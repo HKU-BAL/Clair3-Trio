@@ -7,7 +7,7 @@ set -e
 ARGS=`getopt -o b:f:t:m:p:o:r::c::s::h::g \
 -l bam_fn:,ref_fn:,threads:,model_path:,platform:,output:,\
 bed_fn::,vcf_fn::,ctg_name::,sample_name::,help::,qual::,samtools::,python::,pypy::,parallel::,whatshap::,chunk_num::,chunk_size::,var_pct_full::,var_pct_phasing::,\
-snp_min_af::,indel_min_af::,ref_pct_full::,pileup_only::,fast_mode::,gvcf::,print_ref_calls::,haploid_precise::,haploid_sensitive::,include_all_ctgs::,\
+snp_min_af::,indel_min_af::,ref_pct_full::,pileup_only::,pileup_phasing::,fast_mode::,gvcf::,print_ref_calls::,haploid_precise::,haploid_sensitive::,include_all_ctgs::,\
 no_phasing_for_fa::,pileup_model_prefix::,fa_model_prefix::,call_snp_only::,remove_intermediate_dir::,enable_phasing::,enable_long_indel:: -n 'run_clair3.sh' -- "$@"`
 
 if [ $? != 0 ] ; then echo"No input. Terminating...">&2 ; exit 1 ; fi
@@ -37,6 +37,7 @@ while true; do
     --ref_pct_full ) REF_PRO="$2"; shift 2 ;;
     --var_pct_phasing ) PHASING_PCT="$2"; shift 2 ;;
     --pileup_only ) PILEUP_ONLY="$2"; shift 2 ;;
+    --pileup_phasing ) PILEUP_PHASING="$2"; shift 2 ;;
     --fast_mode ) FAST_MODE="$2"; shift 2 ;;
     --call_snp_only ) SNP_ONLY="$2"; shift 2 ;;
     --print_ref_calls ) SHOW_REF="$2"; shift 2 ;;
@@ -201,6 +202,12 @@ else
     ${PARALLEL} -j${THREADS} ${SAMTOOLS} index -@12 ${PHASE_BAM_PATH}/{1}.bam ::: ${CHR[@]}
 fi
 
+
+if [ ${PILEUP_PHASING} == True ]; then
+    echo "[INFO] Only call pileup output and phasing, output file: ${OUTPUT_FOLDER}/pileup.vcf.gz"
+    echo "[INFO] SAMPLE ${SAMPLE} Finish calling!"
+    exit 0;
+fi
 # Full alignment calling
 #-----------------------------------------------------------------------------------------------------------------------
 echo $''

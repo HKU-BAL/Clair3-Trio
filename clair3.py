@@ -5,6 +5,7 @@ from shared.param_p import REPO_NAME
 DATA_PREP_SCRIPTS_FOLDER="preprocess"
 DEEP_LEARNING_FOLDER="clair3"
 POST_PROCESS_SCRIPTS_FOLDER="clair3.metrics"
+TRIO_SCRIPTS_FOLDER="trio"
 
 deep_learning_folder = [
     "CallVarBam",
@@ -34,6 +35,20 @@ post_process_scripts_folder = [
     'GetOverallMetrics',
 ]
 
+tri_scripts_folder = [
+    'SelectHetSnp_Trio',
+    'SelectCandidates_Trio',
+    'Merge_Tensors_Trio',
+    'Tensor2Bin_Trio',
+    'Train_Trio',
+    'Check_de_novo',
+    'CallVariants_Trio',
+    "CallVarBam_Trio",
+    "CheckEnvs_Trio",
+    'MergeTensorsBam_Trio',
+    'SortVcf_Trio',
+]
+
 def directory_for(submodule_name):
     if submodule_name in deep_learning_folder:
         return DEEP_LEARNING_FOLDER
@@ -41,6 +56,8 @@ def directory_for(submodule_name):
         return DATA_PREP_SCRIPTS_FOLDER
     if submodule_name in post_process_scripts_folder:
         return POST_PROCESS_SCRIPTS_FOLDER
+    if submodule_name in tri_scripts_folder:
+        return TRIO_SCRIPTS_FOLDER
     return ""
 
 
@@ -57,6 +74,7 @@ def print_help_messages():
             "\n".join("          - %s" % submodule_name for submodule_name in data_preprocess_folder),
             "\n".join("          - %s" % submodule_name for submodule_name in deep_learning_folder),
             "\n".join("          - %s" % submodule_name for submodule_name in post_process_scripts_folder),
+            "\n".join("          - %s" % submodule_name for submodule_name in tri_scripts_folder),
         )
     ))
 
@@ -70,6 +88,7 @@ def main():
     if (
         submodule_name not in deep_learning_folder and
         submodule_name not in data_preprocess_folder and
+        submodule_name not in tri_scripts_folder and
         submodule_name not in post_process_scripts_folder
     ):
         sys.exit("[ERROR] Submodule %s not found." % (submodule_name))
