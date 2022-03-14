@@ -22,6 +22,7 @@ Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3)
 * [Introduction](#introduction)
 * [Latest Updates](#latest-updates)
 * [What's New in Clair3](#whats-new-in-clair3)
+* [Quick Demo](#quick-demo)
 * [Pre-trained Models](#pre-trained-models)
   * [Guppy4 Model](#pre-trained-models)
 * [Installation](#installation)
@@ -30,7 +31,6 @@ Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3)
   + [Option 3. Bioconda](#option-3--bioconda)
   + [Option 4. Build an anaconda virtual environment](#option-4-build-an-anaconda-virtual-environment)
   + [Option 5. Docker Dockerfile](#option-5-docker-dockerfile)
-* [Quick Demo](#quick-demo)
 * [Usage](#usage)
 * [Folder Structure and Submodule Descriptions](#folder-structure-and-submodule-descriptions)
 * [Training Data](docs/training_data.md)
@@ -59,6 +59,12 @@ Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3)
 
 ----
 
+## Quick Demo
+
+*   see [Trio Quick Demo](docs/trio/ont_quick_demo.md).
+
+----
+
 ## Pre-trained Models
 
 ### HKU-provided Models
@@ -71,11 +77,6 @@ In a docker installation, models are in `/opt/models/`. In a bioconda installati
 | :----------------------------: | :---------: | :----------------------------------------------------------: | -------------------------------- | :--------------------------: | :------: | :----------: | ----------------------------------- | :----------------------------------------------------------: |
 |    r941_prom_hac_g422     |     ONT     |                         HG001,2,3       | Yes                              |             Yes              | 20220312 | Guppy4 hac | r941_prom_hac_g422.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/r941_prom_hac_g422.tar.gz) |
 
-----
-
-## Quick Demo
-
-*   Oxford Nanopore (ONT) data, see [ONT Quick Demo](docs/quick_demo/trio/ont_quick_demo.md).
 
 ----
 
@@ -166,16 +167,20 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. c3t_hg002_g422
 **Caution**:  Use `=value` for optional parameters, e.g. `--bed_fn=fn.bed` instead of `--bed_fn fn.bed`.
 
 ```bash
-./run_clair3.sh \
-  --bam_fn=${BAM} \
-  --ref_fn=${REF} \
-  --threads=${THREADS} \  		     
-  --platform="ont" \               ## options: {ont,hifi,ilmn}
-  --model_path=${MODEL_PREFIX} \   ## absolute model path prefix
-  --output=${OUTPUT_DIR}           ## absolute output path prefix
-## pileup output file: ${OUTPUT_DIR}/pileup.vcf.gz
-## full-alignment output file: ${OUTPUT_DIR}/full_alignment.vcf.gz
-## Clair3 final output file: ${OUTPUT_DIR}/merge_output.vcf.gz
+./run_clair3_trio.sh \
+  --bam_fn_c=${_BAM_C} \
+  --bam_fn_p1=${_BAM_P1} \
+  --bam_fn_p2=${_BAM_P2} \
+  --output=${_OUTPUT_DIR} \
+  --ref_fn=${_REF} \
+  --threads=${_THREADS} \
+  --model_path_clair3="${_MODEL_DIR_C3}" \
+  --model_path_clair3_trio="${_MODEL_DIR_C3T}" \
+  --bed_fn=${_INPUT_DIR}/quick_demo.bed \
+  --sample_name_c=${_SAMPLE_C} \
+  --sample_name_p1=${_SAMPLE_P1} \
+  --sample_name_p2=${_SAMPLE_P2}
+
 ```
 
 ### Options
@@ -228,110 +233,6 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. c3t_hg002_g422
       --enable_long_indel       EXPERIMENTAL: Call long Indel variants(>50 bp), default: disable.
 ```
 
-#### Call variants in a chromosome
-
-```bash
-CONTIGS_LIST="[YOUR_CONTIGS_LIST]"     # e.g "chr21" or "chr21,chr22"
-INPUT_DIR="[YOUR_INPUT_FOLDER]"        # e.g. /home/user1/input  (absolute path needed)
-OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"      # e.g. /home/user1/output (absolute path needed)
-THREADS="[MAXIMUM_THREADS]"            # e.g. 8
-MODEL_NAME="[YOUR_MODEL_NAME]"         # e.g. r941_prom_hac_g360+g422
-
-docker run -it \
-  -v ${INPUT_DIR}:${INPUT_DIR} \
-  -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
-  hkubal/clair3:latest \
-  /opt/bin/run_clair3.sh \
-  --bam_fn=${INPUT_DIR}/input.bam \    ## change your bam file name here
-  --ref_fn=${INPUT_DIR}/ref.fa \       ## change your reference file name here
-  --threads=${THREADS} \               ## maximum threads to be used
-  --platform="ont" \                   ## options: {ont,hifi,ilmn}
-  --model_path="/opt/models/${MODEL_NAME}" \
-  --output=${OUTPUT_DIR} \             ## absolute output path prefix
-  --ctg_name=${CONTIGS_LIST}
-```
-
-#### Call variants at known variant sites
-
-```bash
-KNOWN_VARIANTS_VCF="[YOUR_VCF_PATH]"   # e.g. /home/user1/known_variants.vcf.gz (absolute path needed)
-INPUT_DIR="[YOUR_INPUT_FOLDER]"        # e.g. /home/user1/input (absolute path needed)
-OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"      # e.g. /home/user1/output (absolute path needed)
-THREADS="[MAXIMUM_THREADS]"            # e.g. 8
-MODEL_NAME="[YOUR_MODEL_NAME]"         # e.g. r941_prom_hac_g360+g422
-
-docker run -it \
-  -v ${INPUT_DIR}:${INPUT_DIR} \
-  -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
-  hkubal/clair3:latest \
-  /opt/bin/run_clair3.sh \
-  --bam_fn=${INPUT_DIR}/input.bam \    ## change your bam file name here
-  --ref_fn=${INPUT_DIR}/ref.fa \       ## change your reference file name here
-  --threads=${THREADS} \               ## maximum threads to be used
-  --platform="ont" \                   ## options: {ont,hifi,ilmn}
-  --model_path="/opt/models/${MODEL_NAME}" \
-  --output=${OUTPUT_DIR} \             ## absolute output path prefix
-  --vcf_fn=${KNOWN_VARIANTS_VCF}
-```
-
-#### Call variants at specific sites or bed regions
-
-We highly recommended using BED file to define the regions of interest like:
-
-```shell
-# define 0-based "ctg start end" if at specific sites
-CONTIGS="[YOUR_CONTIGS_NAME]"          # e.g. chr22
-START_POS="[YOUR_START_POS]"           # e.g. 0
-END_POS="[YOUR_END_POS]"               # e.g 10000
-echo -e "${CONTIGS}\t${START_POS}\t${END_POS}" > /home/user1/tmp.bed ## change directory accordingly
-```
-
-Then run Clair3 like this:
-
-```bash
-BED_FILE_PATH="[YOUR_BED_FILE]"        # e.g. /home/user1/tmp.bed (absolute path needed)
-INPUT_DIR="[YOUR_INPUT_FOLDER]"        # e.g. /home/user1/input (absolute path needed)
-OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"      # e.g. /home/user1/output (absolute path needed)
-THREADS="[MAXIMUM_THREADS]"            # e.g. 8
-MODEL_NAME="[YOUR_MODEL_NAME]"         # e.g. r941_prom_hac_g360+g422
-
-docker run -it \
-  -v ${INPUT_DIR}:${INPUT_DIR} \
-  -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
-  hkubal/clair3:latest \
-  /opt/bin/run_clair3.sh \
-  --bam_fn=${INPUT_DIR}/input.bam \    ## change your bam file name here
-  --ref_fn=${INPUT_DIR}/ref.fa \       ## change your reference file name here
-  --threads=${THREADS} \               ## maximum threads to be used
-  --platform="ont" \                   ## options: {ont,hifi,ilmn}
-  --model_path="/opt/models/${MODEL_NAME}" \
-  --output=${OUTPUT_DIR} \             ## absolute output path prefix
-  --bed_fn=${BED_FILE_PATH}
-```
-
-#### Call variants in non-diploid organisms (Haploid calling)
-
-```bash
-INPUT_DIR="[YOUR_INPUT_FOLDER]"        # e.g. /home/user1/input (absolute path needed)
-OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"      # e.g. /home/user1/output (absolute path needed)
-THREADS="[MAXIMUM_THREADS]"            # e.g. 8
-MODEL_NAME="[YOUR_MODEL_NAME]"         # e.g. r941_prom_hac_g360+g422
-
-docker run -it \
-  -v ${INPUT_DIR}:${INPUT_DIR} \
-  -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
-  hkubal/clair3:latest \
-  /opt/bin/run_clair3.sh \
-  --bam_fn=${INPUT_DIR}/input.bam \    ## change your bam file name here
-  --ref_fn=${INPUT_DIR}/ref.fa \       ## change your reference file name here
-  --threads=${THREADS} \               ## maximum threads to be used
-  --platform="ont" \                   ## options: {ont,hifi,ilmn}
-  --model_path="/opt/models/${MODEL_NAME}" \
-  --output=${OUTPUT_DIR} \
-  --no_phasing_for_fa \                ## disable phasing for full-alignment
-  --include_all_ctgs \                 ## call variants on all contigs in the reference fasta
-  --haploid_precise                    ## optional(enable --haploid_precise or --haploid_sensitive) for haploid calling
-```
 
 ----
 
@@ -383,8 +284,3 @@ Please find more details about the training data and links at [Training Data](do
 
 ----
 
-## VCF/GVCF Output Formats
-
-Clair3 supports both VCF and GVCF output formats. Clair3 uses VCF version 4.2 specifications. Specifically, Clair3 adds a `P` INFO tag to the results called using a pileup model, and a `F` INFO tag to the results called using a full-alignment model.
-
-Clair3 outputs a GATK-compatible GVCF format that passes GATK's `ValidateVariants` module. Different from DeepVariant that uses `<*>` to represent any possible alternative allele, Clair3 uses `<NON_REF>`, the same as GATK.
