@@ -9,7 +9,7 @@ Region:     chr20:100000-300000
 Basecaller: Guppy 4.2.2
 ```
 
-###**Download data**
+### **Download data**
 
 ```bash
 # Parameters
@@ -61,7 +61,7 @@ END_POS=300000
 echo -e "${_CONTIGS}\t${START_POS}\t${END_POS}" > ${_INPUT_DIR}/quick_demo.bed
 ```
 
-###**Run Clair3-Trio**
+### **Run Clair3-Trio**
 
 ```bash
 
@@ -85,7 +85,7 @@ _MODEL_DIR_C3T=`pwd`"/models/clair3_trio_models/c3t_hg002_g422"
   --sample_name_p2=${_SAMPLE_P2}
 ```
 
-###**Run hap.py for benchmarking (optional)**
+### **Run hap.py for benchmarking (optional)**
 
 ```bash
 BASELINE_VCF_FILE_PATH_C="HG002_GRCh38_20.v4.2.1_benchmark.vcf.gz"
@@ -164,7 +164,7 @@ ${_OUTPUT_DIR}/${OUTPUT_VCF_FILE_PATH} \
 
 ```
 
-###**Calculate number of Mendelian violation and de novo variants**
+### **Calculate number of Mendelian violation and de novo variants**
 
 ```
 mkdir -p ${_OUTPUT_DIR}/trio
