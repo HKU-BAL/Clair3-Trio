@@ -6,9 +6,9 @@ Usage="Usage: ./${SCRIPT_NAME} --bam_fn_c=BAM --bam_fn_p1=BAM --bam_fn_p2=BAM --
 set -e
 ARGS=`getopt -o f:t:p:o:r::c::s::h::g \
 -l bam_fn_c:,bam_fn_p1:,bam_fn_p2:,ref_fn:,threads:,model_path_clair3:,model_path_clair3_trio:,platform:,output:,\
-bed_fn::,vcf_fn::,ctg_name::,sample_name_c::,sample_name_p1::,sample_name_p2::,help::,qual::,samtools::,python::,pypy::,parallel::,whatshap::,chunk_num::,chunk_size::,var_pct_full::,\
+bed_fn::,vcf_fn::,ctg_name::,sample_name_c::,sample_name_p1::,sample_name_p2::,help::,qual::,samtools::,python::,pypy::,parallel::,whatshap::,chunk_num::,chunk_size::,var_pct_full::,var_pct_phasing::,\
 snp_min_af::,indel_min_af::,ref_pct_full::,pileup_only::,pileup_phasing::,fast_mode::,gvcf::,print_ref_calls::,haploid_precise::,haploid_sensitive::,include_all_ctgs::,\
-no_phasing_for_fa::,pileup_model_prefix::,trio_model_prefix::,call_snp_only:: -n 'run_clair3_trio.sh' -- "$@"`
+no_phasing_for_fa::,pileup_model_prefix::,trio_model_prefix::,call_snp_only::,remove_intermediate_dir::,enable_phasing::,enable_long_indel:: -n 'run_clair3_trio.sh' -- "$@"`
 
 if [ $? != 0 ] ; then echo"No input. Terminating...">&2 ; exit 1 ; fi
 eval set -- "${ARGS}"
@@ -46,6 +46,9 @@ INCLUDE_ALL_CTGS=False
 NO_PHASING=False
 PILEUP_PREFIX="pileup"
 TRIO_PREFIX="trio"
+RM_TMP_DIR=False
+ENABLE_PHASING=False
+ENABLE_LONG_INDEL=False
 
 
 
@@ -76,6 +79,7 @@ while true; do
     --whatshap ) WHATSHAP="$2"; shift 2 ;;
     --var_pct_full ) PRO="$2"; shift 2 ;;
     --ref_pct_full ) REF_PRO="$2"; shift 2 ;;
+    --var_pct_phasing ) PHASING_PCT="$2"; shift 2 ;;
     --pileup_only ) PILEUP_ONLY="$2"; shift 2 ;;
     --pileup_phasing ) PILEUP_PHASING="$2"; shift 2 ;;
     --fast_mode ) FAST_MODE="$2"; shift 2 ;;
@@ -90,6 +94,9 @@ while true; do
     --haploid_sensitive ) HAP_SEN="$2"; shift 2 ;;
     --include_all_ctgs ) INCLUDE_ALL_CTGS="$2"; shift 2 ;;
     --no_phasing_for_fa ) NO_PHASING="$2"; shift 2 ;;
+    --remove_intermediate_dir ) RM_TMP_DIR="$2"; shift 2 ;;
+    --enable_long_indel ) ENABLE_LONG_INDEL="$2"; shift 2 ;;
+    --enable_phasing ) ENABLE_PHASING="$2"; shift 2 ;;
 
     -- ) shift; break; ;;
     -h|--help ) print_help_messages; break ;;
@@ -211,7 +218,9 @@ ${PARALLEL} --retries ${RETRIES} -j3 --joblog  ${LOG_PATH}/parallel_1_clair3_pil
     --ref_pct_full=${REF_PRO} \
     --snp_min_af=${SNP_AF} \
     --indel_min_af=${INDEL_AF} \
-    --pileup_only=True \
+    --var_pct_phasing=${PHASING_PCT} \
+    --pileup_only=False \
+    --pileup_phasing=True \
     --gvcf=${GVCF} \
     --fast_mode=${FAST_MODE} \
     --call_snp_only=${SNP_ONLY} \
@@ -220,6 +229,9 @@ ${PARALLEL} --retries ${RETRIES} -j3 --joblog  ${LOG_PATH}/parallel_1_clair3_pil
     --haploid_sensitive=${HAP_SEN} \
     --include_all_ctgs=${INCLUDE_ALL_CTGS} \
     --no_phasing_for_fa=${NO_PHASING} \
+    --remove_intermediate_dir=${RM_TMP_DIR} \
+    --enable_phasing=${ENABLE_PHASING} \
+    --enable_long_indel=${ENABLE_LONG_INDEL} \
     --pileup_model_prefix=${PILEUP_PREFIX} \
     --fa_model_prefix=full_alignment" ::: ${ALL_SAMPLE[@]} :::+ ${ALL_UNPHASED_BAM_FILE_PATH[@]} |& tee ${LOG_PATH}/1_call_var_bam_pileup.log
 
@@ -311,236 +323,4 @@ echo $''
 echo "[INFO] Finish calling, output file [Child]: ${OUTPUT_FOLDER}/${SAMPLE_C}.vcf.gz"
 echo "[INFO] Finish calling, output file [Parent 1]: ${OUTPUT_FOLDER}/${SAMPLE_P1}.vcf.gz"
 echo "[INFO] Finish calling, output file [Parent 2]: ${OUTPUT_FOLDER}/${SAMPLE_P2}.vcf.gz"
-exit 0
-
-# note that in training included the add_no_phasing_data_training
-# no using the giab bed files
-echo "[INFO] * 3/7 Creating Tensors"
-time ${PARALLEL}  --joblog ${LOG_PATH}/parallel_3_create_tensor.log -j${THREADS} \
-"${PYPY} ${CLAIR3_TRIO} CreateTensorFullAlignment \
---bam_fn {3}/{1}.bam \
---ref_fn ${REFERENCE_FILE_PATH} \
---tensor_can_fn ${TENSOR_CANDIDATE_FOLDER_PATH}/tensor_can_{2}_{1}_{4} \
---indel_fn ${INDEL_PATH}/{2}_{1}_{4} \
---ctgName {1} \
---samtools ${SAMTOOLS} \
---platform ${PLATFORM} \
---full_aln_regions ${SPLIT_BED_PATH}/${TRIO_N}_1000_{1}_{4} \
---phasing_info_in_bam" ::: ${CHR[@]} ::: ${ALL_SAMPLE[@]} :::+ ${ALL_PHASED_BAM_FILE_DIR[@]} ::: ${CHUNK_LIST[@]} |& tee ${LOG_PATH}/3_CT.log
-
-
-echo "[INFO] * 4/7 Merging Trio Tensors"
-time ${PARALLEL} --joblog ${LOG_PATH}/parallel_4_merge_tensors.log -j${THREADS} \
-"${PYTHON} ${CLAIR3_TRIO} Merge_Tensors_Trio \
---tensor_fn_c ${TENSOR_CANDIDATE_FOLDER_PATH}/tensor_can_${ALL_SAMPLE[0]}_{1}_{2} \
---tensor_fn_p1 ${TENSOR_CANDIDATE_FOLDER_PATH}/tensor_can_${ALL_SAMPLE[1]}_{1}_{2} \
---tensor_fn_p2 ${TENSOR_CANDIDATE_FOLDER_PATH}/tensor_can_${ALL_SAMPLE[2]}_{1}_{2} \
---candidate_fn_c ${INDEL_PATH}/${ALL_SAMPLE[0]}_{1}_{2} \
---candidate_fn_p1 ${INDEL_PATH}/${ALL_SAMPLE[1]}_{1}_{2} \
---candidate_fn_p2 ${INDEL_PATH}/${ALL_SAMPLE[2]}_{1}_{2} \
---tensor_fn ${TENSOR_CANDIDATE_FOLDER_PATH}/tensor_can_${TRIO_N}_{1}_{2} \
---candidate_fn ${INDEL_PATH}/${TRIO_N}_{1}_{2} \
-" ::: ${CHR[@]} ::: ${CHUNK_LIST[@]} |& tee ${LOG_PATH}/4_MT.log
-
-BINS_FOLDER_PATH="${TMP_FILE_PATH}/trio_input/bins"
-mkdir -p ${BINS_FOLDER_PATH}
-
-# create tensors bin chunk number for each chr
-bin_chunk_num=1
-BIN_CHUNK_LIST=`seq 1 ${bin_chunk_num}`
-
-
-echo "[INFO] * 5/7 Coverting Tensors to Bins"
-time ${PARALLEL} --joblog ${LOG_PATH}/parallel_5_tensor2Bin.log -j${THREADS} \
-"${PYTHON} ${CLAIR3_TRIO} Tensor2Bin_Trio \
---tensor_fn ${TENSOR_CANDIDATE_FOLDER_PATH}/tensor_can_${TRIO_N}_{1} \
---bin_fn ${BINS_FOLDER_PATH}/${TRIO_N}_{1}_{2} \
---chunk_id {2} \
---chunk_num ${bin_chunk_num} \
---platform ${PLATFORM} \
-" ::: ${CHR[@]} ::: ${BIN_CHUNK_LIST[@]} |& tee ${LOG_PATH}/5_T2B.log
-
-call_chunk_num=6
-CALL_CHUNK_LIST=`seq 1 ${call_chunk_num}`
-PREDICT_THREADS=6
-add_indel_length=1
-MODEL_ALS="Clair3_Trio_Out3"
-MODEL_ARC=NN
-use_gpu=1
-use_gpu=0
-# export CUDA_VISIBLE_DEVICES="0"
-
-
-CALL_PATH=${TMP_FILE_PATH}/predict_tensors
-mkdir -p ${CALL_PATH}
-
-
-
-echo "[INFO] * 6/7 Calling Trio Variants"
-time ${PARALLEL} --joblog ${LOG_PATH}/parallel_6_predict.log -j${PREDICT_THREADS} \
-"${PYTHON} ${CLAIR3_TRIO} CallVariants_Trio \
---tensor_fn ${BINS_FOLDER_PATH}/${TRIO_N}_{1}_{2} \
---chkpnt_fn ${MODEL_PATH_C3T}/${TRIO_PREFIX} \
---predict_fn ${CALL_PATH}/predict_${TRIO_N}_{1}_{2}_{3} \
---sampleName ${TRIO_N} \
---chunk_id {3} \
---chunk_num ${call_chunk_num} \
---is_from_tables \
---use_gpu ${use_gpu} \
---add_indel_length ${add_indel_length} \
---model_arc ${MODEL_ARC} \
---model_cls ${MODEL_ALS} \
---platform ${PLATFORM} \
---output_probabilities" ::: ${CHR[@]} ::: ${BIN_CHUNK_LIST[@]} ::: ${CALL_CHUNK_LIST[@]} |& tee ${LOG_PATH}/6_PREDICT.log
-
-ALL_SAMPLE_IDX=(
-0
-1
-2
-)
-
-time ${PARALLEL}  --joblog ${LOG_PATH}/parallel_7_call.log  -j ${THREADS} \
-"${PYTHON} ${CLAIR3_TRIO} CallVariants_Trio \
---tensor_fn ${CALL_PATH}/predict_${TRIO_N}_{1}_{4}_{5} \
---chkpnt_fn 0 \
---call_fn ${CALL_PATH}/{2}_{1}_{4}_{5}.vcf \
---sampleName {2} \
---ref_fn ${REFERENCE_FILE_PATH} \
---add_indel_length ${add_indel_length} \
---platform ${PLATFORM} \
---model_arc ${MODEL_ARC} \
---trio_n_id {3} \
---showRef \
---input_probabilities" ::: ${CHR[@]} ::: ${ALL_SAMPLE[@]} :::+ ${ALL_SAMPLE_IDX[@]} ::: ${BIN_CHUNK_LIST[@]} ::: ${CALL_CHUNK_LIST[@]} |& tee ${LOG_PATH}/7_CV.log
-
-time ${PARALLEL}  --joblog ${LOG_PATH}/parallel_8_sort.log  -j ${THREADS} \
-"${PYTHON} ${CLAIR3_TRIO} SortVcf \
---input_dir ${CALL_PATH} \
---vcf_fn_prefix {1} \
---output_fn ${OUTPUT_FOLDER}/{1}.vcf \
---sampleName {1} \
---ref_fn ${REFERENCE_FILE_PATH} \
---contigs_fn ${TMP_FILE_PATH}/CONTIGS" ::: ${ALL_SAMPLE[@]}  |& tee ${LOG_PATH}/8_SORT.log
-
-
-
-
-echo $''
-echo "[INFO] Finish calling, output folder: ${OUTPUT_FOLDER}"
-
-
-
-# call_chunk_num=1
-# CALL_CHUNK_LIST=`seq 1 ${call_chunk_num}`
-
-
-
-
-
-# CALL_PATH="${TMP_FILE_PATH}/trio_input/call"
-# mkdir -p ${CALL_PATH}
-
-# cd ${CALL_PATH}
-# echo "[INFO] Call var parallel for testing"
-
-
-
-# MODEL_ALS="Clair3_Trio_Out3"
-# MODEL_ARC=NN
-# use_gpu=0
-# add_indel_length=1
-# export CUDA_VISIBLE_DEVICES="1"
-
-
-# # 10G GPU: maximum 6 threads 
-# PREDICT_THREADS=6
-
-# time ${PARALLEL} --joblog ${LOG_PATH}/parallel_5_call_v.txt -j${PREDICT_THREADS} \
-# echo "${PYTHON} ${CLAIR3_TRIO} CallVariants_Trio \
-# --tensor_fn ${TENSOR_CANDIDATE_FOLDER_PATH}/tensor_can_${TRIO_N}_{1}_1 \
-# --chkpnt_fn ${MODEL_PATH_C3T}/${TRIO_PREFIX} \
-# --call_fn ${CALL_PATH}/predict_tensors/predict_${TRIO_N}.vcf \
-# --predict_fn ${CALL_PATH}/predict_tensors/predict_${TRIO_N}_{1}_{3}_{4} \
-# --ref_fn ${REFERENCE_FILE_PATH} \
-# --sampleName ${TRIO_N} \
-# --chunk_id {4} \
-# --ctgName {1} \
-# --chunk_num ${call_chunk_num} \
-# --use_gpu ${use_gpu} \
-# --add_indel_length ${add_indel_length} \
-# --model_arc ${MODEL_ARC} \
-# --model_cls ${MODEL_ALS} \
-# --platform ${PLATFORM} \
-# " ::: ${CHR[@]} ::: ${EPOCH[@]} ::: ${BIN_CHUNK_LIST[@]} ::: ${CALL_CHUNK_LIST[@]} |& tee ${CALL_PATH}/PREDICT.log
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# THREADS
-# CLAIR3
-# CLAIR3_THREADS
-# CLAIR3_MODEL
-# REFERENCE_FILE_PATH
-# BED_FILE_PATH
-
-# CLAIR3_THREADS=$((${THREADS}/3))
-# if [[ ${CLAIR3_THREADS} < 1 ]]; then CLAIR3_THREADS=1; fi
-
-
-# PARALLEL
-# LOG_PATH
-# PILEUP_OUTPUT_PATH
-# # Step 1 run Clair3 pileup
-
-
-
-# ALL_SAMPLE=(
-# )
-
-# ALL_UNPHASED_BAM_FILE_PATH=(
-# )
-
-
-# ${LOG_PATH}/parallel_1_pileup_c.log
-
-# # Call variants using Clair3‘s pileup model with the --pileup_only option
-# # Only select the candidates in the high-confident BED regions for model training (with --bed_fn)
-# ${PARALLEL} -j3 --joblog  ${LOG_PATH}/parallel_1_clair3_pileup.log \
-# "${CLAIR3}/run_clair3.sh \
-# --bam_fn={3} \
-# --ref_fn=${REFERENCE_FILE_PATH} \
-# --threads=${CLAIR3_THREADS} \
-# --platform="ont" \
-# --model_path="${CLAIR3_MODEL}" \
-# --output=${PILEUP_OUTPUT_PATH}/{1} \
-# --bed_fn=${ALL_BED_FILE_PATH} \
-# --bed_fn ${BED_FILE_PATH} \
-# --ctg_name ${CONTIGS}  \
-# --include_all_ctgs ${INCLUDE_ALL_CTGS} \
-# --python ${PYTHON} \
-# --pypy ${PYPY} \
-# --samtools ${SAMTOOLS} \
-# --whatshap ${WHATSHAP} \
-# --parallel ${PARALLEL} \
-# --qual ${QUAL} \
-# --sampleName ${SAMPLE} \
-# --var_pct_full ${PRO} \
-# --ref_pct_full ${REF_PRO} \
-# --snp_min_af ${SNP_AF} \
-# --indel_min_af ${INDEL_AF}
-# --pileup_phasing" ::: ${ALL_SAMPLE[@]} :::+ ${ALL_UNPHASED_BAM_FILE_PATH[@]}
 

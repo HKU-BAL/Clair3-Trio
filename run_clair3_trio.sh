@@ -48,14 +48,18 @@ print_help_messages()
     echo $'--gvcf                         Enable GVCF output, default: disable.'
     echo $'--snp_min_af=FLOAT             Minimum SNP AF required for a candidate variant. Lowering the value might increase a bit of sensitivity in trade of speed and accuracy, default: ont:0.08,hifi:0.08,ilmn:0.08.'
     echo $'--indel_min_af=FLOAT           Minimum Indel AF required for a candidate variant. Lowering the value might increase a bit of sensitivity in trade of speed and accuracy, default: ont:0.15,hifi:0.08,ilmn:0.08.'
+    echo $'--remove_intermediate_dir      Remove intermediate directory, including intermediate phased BAM, pileup and full-alignment results. default: disable.'
+    echo $'--enable_phasing               Output phased variants using whatshap, default: disable.'
     echo $'--var_pct_full=FLOAT           EXPERIMENTAL: Specify an expected percentage of low quality 0/1 and 1/1 variants called in the pileup mode for full-alignment mode calling, default: 0.3.'
     echo $'--ref_pct_full=FLOAT           EXPERIMENTAL: Specify an expected percentage of low quality 0/0 variants called in the pileup mode for full-alignment mode calling, default: 0.3 for ilmn and hifi, 0.1 for ont.'
+    echo $'--var_pct_phasing=FLOAT        EXPERIMENTAL: Specify an expected percentage of high quality 0/1 variants used in WhatsHap phasing, default: 0.8 for ont guppy5 and 0.7 for other platforms.'
     echo $'--pileup_model_prefix=STR      EXPERIMENTAL: Model prefix in pileup calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index. default: pileup.'
     echo $'--trio_model_prefix=STR        EXPERIMENTAL: Model prefix in trio calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index, default: trio.'
     echo $'--fast_mode                    EXPERIMENTAL: Skip variant candidates with AF <= 0.15, default: disable.'
     echo $'--haploid_precise              EXPERIMENTAL: Enable haploid calling mode. Only 1/1 is considered as a variant, default: disable.'
     echo $'--haploid_sensitive            EXPERIMENTAL: Enable haploid calling mode. 0/1 and 1/1 are considered as a variant, default: disable.'
     echo $'--call_snp_only                EXPERIMENTAL: Call candidates pass SNP minimum AF only, ignore Indel candidates, default: disable.'
+    echo $'--enable_long_indel            EXPERIMENTAL: Call long Indel variants(>50 bp), default: disable.'
     echo $'--no_phasing_for_fa            EXPERIMENTAL: Call variants without whatshap phasing in full alignment calling, default: disable.'
     echo $'-p, --platform=STR             EXPERIMENTAL: [DO NOT CHANGE] Select the sequencing platform of the input. Possible options: {ont}.'
     echo $''
@@ -75,8 +79,8 @@ NC="\\033[0m"
 
 ARGS=`getopt -o b:f:t:p:o:hv \
 -l bam_fn_c:,bam_fn_p1:,bam_fn_p2:,ref_fn:,threads:,model_path_clair3:,model_path_clair3_trio:,platform:,output:,\
-bed_fn::,vcf_fn::,ctg_name::,sample_name_c::,sample_name_p1::,sample_name_p2::,qual::,samtools::,python::,pypy::,parallel::,whatshap::,chunk_num::,chunk_size::,var_pct_full::,ref_pct_full::,\
-resumn::,snp_min_af::,indel_min_af::,pileup_model_prefix::,trio_model_prefix::,fast_mode,gvcf,pileup_only,pileup_phasing,print_ref_calls,haploid_precise,haploid_sensitive,include_all_ctgs,no_phasing_for_fa,call_snp_only,help,version -n 'run_clair3.sh' -- "$@"`
+bed_fn::,vcf_fn::,ctg_name::,sample_name_c::,sample_name_p1::,sample_name_p2::,qual::,samtools::,python::,pypy::,parallel::,whatshap::,chunk_num::,chunk_size::,var_pct_full::,ref_pct_full::,var_pct_phasing::,\
+resumn::,snp_min_af::,indel_min_af::,pileup_model_prefix::,trio_model_prefix::,fast_mode,gvcf,pileup_only,pileup_phasing,print_ref_calls,haploid_precise,haploid_sensitive,include_all_ctgs,no_phasing_for_fa,call_snp_only,remove_intermediate_dir,enable_phasing,enable_long_indel,help,version -n 'run_clair3_trio.sh' -- "$@"`
 
 if [ $? != 0 ] ; then echo"No input. Terminating...">&2 ; exit 1 ; fi
 eval set -- "${ARGS}"
@@ -97,6 +101,7 @@ PLATFORM=ont
 CHUNK_NUM=0
 CHUNK_SIZE=5000000
 QUAL=2
+PHASING_PCT="0"
 PRO=0.3
 REF_PRO=0
 GVCF=False
@@ -112,6 +117,9 @@ HAP_SEN=False
 SNP_ONLY=False
 INCLUDE_ALL_CTGS=False
 NO_PHASING=False
+RM_TMP_DIR=False
+ENABLE_PHASING=False
+ENABLE_LONG_INDEL=False
 PILEUP_PREFIX="pileup"
 TRIO_PREFIX="trio"
 
@@ -142,6 +150,7 @@ while true; do
     --whatshap ) WHATSHAP="$2"; shift 2 ;;
     --var_pct_full ) PRO="$2"; shift 2 ;;
     --ref_pct_full ) REF_PRO="$2"; shift 2 ;;
+    --var_pct_phasing ) PHASING_PCT="$2"; shift 2 ;;
     --snp_min_af ) SNP_AF="$2"; shift 2 ;;
     --indel_min_af ) INDEL_AF="$2"; shift 2 ;;
     --pileup_model_prefix ) PILEUP_PREFIX="$2"; shift 2 ;;
@@ -157,6 +166,9 @@ while true; do
     --haploid_sensitive ) HAP_SEN=True; shift 1 ;;
     --include_all_ctgs ) INCLUDE_ALL_CTGS=True; shift 1 ;;
     --no_phasing_for_fa ) NO_PHASING=True; shift 1 ;;
+    --remove_intermediate_dir ) RM_TMP_DIR=True; shift 1 ;;
+    --enable_long_indel ) ENABLE_LONG_INDEL=True; shift 1 ;;
+    --enable_phasing ) ENABLE_PHASING=True; shift 1 ;;
 
     -- ) shift; break; ;;
     -h|--help ) print_help_messages; exit 0 ;;
@@ -209,6 +221,17 @@ if [ ! -d ${OUTPUT_FOLDER} ]; then echo -e "${ERROR} Cannot create output folder
 if [ "${PLATFORM}" = "ont" ] && [ ! "${REF_PRO}" -gt 0 ]; then REF_PRO=0.1; fi
 if [ "${PLATFORM}" != "ont" ] && [ ! "${REF_PRO}" -gt 0 ]; then REF_PRO=0.3; fi
 
+echo "asd"
+# show default high quality hete variant proportion for whatshap phasing, 0.8 for ont guppy5 and 0.7 for others
+if [ "${PHASING_PCT}" = "0" ]; then PHASING_PCT=0.7; fi
+BASE_MODEL=$(basename ${MODEL_PATH_C3})C
+if [ "${BASE_MODEL}" = "r941_prom_sup_g5014" ] || [ "${BASE_MODEL}" = "r941_prom_hac_g5014" ] || [ "${BASE_MODEL}" = "ont_guppy5" ]; then PHASING_PCT=0.8; fi
+
+# remove the last '/' character in directory input
+OUTPUT_FOLDER=$(echo ${OUTPUT_FOLDER%*/})
+MODEL_PATH_C3=$(echo ${MODEL_PATH_C3%*/})
+MODEL_PATH_C3T=$(echo ${MODEL_PATH_C3T%*/})
+
 # optional parameters should use "="
 (time (
 echo -e "\033[0;94mClair3-Trio\\033[0m (${VERSION})"
@@ -239,6 +262,7 @@ echo "[INFO] CHUNK SIZE: ${CHUNK_SIZE}"
 if [ ${CHUNK_NUM} -gt 0 ]; then echo "[INFO] CHUNK NUM: ${CHUNK_NUM}"; fi
 echo "[INFO] FULL ALIGN PROPORTION: ${PRO}"
 echo "[INFO] FULL ALIGN REFERENCE PROPORTION: ${REF_PRO}"
+echo "[INFO] PHASING PROPORTION: ${PHASING_PCT}"
 if [ ${SNP_AF} -gt 0 ]; then echo "[INFO] USER DEFINED SNP THRESHOLD: ${SNP_AF}"; fi
 if [ ${INDEL_AF} -gt 0 ]; then echo "[INFO] USER DEFINED INDEL THRESHOLD: ${INDEL_AF}"; fi
 echo "[INFO] ENABLE FILEUP ONLY CALLING: ${PILEUP_ONLY}"
@@ -251,6 +275,9 @@ echo "[INFO] ENABLE HAPLOID PRECISE MODE: ${HAP_PRE}"
 echo "[INFO] ENABLE HAPLOID SENSITIVE MODE: ${GVCF}"
 echo "[INFO] ENABLE INCLUDE ALL CTGS CALLING: ${INCLUDE_ALL_CTGS}"
 echo "[INFO] ENABLE NO PHASING FOR FULL ALIGNMENT: ${NO_PHASING}"
+echo "[INFO] ENABLE REMOVING INTERMEDIATE FILES: ${RM_TMP_DIR}"
+echo "[INFO] ENABLE PHASING VCF OUTPUT: ${ENABLE_PHASING}"
+echo "[INFO] ENABLE LONG INDEL CALLING: ${ENABLE_LONG_INDEL}"
 echo $''
 
 # file check
@@ -302,6 +329,7 @@ if [ -z ${SNP_AF} ]; then echo -e "${ERROR} Use '--snp_min_af=FLOAT' instead of 
 if [ -z ${INDEL_AF} ]; then echo -e "${ERROR} Use '--indel_min_af=FLOAT' instead of '--indel_min_af FLOAT' for optional parameters${NC}"; exit 1 ; fi
 if [ -z ${PRO} ]; then echo -e "${ERROR} Use '--var_pct_full=FLOAT' instead of '--var_pct_full FLOAT' for optional parameters${NC}"; exit 1 ; fi
 if [ -z ${REF_PRO} ]; then echo -e "${ERROR} Use '--ref_pct_full=FLOAT' instead of '--ref_pct_full FLOAT' for optional parameters${NC}"; exit 1 ; fi
+if [ -z ${PHASING_PCT} ]; then echo -e "${ERROR} Use '--var_pct_phasing=FLOAT' instead of '--var_pct_phasing FLOAT' for optional parameters${NC}"; exit 1 ; fi
 if [ -z ${PILEUP_PREFIX} ]; then echo -e "${ERROR} Use '--pileup_model_prefix=STR' instead of '--pileup_model_prefix STR' for optional parameters${NC}"; exit 1 ; fi
 if [ -z ${TRIO_PREFIX} ]; then echo -e "${ERROR} Use '--trio_model_prefix=STR' instead of '--trio_model_prefix STR' for optional parameters${NC}"; exit 1 ; fi
 if [ -z ${RESUMN} ]; then echo -e "${ERROR} Use '--resumn=0,1,2,3,4'for optional parameters${NC}"; exit 1 ; fi
@@ -338,6 +366,7 @@ ${SCRIPT_PATH}/trio/Call_Clair3_Trio.sh \
     --qual=${QUAL} \
     --var_pct_full=${PRO} \
     --ref_pct_full=${REF_PRO} \
+    --var_pct_phasing=${PHASING_PCT} \
     --snp_min_af=${SNP_AF} \
     --indel_min_af=${INDEL_AF} \
     --pileup_only=${PILEUP_ONLY} \
@@ -351,7 +380,10 @@ ${SCRIPT_PATH}/trio/Call_Clair3_Trio.sh \
     --include_all_ctgs=${INCLUDE_ALL_CTGS} \
     --no_phasing_for_fa=${NO_PHASING} \
     --pileup_model_prefix=${PILEUP_PREFIX} \
-    --trio_model_prefix=${TRIO_PREFIX}
+    --trio_model_prefix=${TRIO_PREFIX} \
+    --remove_intermediate_dir=${RM_TMP_DIR} \
+    --enable_phasing=${ENABLE_PHASING} \
+    --enable_long_indel=${ENABLE_LONG_INDEL}
 
 
 )) |& tee ${OUTPUT_FOLDER}/run_clair3_trio.log
