@@ -61,7 +61,7 @@ Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3)
 
 ## Quick Demo
 
-*   see [Trio Quick Demo](docs/trio/ont_quick_demo.md).
+*   see [Trio Quick Demo](docs/trio/trio_quick_demo.md).
 
 ----
 
