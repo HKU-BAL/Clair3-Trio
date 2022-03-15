@@ -203,9 +203,9 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c
  **Caution**:  Use `=value` for optional parameters, e.g., `--bed_fn=fn.bed` instead of `--bed_fn fn.bed`
 
 ```bash
-   	  --sample_name_c=STR       Define the sample name for Child to be shown in the VCF file.[Child]'
-      --sample_name_p1=STR      Define the sample name for Parent1 to be shown in the VCF file.[Parent1]'
-      --sample_name_p2=STR      Define the sample name for Parent2 to be shown in the VCF file.[Parent2]'
+	  --sample_name_c=STR       Define the sample name for Child to be shown in the VCF file.[Child].
+      --sample_name_p1=STR      Define the sample name for Parent1 to be shown in the VCF file.[Parent1].
+      --sample_name_p2=STR      Define the sample name for Parent2 to be shown in the VCF file.[Parent2].
       --bed_fn=FILE             Call variants only in the provided bed regions.
       --vcf_fn=FILE             Candidate sites VCF file input, variants will only be called at the sites in the VCF file if provided.
       --ctg_name=STR            The name of the sequence to be processed.
