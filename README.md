@@ -94,7 +94,7 @@ chmod +x ./Miniconda3-latest-Linux-x86_64.sh
 ./Miniconda3-latest-Linux-x86_64.sh
 ```
 
-**Install Clair3 env using anaconda step by step:**
+**Install Clair3 env and Clair3-Trio using anaconda step by step:**
 
 
 ```bash
@@ -188,12 +188,14 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c
 **Required parameters:**
 
 ```bash
-  -b, --bam_fn=FILE             BAM file input. The input file must be samtools indexed.
+  --bam_fn_c=FILE             	Child's BAM file input. The input file must be samtools indexed.
+  --bam_fn_p1=FILE             	Parent1's BAM file input (Parent1 can be father or mother). The input file must be samtools indexed.
+  --bam_fn_p2=FILE             	Parent2's BAM file input (Parent2 can be father or mother). The input file must be samtools indexed.
   -f, --ref_fn=FILE             FASTA reference file input. The input file must be samtools indexed.
-  -m, --model_path=STR          The folder path containing a Clair3 model (requiring six files in the folder, including pileup.data-00000-of-00002, pileup.data-00001-of-00002 pileup.index, full_alignment.data-00000-of-00002, full_alignment.data-00001-of-00002  and full_alignment.index).
+  --model_path_clair3=STR       The folder path containing a Clair3 model (requiring six files in the folder, including pileup.data-00000-of-00002, pileup.data-00001-of-00002 pileup.index, full_alignment.data-00000-of-00002, full_alignment.data-00001-of-00002  and full_alignment.index.
+  --model_path_clair3_trio=STR   The folder path containing a Clair3-Trio model.
   -t, --threads=INT             Max threads to be used. The full genome will be divided into small chunks for parallel processing. Each chunk will use 4 threads. The chunks being processed simultaneously is ceil($threads/4)*3. 3 is the overloading factor.
-  -p, --platform=STR            Select the sequencing platform of the input. Possible options: {ont,hifi,ilmn}.
-  -o, --output=PATH             VCF/GVCF output directory.
+  -o, --output=PATH             VCF output directory.
 ```
 
 **Other parameters:**
@@ -201,10 +203,12 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c
  **Caution**:  Use `=value` for optional parameters, e.g., `--bed_fn=fn.bed` instead of `--bed_fn fn.bed`
 
 ```bash
+   	  --sample_name_c=STR       Define the sample name for Child to be shown in the VCF file.[Child]'
+      --sample_name_p1=STR      Define the sample name for Parent1 to be shown in the VCF file.[Parent1]'
+      --sample_name_p2=STR      Define the sample name for Parent2 to be shown in the VCF file.[Parent2]'
       --bed_fn=FILE             Call variants only in the provided bed regions.
       --vcf_fn=FILE             Candidate sites VCF file input, variants will only be called at the sites in the VCF file if provided.
       --ctg_name=STR            The name of the sequence to be processed.
-      --sample_name=STR         Define the sample name to be shown in the VCF file.
       --qual=INT                If set, variants with >$qual will be marked PASS, or LowQual otherwise.
       --samtools=STR            Path of samtools, samtools version >= 1.10 is required.
       --python=STR              Path of python, python3 >= 3.6 is required.
@@ -223,6 +227,7 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c
       --var_pct_full=FLOAT      EXPERIMENTAL: Specify an expected percentage of low quality 0/1 and 1/1 variants called in the pileup mode for full-alignment mode calling, default: 0.3.
       --ref_pct_full=FLOAT      EXPERIMENTAL: Specify an expected percentage of low quality 0/0 variants called in the pileup mode for full-alignment mode calling, default: 0.3 for ilmn and hifi, 0.1 for ont.
       --var_pct_phasing=FLOAT   EXPERIMENTAL: Specify an expected percentage of high quality 0/1 variants used in WhatsHap phasing, default: 0.8 for ont guppy5 and 0.7 for other platforms.
+      --trio_model_prefix=STR   EXPERIMENTAL: Model prefix in trio calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index, default: trio.'
       --pileup_model_prefix=STR EXPERIMENTAL: Model prefix in pileup calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index. default: pileup.
       --fa_model_prefix=STR     EXPERIMENTAL: Model prefix in full-alignment calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index, default: full_alignment.
       --fast_mode               EXPERIMENTAL: Skip variant candidates with AF <= 0.15, default: disable.
@@ -238,47 +243,41 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c
 
 ## Folder Structure and Submodule Descriptions
 
+Clair3 shares the same folder structure as Clair3, except for an additional folder `trio`. For descriptions for Clair3 folder, please check [Clair3's Descriptions](https://github.com/HKU-BAL/Clair3#folder-structure-and-submodule-descriptions) for more inforamtion.
 Submodules in __`clair3/`__ are for variant calling and model training. Submodules in __`preprocess`__ are for data preparation.
 
 *For all the submodules listed below, you can use `-h` or `--help` for available options.*
 
-`clair3/` | Note: submodules under this folder are pypy incompatible, please run using python
+`trio/` | submodules under this folder are pypy incompatible, please run using python
 ---: | ---
-`CallVariants` | Call variants using a trained model and tensors of candidate variants.
-`CallVarBam` | Call variants using a trained model and a BAM file.
-`Train` | Training a model using the `RectifiedAdam` optimizer. We also use the `Lookahead` optimizer to adjust the `RectifiedAdam` parameters dynamically. The initial learning rate is `1e-3` with `0.1` learning rate warm-up. Input a binary containing tensors created by `Tensor2Bin`. 
+`CheckEnvs_Trio`| Check the environment and  validity of the input variables, preprocess the BED input if necessary, `--chunk_size` sets the chuck size to be processed per parallel job. 
+`SelectCandidates_Trio`| Select trio candidates for clair3-trio calling.
+`CallVarBam_Trio` | Call variants using a trained model and three BAM files.
+`SortVcf_Trio` | Sort Trio's VCF file. 
+`MergeTenorsBam_Trio` | Create and merge three tensors into trio's tensors.
+`CallVariants_Trio` | Call variants using a trained model and merged tensors of candidate variants.
+`model` | define Clair3-Trio model
+`Training` | -
+`SelectHetSnp_Trio` | Select heterozygous SNP candidates from pileup model and true set.
+`MergeTenors_Trio` | Merge three tensors into trio's tensors.
+`Tensor2Bin_Trio` | Convert trio's tensors into Bin file for training.
+`Train_Trio` | Training a trio model using the `RectifiedAdam` optimizer. We also use the `Lookahead` optimizer to adjust the `RectifiedAdam` parameters dynamically. The initial learning rate is `1e-3` with `0.1` learning rate warm-up. Input a binary containing tensors created by `Tensor2Bin`. 
+`Evaluation` | -
+`Check_de_novo` | Benchmark calling results in terms of de novo variants.
 
 
 
-`preprocess/` | Note: submodules under this folder is Pypy compatible unless specified.
----: | ---
-`CheckEnvs`| Check the environment and  validity of the input variables, preprocess the BED input if necessary, `--chunk_size` sets the chuck size to be processed per parallel job. 
-`CreateTensorPileup`| Generate variant candidate tensors in pileup format for training or calling. 
-`CreateTensorFullAlignment`| Generate variant candidate tensors in phased full-alignment format for training or calling. 
-`GetTruth`| Extract the variants from a truth VCF. Input: VCF; Reference FASTA if the VCF contains asterisks in ALT field.
-`MergeVcf` | Merge pileup and full-alignment VCF/GVCF.
-`RealignReads` | Reads local realignment for Illumina platform.
-`SelectCandidates`| Select pileup candidates for full-alignment calling.
-`SelectHetSnp` | Select heterozygous SNP candidates for whatshap phasing.
-`SelectQual` | Select a quality cutoff using the pileup calling results. Variants below the cutoff are included in phasing and full-alignment calling. 
-`SortVcf` | Sort VCF file. 
-`SplitExtendBed` | Split BED file regions according to the contig names and extend bed region by 33bp by default for variant calling. 
-`UnifyRepresentation` | Representation unification between candidate sites and true variants. 
-`MergeBin` | Combine tensor binaries into a single file. 
-`CreateTrainingTensor` | Create tensor binaries for pileup or full-alignment training. 
-`Tensor2Bin` | Combine the variant and non-variant tensors and convert them to a binary, using `blosc:lz4hc` meta-compressor, the overall training memory is 10~15G (pypy incompatible). 
+
 
 ----
 
 ## Training Data
 
-Clair3 trained both its pileup and full-alignment models using four GIAB samples (HG001, HG002, HG004 and HG005), excluded HG003. On ONT, we also trained a model using HG001, 2, 3, and 5, excluded HG004. All models were trained with chr20 excluded (including only chr1-19, 21, 22). 
+Clair3-Trio trained its trio models using four GIAB samples (HG002, HG003 and HG004). All models were trained with chr20 excluded (including only chr1-19, 21, 22). 
 
 |  Platform   |   Reference   |      Aligner      | Training samples |
 | :---------: | :-----------: | :---------------: | :--------------: |
-|     ONT     | GRCh38_no_alt |     minimap2      | HG001,2,(3\|4),5 |
-| PacBio HiFi | GRCh38_no_alt |       pbmm2       |   HG001,2,4,5    |
-|  Illumina   |    GRCh38     | BWA-MEM/NovoAlign |   HG001,2,4,5    |
+|     ONT     | GRCh38_no_alt |     minimap2      | HG002,3,5 |
 
 Please find more details about the training data and links at [Training Data](docs/training_data.md).
 
