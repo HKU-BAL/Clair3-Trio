@@ -221,10 +221,9 @@ if [ ! -d ${OUTPUT_FOLDER} ]; then echo -e "${ERROR} Cannot create output folder
 if [ "${PLATFORM}" = "ont" ] && [ ! "${REF_PRO}" -gt 0 ]; then REF_PRO=0.1; fi
 if [ "${PLATFORM}" != "ont" ] && [ ! "${REF_PRO}" -gt 0 ]; then REF_PRO=0.3; fi
 
-echo "asd"
 # show default high quality hete variant proportion for whatshap phasing, 0.8 for ont guppy5 and 0.7 for others
 if [ "${PHASING_PCT}" = "0" ]; then PHASING_PCT=0.7; fi
-BASE_MODEL=$(basename ${MODEL_PATH_C3})C
+BASE_MODEL=$(basename ${MODEL_PATH_C3})
 if [ "${BASE_MODEL}" = "r941_prom_sup_g5014" ] || [ "${BASE_MODEL}" = "r941_prom_hac_g5014" ] || [ "${BASE_MODEL}" = "ont_guppy5" ]; then PHASING_PCT=0.8; fi
 
 # remove the last '/' character in directory input

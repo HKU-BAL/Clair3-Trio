@@ -120,15 +120,15 @@ git clone https://github.com/HKU-BAL/Clair3-Trio.git
 cd Clair3-Trio
 
 # download Clair3's pre-trained models
-mkdir clair3_models
+mkdir -p models/clair3_models
 wget http://www.bio8.cs.hku.hk/clair3/clair3_models/clair3_models.tar.gz 
-tar -zxvf clair3_models.tar.gz -C ./cliar3_models
+tar -zxvf clair3_models.tar.gz -C ./models/cliar3_models
 
 
 # download Clair3-Trio's pre-trained models
-mkdir clair3_trio_models
+mkdir -p models/clair3_trio_models
 wget http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/clair3_trio_models.tar.gz 
-tar -zxvf clair3_trio_models.tar.gz -C ./cliar3_trio_models
+tar -zxvf clair3_trio_models.tar.gz -C ./models/cliar3_trio_models
 
 
 # run clair3-trio
@@ -142,8 +142,8 @@ _SAMPLE_P2="[Parent2 sample ID]"            # parent2 sample ID, e.g. HG004
 _REF=${_INPUT_DIR}/ref.fa                   # change your reference file name here
 _OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"          # e.g. ./output
 _THREADS="[MAXIMUM_THREADS]"                # e.g. 8
-_MODEL_DIR_C3="[Clair3 MODEL NAME]"         # e.g. ont
-_MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. c3t_hg002_g422
+_MODEL_DIR_C3="[Clair3 MODEL NAME]"         # e.g. ./models/clair3_models/ont
+_MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c3t_hg002_g422
 
 ./run_clair3_trio.sh \
   --bam_fn_c=${_BAM_C} \    
