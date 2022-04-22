@@ -38,11 +38,6 @@ Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3).
 * **Mendelian violations - Aware.**  Clair3-Trio uses MCVLoss to improve variants calling in trios by leveraging the explicitly encoding of the priors of the Mendelian inheritance in trios. 
 * **Improved Performance.** Using HG002 trio 10-fold coverage ONT data for benchmarking, Clair-Trio achieved 97.30% SNP F1-score and 56.48% Indel F1-score. Compare to Clair3, Clair3-Trio reduced SNP errors by **~78%**,  and Indel errors by **~22%**. Clair3-Trio also reduced Mendelian violations from 48345 to 7072 in the family.
 
-----
-
-## Quick Demo
-
-*   see [Trio Quick Demo](docs/trio/trio_quick_demo.md).
 
 ----
 
@@ -60,9 +55,15 @@ Download models from [here](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_mo
 
 ----
 
+## Quick Demo
+
+*   see [Trio Quick Demo](docs/trio/trio_quick_demo.md).
+
+----
+
 ## Installation
 
-### Option 1. Build an anaconda virtual environment
+### Build an anaconda virtual environment
 
 **Anaconda install**:
 
@@ -181,41 +182,43 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c
 **Other parameters:**
 
  **Caution**:  Use `=value` for optional parameters, e.g., `--bed_fn=fn.bed` instead of `--bed_fn fn.bed`
+ **[not supported]**: Parameters to be updated and not supported at this moment. 
 
 ```bash
-	  --sample_name_c=STR       Define the sample name for Child to be shown in the VCF file.[Child].
-      --sample_name_p1=STR      Define the sample name for Parent1 to be shown in the VCF file.[Parent1].
-      --sample_name_p2=STR      Define the sample name for Parent2 to be shown in the VCF file.[Parent2].
-      --bed_fn=FILE             Call variants only in the provided bed regions.
-      --vcf_fn=FILE             Candidate sites VCF file input, variants will only be called at the sites in the VCF file if provided.
-      --ctg_name=STR            The name of the sequence to be processed.
-      --qual=INT                If set, variants with >$qual will be marked PASS, or LowQual otherwise.
-      --samtools=STR            Path of samtools, samtools version >= 1.10 is required.
-      --python=STR              Path of python, python3 >= 3.6 is required.
-      --pypy=STR                Path of pypy3, pypy3 >= 3.6 is required.
-      --parallel=STR            Path of parallel, parallel >= 20191122 is required.
-      --whatshap=STR            Path of whatshap, whatshap >= 1.0 is required.
-      --chunk_size=INT          The size of each chuck for parallel processing, default: 5Mbp.
-      --pileup_only             Use the pileup model only when calling, default: disable.
-      --print_ref_calls         Show reference calls (0/0) in vcf file, default: disable.
-      --include_all_ctgs        Call variants on all contigs, otherwise call in chr{1..22,X,Y} and {1..22,X,Y}, default: disable.
-      --gvcf                    Enable GVCF output, default: disable.
-      --enable_phasing          Output phased variants using whatshap, default: disable.
-      --remove_intermediate_dir Remove intermediate directory, including intermediate phased BAM, pileup and full-alignment results. default: disable.
-      --snp_min_af=FLOAT        Minimum SNP AF required for a candidate variant. Lowering the value might increase a bit of sensitivity in trade of speed and accuracy, default: ont:0.08,hifi:0.08,ilmn:0.08.
-      --indel_min_af=FLOAT      Minimum INDEL AF required for a candidate variant. Lowering the value might increase a bit of sensitivity in trade of speed and accuracy, default: ont:0.15,hifi:0.08,ilmn:0.08.
-      --var_pct_full=FLOAT      EXPERIMENTAL: Specify an expected percentage of low quality 0/1 and 1/1 variants called in the pileup mode for full-alignment mode calling, default: 0.3.
-      --ref_pct_full=FLOAT      EXPERIMENTAL: Specify an expected percentage of low quality 0/0 variants called in the pileup mode for full-alignment mode calling, default: 0.3 for ilmn and hifi, 0.1 for ont.
-      --var_pct_phasing=FLOAT   EXPERIMENTAL: Specify an expected percentage of high quality 0/1 variants used in WhatsHap phasing, default: 0.8 for ont guppy5 and 0.7 for other platforms.
-      --trio_model_prefix=STR   EXPERIMENTAL: Model prefix in trio calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index, default: trio.'
-      --pileup_model_prefix=STR EXPERIMENTAL: Model prefix in pileup calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index. default: pileup.
-      --fa_model_prefix=STR     EXPERIMENTAL: Model prefix in full-alignment calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index, default: full_alignment.
-      --fast_mode               EXPERIMENTAL: Skip variant candidates with AF <= 0.15, default: disable.
-      --haploid_precise         EXPERIMENTAL: Enable haploid calling mode. Only 1/1 is considered as a variant, default: disable.
-      --haploid_sensitive       EXPERIMENTAL: Enable haploid calling mode. 0/1 and 1/1 are considered as a variant, default: disable.
-      --no_phasing_for_fa       EXPERIMENTAL: Call variants without whatshap phasing in full alignment calling, default: disable.
-      --call_snp_only           EXPERIMENTAL: Call candidates pass SNP minimum AF only, ignore Indel candidates, default: disable.
-      --enable_long_indel       EXPERIMENTAL: Call long Indel variants(>50 bp), default: disable.
+  --sample_name_c=STR       Define the sample name for Child to be shown in the VCF file.[Child].
+  --sample_name_p1=STR      Define the sample name for Parent1 to be shown in the VCF file.[Parent1].
+  --sample_name_p2=STR      Define the sample name for Parent2 to be shown in the VCF file.[Parent2].
+  --bed_fn=FILE             Call variants only in the provided bed regions.
+  --vcf_fn=FILE             Candidate sites VCF file input, variants will only be called at the sites in the VCF file if provided.
+  --ctg_name=STR            The name of the sequence to be processed.
+  --qual=INT                If set, variants with >$qual will be marked PASS, or LowQual otherwise.
+  --samtools=STR            Path of samtools, samtools version >= 1.10 is required.
+  --python=STR              Path of python, python3 >= 3.6 is required.
+  --pypy=STR                Path of pypy3, pypy3 >= 3.6 is required.
+  --parallel=STR            Path of parallel, parallel >= 20191122 is required.
+  --whatshap=STR            Path of whatshap, whatshap >= 1.0 is required.
+  --chunk_size=INT          The size of each chuck for parallel processing, default: 5Mbp.
+  --print_ref_calls         Show reference calls (0/0) in vcf file, default: disable.
+  --include_all_ctgs        Call variants on all contigs, otherwise call in chr{1..22,X,Y} and {1..22,X,Y}, default: disable.
+  --snp_min_af=FLOAT        Minimum SNP AF required for a candidate variant. Lowering the value might increase a bit of sensitivity in trade of speed and accuracy, default: ont:0.08.
+  --indel_min_af=FLOAT      Minimum INDEL AF required for a candidate variant. Lowering the value might increase a bit of sensitivity in trade of speed and accuracy, default: ont:0.15.
+
+  --pileup_model_prefix=STR EXPERIMENTAL: Model prefix in pileup calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index. default: pileup.
+  --fa_model_prefix=STR     EXPERIMENTAL: Model prefix in full-alignment calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index, default: full_alignment.
+  --trio_model_prefix=STR   EXPERIMENTAL: Model prefix in trio calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index, default: trio.'
+  --var_pct_full=FLOAT      EXPERIMENTAL: Specify an expected percentage of low quality 0/1 and 1/1 variants called in the pileup mode for full-alignment mode calling, default: 0.3.
+  --ref_pct_full=FLOAT      EXPERIMENTAL: Specify an expected percentage of low quality 0/0 variants called in the pileup mode for full-alignment mode calling, default: 0.3 for ilmn and hifi, 0.1 for ont.
+  --var_pct_phasing=FLOAT   EXPERIMENTAL: Specify an expected percentage of high quality 0/1 variants used in Clair3 WhatsHap phasing, default: 0.8 for ont guppy5 and 0.7 for other platforms.
+  --fast_mode               [not supported] EXPERIMENTAL: Skip variant candidates with AF <= 0.15, default: disable.
+  --pileup_only             [not supported] Use the pileup model only when calling, default: disable.
+  --gvcf                    [not supported] Enable GVCF output, default: disable.
+  --enable_phasing          [not supported] Output phased variants using whatshap, default: disable.
+  --remove_intermediate_dir [not supported] Remove intermediate directory, including intermediate phased BAM, pileup and full-alignment results. default: disable.
+  --haploid_precise         [not supported] EXPERIMENTAL: Enable haploid calling mode. Only 1/1 is considered as a variant, default: disable.
+  --haploid_sensitive       [not supported] EXPERIMENTAL: Enable haploid calling mode. 0/1 and 1/1 are considered as a variant, default: disable.
+  --no_phasing_for_fa       [not supported] EXPERIMENTAL: Call variants without whatshap phasing in full alignment calling, default: disable.
+  --call_snp_only           [not supported] EXPERIMENTAL: Call candidates pass SNP minimum AF only, ignore Indel candidates, default: disable.
+  --enable_long_indel       [not supported] EXPERIMENTAL: Call long Indel variants(>50 bp), default: disable.
 ```
 
 
@@ -248,7 +251,6 @@ Submodules in __`clair3/`__ are for variant calling and model training. Submodul
 
 
 
-
 ----
 
 ## Training Data
@@ -259,7 +261,6 @@ Clair3-Trio trained its trio models using four GIAB samples (HG002, HG003 and HG
 | :---------: | :-----------: | :---------------: | :--------------: |
 |     ONT     | GRCh38_no_alt |     minimap2      | HG002,3,5 |
 
-Please find more details about the training data and links at [Training Data](docs/training_data.md).
 
 ----
 

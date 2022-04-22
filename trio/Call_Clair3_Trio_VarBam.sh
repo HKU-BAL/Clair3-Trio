@@ -135,32 +135,32 @@ mkdir -p ${INDEL_PATH}
 echo "[INFO] * Clir3-Trio pipeline start"
 echo "[INFO] * 0/7 Check environment variables"
 
-# ${PYTHON} ${CLAIR3_TRIO} CheckEnvs_Trio \
-#     --bam_fn_c ${BAM_FILE_PATH_C} \
-#     --bam_fn_p1 ${BAM_FILE_PATH_P1} \
-#     --bam_fn_p2 ${BAM_FILE_PATH_P2} \
-#     --bed_fn ${BED_FILE_PATH} \
-#     --output_fn_prefix ${OUTPUT_FOLDER} \
-#     --ref_fn ${REFERENCE_FILE_PATH} \
-#     --vcf_fn ${VCF_FILE_PATH} \
-#     --ctg_name ${CONTIGS} \
-#     --chunk_num ${CHUNK_NUM} \
-#     --chunk_size ${CHUNK_SIZE} \
-#     --include_all_ctgs ${INCLUDE_ALL_CTGS} \
-#     --threads ${THREADS} \
-#     --python ${PYTHON} \
-#     --pypy ${PYPY} \
-#     --samtools ${SAMTOOLS} \
-#     --whatshap ${WHATSHAP} \
-#     --parallel ${PARALLEL} \
-#     --qual ${QUAL} \
-#     --sampleName_c ${SAMPLE_C} \
-#     --sampleName_p1 ${SAMPLE_P1} \
-#     --sampleName_p2 ${SAMPLE_P2} \
-#     --var_pct_full ${PRO} \
-#     --ref_pct_full ${REF_PRO} \
-#     --snp_min_af ${SNP_AF} \
-#     --indel_min_af ${INDEL_AF}
+${PYTHON} ${CLAIR3_TRIO} CheckEnvs_Trio \
+    --bam_fn_c ${BAM_FILE_PATH_C} \
+    --bam_fn_p1 ${BAM_FILE_PATH_P1} \
+    --bam_fn_p2 ${BAM_FILE_PATH_P2} \
+    --bed_fn ${BED_FILE_PATH} \
+    --output_fn_prefix ${OUTPUT_FOLDER} \
+    --ref_fn ${REFERENCE_FILE_PATH} \
+    --vcf_fn ${VCF_FILE_PATH} \
+    --ctg_name ${CONTIGS} \
+    --chunk_num ${CHUNK_NUM} \
+    --chunk_size ${CHUNK_SIZE} \
+    --include_all_ctgs ${INCLUDE_ALL_CTGS} \
+    --threads ${THREADS} \
+    --python ${PYTHON} \
+    --pypy ${PYPY} \
+    --samtools ${SAMTOOLS} \
+    --whatshap ${WHATSHAP} \
+    --parallel ${PARALLEL} \
+    --qual ${QUAL} \
+    --sampleName_c ${SAMPLE_C} \
+    --sampleName_p1 ${SAMPLE_P1} \
+    --sampleName_p2 ${SAMPLE_P2} \
+    --var_pct_full ${PRO} \
+    --ref_pct_full ${REF_PRO} \
+    --snp_min_af ${SNP_AF} \
+    --indel_min_af ${INDEL_AF}
 
 
 readarray -t CHR < "${OUTPUT_FOLDER}/tmp/CONTIGS"
@@ -197,41 +197,41 @@ echo "pileup threads" ${CLAIR3_THREADS}
 echo "running pileup"
 
 
-# ${PARALLEL} -j3 --joblog  ${LOG_PATH}/parallel_1_clair3_pileup.log \
-# "${SHELL_FOLDER}/..//scripts/clair3.sh \
-#     --bam_fn={2} \
-#     --ref_fn=${REFERENCE_FILE_PATH} \
-#     --threads=${CLAIR3_THREADS} \
-#     --model_path=${MODEL_PATH_C3} \
-#     --output=${PILEUP_VCF_PATH}/{1} \
-#     --platform="ont" \
-#     --bed_fn=${BED_FILE_PATH} \
-#     --vcf_fn=${VCF_FILE_PATH} \
-#     --ctg_name=${CONTIGS} \
-#     --sample_name={1} \
-#     --chunk_num=${CHUNK_NUM} \
-#     --chunk_size=${CHUNK_SIZE} \
-#     --samtools=${SAMTOOLS} \
-#     --python=${PYTHON} \
-#     --pypy=${PYPY} \
-#     --parallel=${PARALLEL} \
-#     --whatshap=${WHATSHAP} \
-#     --qual=${QUAL} \
-#     --var_pct_full=${PRO} \
-#     --ref_pct_full=${REF_PRO} \
-#     --snp_min_af=${SNP_AF} \
-#     --indel_min_af=${INDEL_AF} \
-#     --pileup_only=True \
-#     --gvcf=${GVCF} \
-#     --fast_mode=${FAST_MODE} \
-#     --call_snp_only=${SNP_ONLY} \
-#     --print_ref_calls=${SHOW_REF} \
-#     --haploid_precise=${HAP_PRE} \
-#     --haploid_sensitive=${HAP_SEN} \
-#     --include_all_ctgs=${INCLUDE_ALL_CTGS} \
-#     --no_phasing_for_fa=${NO_PHASING} \
-#     --pileup_model_prefix=${PILEUP_PREFIX} \
-#     --fa_model_prefix=full_alignment" ::: ${ALL_SAMPLE[@]} :::+ ${ALL_UNPHASED_BAM_FILE_PATH[@]} |& tee ${LOG_PATH}/1_call_var_bam_pileup.log
+${PARALLEL} -j3 --joblog  ${LOG_PATH}/parallel_1_clair3_pileup.log \
+"${SHELL_FOLDER}/..//scripts/clair3.sh \
+    --bam_fn={2} \
+    --ref_fn=${REFERENCE_FILE_PATH} \
+    --threads=${CLAIR3_THREADS} \
+    --model_path=${MODEL_PATH_C3} \
+    --output=${PILEUP_VCF_PATH}/{1} \
+    --platform="ont" \
+    --bed_fn=${BED_FILE_PATH} \
+    --vcf_fn=${VCF_FILE_PATH} \
+    --ctg_name=${CONTIGS} \
+    --sample_name={1} \
+    --chunk_num=${CHUNK_NUM} \
+    --chunk_size=${CHUNK_SIZE} \
+    --samtools=${SAMTOOLS} \
+    --python=${PYTHON} \
+    --pypy=${PYPY} \
+    --parallel=${PARALLEL} \
+    --whatshap=${WHATSHAP} \
+    --qual=${QUAL} \
+    --var_pct_full=${PRO} \
+    --ref_pct_full=${REF_PRO} \
+    --snp_min_af=${SNP_AF} \
+    --indel_min_af=${INDEL_AF} \
+    --pileup_only=True \
+    --gvcf=${GVCF} \
+    --fast_mode=${FAST_MODE} \
+    --call_snp_only=${SNP_ONLY} \
+    --print_ref_calls=${SHOW_REF} \
+    --haploid_precise=${HAP_PRE} \
+    --haploid_sensitive=${HAP_SEN} \
+    --include_all_ctgs=${INCLUDE_ALL_CTGS} \
+    --no_phasing_for_fa=${NO_PHASING} \
+    --pileup_model_prefix=${PILEUP_PREFIX} \
+    --fa_model_prefix=full_alignment" ::: ${ALL_SAMPLE[@]} :::+ ${ALL_UNPHASED_BAM_FILE_PATH[@]} |& tee ${LOG_PATH}/1_call_var_bam_pileup.log
 
 
 # phased bam organized in different chr
@@ -259,19 +259,19 @@ chunk_num=20
 CHUNK_LIST=`seq 1 ${chunk_num}`
 
 # select candidate from trio input
-# echo "[INFO] * 2/7 Select Trio Candidates"
-# time ${PARALLEL} --joblog ${LOG_PATH}/parallel_2_fiter_hete_snp_pileup.log -j${THREADS} \
-# "${PYPY} ${CLAIR3_TRIO} SelectHetSnp_Trio \
-# --alt_fn_c ${INPUT_PILEUP_VCF[0]} \
-# --alt_fn_p1 ${INPUT_PILEUP_VCF[1]} \
-# --alt_fn_p2 ${INPUT_PILEUP_VCF[2]} \
-# --split_folder ${SPLIT_BED_PATH} \
-# --sampleName ${TRIO_N} \
-# --ref_pct_full 0.2 \
-# --var_pct_full 1.0 \
-# --chunk_num ${chunk_num} \
-# --chr_prefix '' \
-# --ctgName {1}" ::: ${CHR[@]} |& tee ${LOG_PATH}/2_FHSP.log
+echo "[INFO] * 2/7 Select Trio Candidates"
+time ${PARALLEL} --joblog ${LOG_PATH}/parallel_2_fiter_hete_snp_pileup.log -j${THREADS} \
+"${PYPY} ${CLAIR3_TRIO} SelectHetSnp_Trio \
+--alt_fn_c ${INPUT_PILEUP_VCF[0]} \
+--alt_fn_p1 ${INPUT_PILEUP_VCF[1]} \
+--alt_fn_p2 ${INPUT_PILEUP_VCF[2]} \
+--split_folder ${SPLIT_BED_PATH} \
+--sampleName ${TRIO_N} \
+--ref_pct_full 0.2 \
+--var_pct_full 1.0 \
+--chunk_num ${chunk_num} \
+--chr_prefix '' \
+--ctgName {1}" ::: ${CHR[@]} |& tee ${LOG_PATH}/2_FHSP.log
 
 echo 'check newcode'
 
@@ -353,7 +353,7 @@ mkdir -p ${CALL_PATH}
 
 
 
-echo "[INFO] * 6/7 Calling Trio Variants"
+echo "[INFO] * 6/7 Calling Trio Variants, Generate Probabilities"
 time ${PARALLEL} --joblog ${LOG_PATH}/parallel_6_predict.log -j${PREDICT_THREADS} \
 "${PYTHON} ${CLAIR3_TRIO} CallVariants_Trio \
 --tensor_fn ${BINS_FOLDER_PATH}/${TRIO_N}_{1}_{2} \
@@ -376,6 +376,7 @@ ALL_SAMPLE_IDX=(
 2
 )
 
+echo "[INFO] * 7/7 Calling Trio Variants, Genreate VCFs"
 time ${PARALLEL}  --joblog ${LOG_PATH}/parallel_7_call.log  -j ${THREADS} \
 "${PYTHON} ${CLAIR3_TRIO} CallVariants_Trio \
 --tensor_fn ${CALL_PATH}/predict_${TRIO_N}_{1}_{4}_{5} \
