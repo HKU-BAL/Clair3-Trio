@@ -13,7 +13,7 @@ Email: rbluo@cs.hku.hk, jhsu@cs.hku.hk
 
 Clair3-Trio is a variants caller tailored for family trios from nanopore long-reads. Clair3-Trio employs a Trio-to-Trio deep neural network model that allows it to input all trio’s sequencing information and output all trio’s predicted variants within a single model, to perform far better variant calling. We also present MCVLoss, the first loss function that can improve variants calling in trios by leveraging the explicitly encoding of the priors of the Mendelian inheritance in trios. Clair3-Trio showed comprehensive improvement in experiments. It predicted much fewer Mendelian inheritance violation variations than current state-of-the-art methods.
 
-Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3)
+Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3).
 
 ----
 
@@ -21,26 +21,8 @@ Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3)
 
 * [Introduction](#introduction)
 * [Latest Updates](#latest-updates)
-* [What's New in Clair3](#whats-new-in-clair3)
+* [What's New in Clair3-Trio](#whats-new-in-clair3-trio)
 * [Quick Demo](#quick-demo)
-* [Pre-trained Models](#pre-trained-models)
-  * [Guppy4 Model](#pre-trained-models)
-* [Installation](#installation)
-  + [Option 1. Docker pre-built image](#option-1--docker-pre-built-image)
-  + [Option 2. Singularity](#option-2-singularity)
-  + [Option 3. Bioconda](#option-3--bioconda)
-  + [Option 4. Build an anaconda virtual environment](#option-4-build-an-anaconda-virtual-environment)
-  + [Option 5. Docker Dockerfile](#option-5-docker-dockerfile)
-* [Usage](#usage)
-* [Folder Structure and Submodule Descriptions](#folder-structure-and-submodule-descriptions)
-* [Training Data](docs/training_data.md)
-* [VCF/GVCF Output Formats](#vcfgvcf-output-formats)
-* [Pileup Model Training](docs/pileup_training.md)
-* [Full-Alignment Model Training](docs/full_alignment_training_r1.md)
-* [Representation Unification](docs/representation_unification.md)
-* [Visualization](docs)
-  * [Model Input](docs/model_input_visualization.md)
-  * [Representation Unification](docs/representation_unification_visualization.md)
 
 ----
 
@@ -49,7 +31,6 @@ Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3)
 *v0.1 (March 12, 2022)*: Initial release.
 
 ---
-
 
 ## What's New in Clair3-Trio
 
@@ -71,11 +52,10 @@ Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3)
 
 Download models from [here](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/) or click on the links below.
 
-In a docker installation, models are in `/opt/models/`. In a bioconda installation, models are in `{CONDA_PREFIX}/bin/models/`.
 
-|           Model name           |  Platform   |                       Training samples                       | Included in the bioconda package | Included in the docker image |   Date   |  Basecaller  | File                                |                             Link                             |
-| :----------------------------: | :---------: | :----------------------------------------------------------: | -------------------------------- | :--------------------------: | :------: | :----------: | ----------------------------------- | :----------------------------------------------------------: |
-|    r941_prom_hac_g422     |     ONT     |                         HG001,2,3       | Yes                              |             Yes              | 20220312 | Guppy4 hac | r941_prom_hac_g422.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/r941_prom_hac_g422.tar.gz) |
+|           Model name           |  Platform   |    Training samples         |   Date   |  Basecaller  | File    |          Link            |
+| :----------------------------: | :---------: | :----------------------------------------------------------: | -------------------------------- | :--------------------------: | ----------------| :-------------------: |
+|    c3t_hg002_g422 |     ONT     |                         HG002,3,4      |             20220422 | Guppy4 hac | c3t_hg002_g422.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/c3t_hg002_g422.tar.gz) |
 
 
 ----
