@@ -146,6 +146,14 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c
   --sample_name_p2=${_SAMPLE_P2}
 
 ```
+### Bioconda
+
+To be updated
+
+### Docker pre-built image
+
+To be updated
+
 
 ## Usage
 
