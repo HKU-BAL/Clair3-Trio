@@ -40,8 +40,6 @@ Note that all samples in family should be phased before training.
 
 
 ```bash
-
-
 PARALLEL="[WHATSHAP_PATH]"                           # e.g. "parallel"
 PYPY="[PYPY_PATH]"                                   # e.g. "pypy3"
 SAMTOOLS="[SAMTOOLS_PATH]"                           # e.g. "samtools"
@@ -61,7 +59,6 @@ CLAIR3_TRIO="[CLAIR3-TRIO_PATH]/clair3.py"
 # creating working folder
 TRAIN_FOLDER_PREFIX="[YOU_TRAINING_FOLDER]"
 BUILD_N="[DATA_BUILDING_NAME]"                       # data building data, e.g. "HG002_all"
-
 
 # Temporary working directories
 TRAIN_FOLDER="${TRAIN_FOLDER_PREFIX}"
@@ -92,7 +89,6 @@ cd ${DATASET_FOLDER_PATH}
 # log file suffix name
 _LOG_SUF=""                         # log file suffix
 
-
 # input files and parameters
 
 # sample name
@@ -110,8 +106,6 @@ DEPTHS=(                            # data coverage
 10
 )
 
-
-
 # true variants set from Clair3-Trio Representation Unification
 # Each line represents one representation-unified path for each input sample
 # note the all path have a folder called **var_ru**
@@ -124,14 +118,11 @@ ALL_RU_FILE_PATH=(
 "[parent-2 representation unificated folder]"
 )
 
-
-
 ALL_PHASED_BAM_FILE_PATH=(
 "[child representation unificated folder]/merged.bam"          
 "[parent-1 representation unificated folder]/merged.bam"
 "[parent-2 representation unificated folder]/merged.bam"
 )
-
 
 ALL_REFERENCE_FILE_PATH=(
 "[YOUR_REF_FILE]"
@@ -243,8 +234,6 @@ time ${PARALLEL} --joblog ${LOG_PATH}/S_fiter_hete_snp_pileup${_LOG_SUF}.log -j$
 --chunk_num ${chunk_num} \
 --bed ${_TRIO_BED_PATH} \
 --ctgName ${CHR_PREFIX}{1}" ::: ${CHR[@]} ::: ${INPUT_PILEUP_VCF_C[@]} :::+ ${INPUT_PILEUP_VCF_P1[@]} :::+ ${INPUT_PILEUP_VCF_P2[@]} :::+ ${TRUE_RU_FILE_C[@]} :::+ ${TRUE_RU_FILE_P1[@]} :::+ ${TRUE_RU_FILE_P2[@]} :::+ ${DEPTH_S[@]} |& tee ${LOG_PATH}/FHSP${_LOG_SUF}.log
-
-
 
 echo "[INFO] Create Tensors"
 time ${PARALLEL} --joblog ${LOG_PATH}/S_create_tensor${_LOG_SUF}.log -j${THREADS} \
