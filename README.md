@@ -197,7 +197,7 @@ To be updated
 
  **Caution**:  Use `=value` for optional parameters, e.g., `--bed_fn=fn.bed` instead of `--bed_fn fn.bed`
  
- **[not supported]**: Parameters to be updated and not supported at this moment. 
+ **[XXX]**: Parameters to be updated and not supported at this moment. 
 
 ```bash
   --sample_name_c=STR       Define the sample name for Child to be shown in the VCF file.[Child].
@@ -225,16 +225,16 @@ To be updated
   --ref_pct_full=FLOAT      EXPERIMENTAL: Specify an expected percentage of low quality 0/0 variants called in the pileup mode for full-alignment mode calling, default: 0.3 for ilmn and hifi, 0.1 for ont.
   --var_pct_phasing=FLOAT   EXPERIMENTAL: Specify an expected percentage of high quality 0/1 variants used in Clair3 WhatsHap phasing, default: 0.8 for ont guppy5 and 0.7 for other platforms.
   
-  --fast_mode               [not supported] EXPERIMENTAL: Skip variant candidates with AF <= 0.15, default: disable.
-  --pileup_only             [not supported] Use the pileup model only when calling, default: disable.
-  --gvcf                    [not supported] Enable GVCF output, default: disable.
-  --enable_phasing          [not supported] Output phased variants using whatshap, default: disable.
-  --remove_intermediate_dir [not supported] Remove intermediate directory, including intermediate phased BAM, pileup and full-alignment results. default: disable.
-  --haploid_precise         [not supported] EXPERIMENTAL: Enable haploid calling mode. Only 1/1 is considered as a variant, default: disable.
-  --haploid_sensitive       [not supported] EXPERIMENTAL: Enable haploid calling mode. 0/1 and 1/1 are considered as a variant, default: disable.
-  --no_phasing_for_fa       [not supported] EXPERIMENTAL: Call variants without whatshap phasing in full alignment calling, default: disable.
-  --call_snp_only           [not supported] EXPERIMENTAL: Call candidates pass SNP minimum AF only, ignore Indel candidates, default: disable.
-  --enable_long_indel       [not supported] EXPERIMENTAL: Call long Indel variants(>50 bp), default: disable.
+  --fast_mode               [XXX] EXPERIMENTAL: Skip variant candidates with AF <= 0.15, default: disable.
+  --pileup_only             [XXX] Use the pileup model only when calling, default: disable.
+  --gvcf                    [XXX] Enable GVCF output, default: disable.
+  --enable_phasing          [XXX] Output phased variants using whatshap, default: disable.
+  --remove_intermediate_dir [XXX] Remove intermediate directory, including intermediate phased BAM, pileup and full-alignment results. default: disable.
+  --haploid_precise         [XXX] EXPERIMENTAL: Enable haploid calling mode. Only 1/1 is considered as a variant, default: disable.
+  --haploid_sensitive       [XXX] EXPERIMENTAL: Enable haploid calling mode. 0/1 and 1/1 are considered as a variant, default: disable.
+  --no_phasing_for_fa       [XXX] EXPERIMENTAL: Call variants without whatshap phasing in full alignment calling, default: disable.
+  --call_snp_only           [XXX] EXPERIMENTAL: Call candidates pass SNP minimum AF only, ignore Indel candidates, default: disable.
+  --enable_long_indel       [XXX] EXPERIMENTAL: Call long Indel variants(>50 bp), default: disable.
 ```
 
 
@@ -276,7 +276,7 @@ Clair3-Trio trained its trio models using four GIAB samples (HG002, HG003 and HG
 
 |  Platform   |   Reference   |      Aligner      | Training samples |
 | :---------: | :-----------: | :---------------: | :--------------: |
-|     ONT     | GRCh38_no_alt |     minimap2      | HG002,3,5 |
+|     ONT     | GRCh38_no_alt |     minimap2      | HG002,3,4 |
 
 
 ----
