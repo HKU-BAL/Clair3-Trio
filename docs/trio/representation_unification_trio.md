@@ -44,7 +44,7 @@ This document shows how Clair3 unifies the representation between the training m
 - [6.  Merge and sort unified VCF output](#6--merge-and-sort-unified-vcf-output)
 - [7.  Benchmark using unified VCF and true variant set (optional)](#7--benchmark-using-unified-vcf-and-true-variant-set-optional)
 - [8.  Get True variants set for trio input](#8--get-true-variants-set-for-trio-input)
-- [8.  Merge all phased bam](#9--merge-all-phased-bam)
+- [9.  Merge all phased bam](#9--merge-all-phased-bam)
 
 ####  1. Setup variables
 
@@ -211,6 +211,7 @@ hap.py \
 
 #### 8.  Get True variants set for trio input
 
+```
 RU_VAR_OUTPUT_PATH="${OUTPUT_DIR}/var_ru"
 mkdir -p ${RU_VAR_OUTPUT_PATH}
 
@@ -220,7 +221,10 @@ ${PARALLEL} --joblog ${RU_VAR_OUTPUT_PATH}/get_truth.log -j${THREADS} \
 --vcf_fn ${OUTPUT_DIR}/unified.vcf.gz \
 --ctgName ${CHR_PREFIX}{1} \
 --var_fn ${RU_VAR_OUTPUT_PATH}/var_{1}" ::: ${CHR[@]}
+```
 
 #### 9. Merge all phased bam 
+```
 ${SAMTOOLS} merge -@48 -o ${OUTPUT_DIR}/merged.bam ${PHASE_BAM_PATH}/*.bam 
 ${SAMTOOLS} index -@48 ${OUTPUT_DIR}/merged.bam ::: ${CHR[@]}
+```

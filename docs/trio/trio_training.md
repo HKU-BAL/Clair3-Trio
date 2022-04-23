@@ -11,7 +11,7 @@ This document shows how to train and fine-tune a deep learning model for Clair3-
 - Clair3-Trio installed
 - GNU Parallel installed
 - Sufficient hard-disk space
-- Truth VCF file after representation unification (check [here](https://github.com/HKU-BAL/Clair3/blob/main/docs/representation_unification.md) on how to generate unified VCF)
+- Truth VCF file after representation unification (check [here](representation_unification_trio.md) on how to generate unified VCF)
 - A high-end GPU (have tested in RTX Titan, and RTX 2080Ti)
 
 ---
