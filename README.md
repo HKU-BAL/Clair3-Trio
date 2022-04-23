@@ -22,7 +22,12 @@ Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3).
 * [Introduction](#introduction)
 * [Latest Updates](#latest-updates)
 * [What's New in Clair3-Trio](#whats-new-in-clair3-trio)
+* [Pre-trained Models](#pre-trained-models)
 * [Quick Demo](#quick-demo)
+* [Installation](#installation)
+* [Usage](#usage)
+* [Folder Structure and Submodule Descriptions](#folder-structure-and-submodule-descriptions)
+* [Training Data](docs/training_data.md)
 * [Clair3-Trio Model Training](docs/trio/trio_training.md)
 
 ----
