@@ -23,6 +23,7 @@ Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3).
 * [Latest Updates](#latest-updates)
 * [What's New in Clair3-Trio](#whats-new-in-clair3-trio)
 * [Quick Demo](#quick-demo)
+* [Clair3-Trio Model Training](docs/trio/trio_training.md)
 
 ----
 
@@ -210,6 +211,7 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c
   --var_pct_full=FLOAT      EXPERIMENTAL: Specify an expected percentage of low quality 0/1 and 1/1 variants called in the pileup mode for full-alignment mode calling, default: 0.3.
   --ref_pct_full=FLOAT      EXPERIMENTAL: Specify an expected percentage of low quality 0/0 variants called in the pileup mode for full-alignment mode calling, default: 0.3 for ilmn and hifi, 0.1 for ont.
   --var_pct_phasing=FLOAT   EXPERIMENTAL: Specify an expected percentage of high quality 0/1 variants used in Clair3 WhatsHap phasing, default: 0.8 for ont guppy5 and 0.7 for other platforms.
+  
   --fast_mode               [not supported] EXPERIMENTAL: Skip variant candidates with AF <= 0.15, default: disable.
   --pileup_only             [not supported] Use the pileup model only when calling, default: disable.
   --gvcf                    [not supported] Enable GVCF output, default: disable.

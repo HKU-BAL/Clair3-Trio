@@ -1,69 +1,24 @@
-# Train a model for Clair3-trio trio calling (revision 0)
-
-This document shows how to train and fine-tune a deep learning model for Clair3-trio trio calling. For training a model for pileup calling, please check [here](../pileup_training.md). The training materials are grouped according to sample, coverage, and chromosome. The groups are converted into tensor binaries. The binaries are much space-efficient and easier to process. As required, multiples tensor binaries can be used together for model training and fine-tuning. 
-
-
----
-
-## Prerequisites
-
-- Clair3 installed
-- Clair3-Trio installed
-- GNU Parallel installed
-- Sufficient hard-disk space
-- Truth VCF file after representation unification (check [here](https://github.com/HKU-BAL/Clair3/blob/main/docs/representation_unification.md) on how to generate unified VCF)
-- A high-end GPU (have tested in RTX Titan, and RTX 2080Ti)
-
----
-
-## Contents
-
-  - [1. Setup variables](#1-setup-variables)
-  - [2. Run Clair3 pileup model](#2-run-clair3-pileup-model)
-  - [3. Create and merge trio tensors](#3-create-and-merge-trio-tensors)
-  - [4. Train a Clair3-Trio model](#4-train-a-clair3-trio-model)
-  - [5. Finetune a Clair3-Trio model](#5-finetune-a-clair3-trio-model)
-
----
-
-
-
-## 1. Setup variables
-
-
-trio model utilizes phased alignment, phased alignments is required for training a trio model. 
-
-please using this [page](representation_unification_trio.md) to run phasing alignments in all your family samples.
-
-Note that all samples in family should be phased before training.
-
-
-
-```bash
-
-
-PARALLEL="[WHATSHAP_PATH]"                           # e.g. "parallel"
-PYPY="[PYPY_PATH]"                                   # e.g. "pypy3"
-SAMTOOLS="[SAMTOOLS_PATH]"                           # e.g. "samtools"
-PYTHON3="[PYTHON3_PATH]"                             # e.g. "python3"
-THREADS=8                                            # threads number
+PARALLEL='parallel'
+PYPY="pypy3"
+SAMTOOLS="samtools"
 PLATFORM="ont"                      
+THREADS=8
+PYTHON3='python3'
 
 # Clair3 folder
-_ORI_CLAIR3="[CLAIR3_PATH]"
-_MODEL_DIR="[CLAIR3_MODEL_PATH]"
-C3_THREADS=8                                         # Clair3 threads number
+_ORI_CLAIR3=/autofs/bal31/jhsu/home/projects/clair3_t/Clair3_gh/
+_MODEL_DIR=/autofs/bal31/jhsu/home/projects/clair3_t/Clair3_gh/models/ont
+C3_THREADS=8
 
 
-# Clair3-Trio's path
-CLAIR3_TRIO="[CLAIR3-TRIO_PATH]/clair3.py"      
+# Clair3-Trio folder
+CLAIR3_TRIO="${HOME_DIR}/projects/clair3_t/clair3_trio/clair3.py"
 
 # creating working folder
-TRAIN_FOLDER_PREFIX="[YOU_TRAINING_FOLDER]"
-BUILD_N="[DATA_BUILDING_NAME]"                       # data building data, e.g. "HG002_all"
+TRAIN_FOLDER_PREFIX="/autofs/bal31/jhsu/home/data/clair3/train/ont_trio_build"
+BUILD_N="ALL_1"
 
 
-# Temporary working directories
 TRAIN_FOLDER="${TRAIN_FOLDER_PREFIX}"
 mkdir -p ${TRAIN_FOLDER}
 
@@ -90,21 +45,21 @@ mkdir -p ${PILEUP_OUTPUT_PATH}
 cd ${DATASET_FOLDER_PATH}
 
 # log file suffix name
-_LOG_SUF=""                         # log file suffix
+_LOG_SUF=""
 
 
-# input files and parameters
+# input files
 
 # sample name
 ALL_SAMPLE=(
-${CHILD_SAMPLE_N}                   # your child sample name
-${P1_SAMPLE_N}                      # your parenet-1 sample name
-${P2_SAMPLE_N}                      # your parenet-2 sample name
+${CHILD_SAMPLE_N}
+${P1_SAMPLE_N}
+${P2_SAMPLE_N}
 )
 
-TRIO_N="${CHILD_SAMPLE_N}_TRIO"     # your trio name, e.g. HG002_TRIO
+TRIO_N="${CHILD_SAMPLE_N}_TRIO"
 
-DEPTHS=(                            # data coverage
+DEPTHS=(
 10
 10
 10
@@ -114,38 +69,33 @@ DEPTHS=(                            # data coverage
 
 # true variants set from Clair3-Trio Representation Unification
 # Each line represents one representation-unified path for each input sample
-# note the all path have a folder called **var_ru**
-# check the representation_unification_trio.md page for more information
-# for practical concerns, the representation_unification_trio.md require only run once on the highest depth for each sample, while the low coverage can be sampled from the highest coverage data, i.e. merged.bam in the representation_unification folder
-
+# note the all path have a folder called var_ru
 ALL_RU_FILE_PATH=(
-"[child representation unificated folder]"
-"[parent-1 representation unificated folder]"
-"[parent-2 representation unificated folder]"
+"/autofs/bal31/jhsu/home/data/clair3/train/ont_ru_new/HG002/"
+"/autofs/bal31/jhsu/home/data/clair3/train/ont_ru_new/HG003/"
+"/autofs/bal31/jhsu/home/data/clair3/train/ont_ru_new/HG004/"
 )
 
 
-
 ALL_PHASED_BAM_FILE_PATH=(
-"[child representation unificated folder]/merged.bam"          
-"[parent-1 representation unificated folder]/merged.bam"
-"[parent-2 representation unificated folder]/merged.bam"
+"/autofs/bal31/jhsu/home/data/ont_downsample/HG002/HG002_30.bam"
+"/autofs/bal31/jhsu/home/data/ont_downsample/HG003/HG003_30.bam"
+"/autofs/bal31/jhsu/home/data/ont_downsample/HG004/HG004_30.bam"
 )
 
 
 ALL_REFERENCE_FILE_PATH=(
-"[YOUR_REF_FILE]"
-"[YOUR_REF_FILE]"
-"[YOUR_REF_FILE]"
+${REF_FILE_PATH}
+${REF_FILE_PATH}
+${REF_FILE_PATH}
 )
 
 ALL_ORI_BED_FILE_PATH=(
-"[YOUR_BED_FILE_CHILD]"
-"[YOUR_BED_FILE_PARENET1]"
-"[YOUR_BED_FILE_PARENET2]"
+${HG002_GIAB_BED}
+${HG003_GIAB_BED}
+${HG004_GIAB_BED}
 )
 
-# training chrosome name, and prefix
 CHR=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 21 22)
 CHR_PREFIX="chr"
 
@@ -166,12 +116,6 @@ ${_TRIO_BED_PATH}
 ${_TRIO_BED_PATH}
 )
 
-```
----
-
-## 2. Run Clair3 pileup model
-
-```
 # Run Clair3 pileup model
 time ${PARALLEL} -j ${C3_THREADS} --joblog  ${LOG_PATH}/input_pileup${_LOG_SUF}.log ${_ORI_CLAIR3}/run_clair3.sh \
   --bam_fn={5} \
@@ -183,11 +127,8 @@ time ${PARALLEL} -j ${C3_THREADS} --joblog  ${LOG_PATH}/input_pileup${_LOG_SUF}.
   --bed_fn={3} \
   --pileup_only ::: ${ALL_SAMPLE[@]} :::+ ${ALL_REFERENCE_FILE_PATH[@]} :::+ ${ALL_BED_FILE_PATH[@]} :::+ ${DEPTHS[@]} :::+ ${ALL_PHASED_BAM_FILE_PATH[@]}
 
-```
 
-## 3. Create and merge trio tensors
 
-```
 INPUT_PILEUP_VCF_C=()
 INPUT_PILEUP_VCF_P1=()
 INPUT_PILEUP_VCF_P2=()
@@ -274,7 +215,7 @@ time ${PARALLEL} --joblog ${LOG_PATH}/S_merge_tensors${_LOG_SUF}.log -j${THREADS
 --candidate_fn ${INDEL_PATH}/${TRIO_N}_{1}_{2} \
 " ::: ${CHR[@]} ::: ${CHUNK_LIST[@]} ::: ${DEPTH_S[@]} |& tee ${LOG_PATH}/MT${_LOG_SUF}.log
 
-IF_CHECK_MCV=0  # whether filter MCV in training data
+IF_CHECK_MCV=1
 
 time ${PARALLEL} --joblog ${LOG_PATH}/S_tensor2Bin${_LOG_SUF}.log -j${THREADS} \
 "${PYTHON3} ${CLAIR3_TRIO} Tensor2Bin_Trio \
@@ -299,23 +240,19 @@ ${PARALLEL} --joblog ${LOG_PATH}/S_mergeBin${_LOG_SUF}.log -j${THREADS} \
 echo "${PYTHON3} ${CLAIR3_TRIO} MergeBin_Trio \
     ${BINS_FOLDER_PATH}/${TRIO_N}_{2}_{1}_* \
     --out_fn ${ALL_BINS_FOLDER_PATH}/bin_{2}_{1}" ::: ${CHR[@]} ::: ${DEPTH_S[@]}
-```
 
 
-## 4. Train a Clair3-Trio model 
-
-```
 # Training trio model
-TRAIN_N="[YOUR_CLAIR3-TRIO_MODEL_NAME]"
+TRAIN_N="test_train"
 MODEL_FOLDER_PATH="${TRAIN_FOLDER_PREFIX}/train/{TRAIN_N}"					      
 mkdir -p ${MODEL_FOLDER_PATH}
 cd ${MODEL_FOLDER_PATH}
 
 # training setting
-BATCH_SIZE="[YOUR_BATCH_SIZE]"  #training batch size, e.g. 800
 add_indel_length=1
 MODEL_ARC=NN
 MODEL_ALS="Clair3_Trio_Out3"
+BATCH_SIZE=800
 IF_ADD_MCV_LOSS=0
 MCVLOSS_ALPHA=0
 
@@ -338,27 +275,23 @@ time ${PYTHON3} ${CLAIR3_TRIO} Train_Trio \
 --mcv_alpha ${MCVLOSS_ALPHA} \
  |& tee ${MODEL_FOLDER_PATH}/train_log
 
-```
 
-## 5. Finetune a Clair3-Trio model 
-
-```
 # finetune with MCVLoss
-BATCH_SIZE="[YOUR_BATCH_SIZE]"  #training batch size, e.g. 800
 add_indel_length=1
 MODEL_ARC=NN
 MODEL_ALS="Clair3_Trio_Out3"
+BATCH_SIZE=800
 IF_ADD_MCV_LOSS=1
 MCVLOSS_ALPHA=0.1
 
 
 # set pretrained models
-PRETRAINED_N="[YOUR_PRETRAINED_CALIR3-TRIO_MODEL_NAME]"
-PRETRAINED_M_EPCH="[BEGIN_EPOCH_FROM_PRETRAINED_MODEL]"    #10
+PRETRAINED_N="test_train"
+PRETRAINED_M_EPCH='10'    #01, 10, 30
 PRETRAINED_MODEL="${TRAIN_FOLDER_PREFIX}/train/{PRETAINED_N}/.${PRETRAINED_M_EPCH}"					     
 
 # Training trio model
-TRAIN_N="[YOUR_NEW_CALIR3-TRIO_MODEL_NAME]"
+TRAIN_N="test_train_finetune"
 MODEL_FOLDER_PATH="${TRAIN_FOLDER_PREFIX}/train/{TRAIN_N}"					      
 mkdir -p ${MODEL_FOLDER_PATH}
 cd ${MODEL_FOLDER_PATH}
@@ -378,4 +311,3 @@ time ${PYTHON3} ${CLAIR3_TRIO} Train_Trio \
 --add_mcv_loss ${IF_ADD_MCV_LOSS} \
 --mcv_alpha ${MCVLOSS_ALPHA} \
  |& tee ${MODEL_FOLDER_PATH}/train_log
-```
