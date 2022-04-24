@@ -1,19 +1,18 @@
-# Clair3-Trio: high-performance Nanopore long-reads variant calling in family trios with Trio-to-Trio deep neural networks
+# Clair3-Trio: variant calling in trio using Nanopore long-reads
 
 
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)  
 
-Contact: Ruibang Luo, Junhao Su
-
+Contact: Ruibang Luo, Junhao Su  
 Email: rbluo@cs.hku.hk, jhsu@cs.hku.hk  
 
 ----
 
 ## Introduction
 
-Clair3-Trio is a variants caller tailored for family trios from nanopore long-reads. Clair3-Trio employs a Trio-to-Trio deep neural network model that allows it to input all trio’s sequencing information and output all trio’s predicted variants within a single model, to perform far better variant calling. We also present MCVLoss, the first loss function that can improve variants calling in trios by leveraging the explicitly encoding of the priors of the Mendelian inheritance in trios. Clair3-Trio showed comprehensive improvement in experiments. It predicted much fewer Mendelian inheritance violation variations than current state-of-the-art methods.
+Accurate identification of genetic variants from family child-mother-father trio’s sequencing data is important in genomics. However, state-of-the-art approaches formulate the question of variant calling from trios as three independent questions that capped their calling accuracy for the Nanopore long-reads sequencing data. For better trios variant calling, we introduce Clair3-Trio, the first variant caller tailored for family trios from nanopore long-reads. Clair3-Trio employs a Trio-to-Trio deep neural network model that allows it to input the trio’s sequencing information and output all of the trio’s predicted variants within a single model, to perform better variant calling. We also present MCVLoss, aloss function tailor-made for variant calling in trios by leveraging the explicit encoding of the Mendelian inheritance. Clair3-Trio showed comprehensive improvement in experiments. It predicted much fewer Mendelian inheritance violation variations than current state-of-the-art methods. 
 
-Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3).
+A preprint of Clair3-Trio is available in [bioRxiv]().
 
 ----
 
@@ -41,9 +40,9 @@ Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3).
 
 ## What's New in Clair3-Trio
 
-* **New Architecture.** Clair3-Trio employs a Trio-to-Trio deep neural network model that allows it to input all trio’s sequencing information and output all trio’s predicted variants within a single model.
-* **Mendelian violations - Aware.**  Clair3-Trio uses MCVLoss to improve variants calling in trios by leveraging the explicitly encoding of the priors of the Mendelian inheritance in trios. 
-* **Improved Performance.** Using HG002 trio 10-fold coverage ONT data for benchmarking, Clair-Trio achieved 97.30% SNP F1-score and 56.48% Indel F1-score. Compare to Clair3, Clair3-Trio reduced SNP errors by **~78%**,  and Indel errors by **~22%**. Clair3-Trio also reduced Mendelian violations from 48345 to 7072 in the family.
+* **New Architecture.** Clair3-Trio employs a Trio-to-Trio deep neural network model that allows it to take three samples as input and output the varaints of all three samples in one go.
+* **Mendelian violations aware.**  Clair3-Trio uses MCVLoss to improve variants calling in trio by penalizing mendelian violoations. 
+* **Improved Performance.** Using only 10x of HG002, 3 and 4 ONT data, Clair3-Trio achieved 97.30% SNP F1-score and 56.48% Indel F1-score. Compared to Clair3, Clair3-Trio reduced SNP errors by **~78%**,  and Indel errors by **~22%**. Clair3-Trio signficantly reduced Mendelian violations from 48,345 to 7,072.
 
 
 ----
