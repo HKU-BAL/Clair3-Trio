@@ -183,7 +183,6 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c
 ```
 ### Bioconda
 
-*For using Clair3 with Illumina data, install [clair3-illumina](https://anaconda.org/bioconda/clair3-illumina) package in bioconda channel instead.*
 
 ```bash
 # make sure channels are added in conda
