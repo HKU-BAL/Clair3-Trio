@@ -13,7 +13,7 @@ Basecaller: Guppy 4.2.2
 
 ```bash
 # Parameters
-_INPUT_DIR="${HOME}/clair3_trio_quick_demo"         # note that should Absolute path is needed
+_INPUT_DIR="${HOME}/clair3_trio_quick_demo"         # note that Absolute path is needed
 _OUTPUT_DIR="${_INPUT_DIR}/output"
 _TAR_URL="http://www.bio8.cs.hku.hk/clair3_trio/demo/"
 
