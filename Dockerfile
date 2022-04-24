@@ -34,18 +34,24 @@ RUN /bin/bash -c "source activate clair3" && \
     pip install tensorflow-cpu==2.2.0 && \
     pip install tensorflow-addons==0.11.2 tables==3.6.1 && \
     conda install -c anaconda pigz==2.4 -y && \
+    conda install -c anaconda cffi==1.14.4 -y && \
     conda install -c conda-forge parallel=20191122 zstd=1.4.4 -y && \
     conda install -c conda-forge -c bioconda samtools=1.10 -y && \
     conda install -c conda-forge -c bioconda whatshap=1.0 -y && \
+    conda install -c conda-forge xz zlib bzip2 -y && \
+    conda install -c conda-forge automake curl -y && \
     rm -rf /opt/conda/pkgs/* && \
-    rm -rf /root/.cache/pip
+    rm -rf /root/.cache/pip && \
+    echo "source activate clair3" > ~/.bashrc
 
 COPY . .
 
-RUN cd /opt/bin/preprocess/realign && \
-    g++ -std=c++14 -O1 -shared -fPIC -o realigner ssw_cpp.cpp ssw.c realigner.cpp && \
-    g++ -std=c++11 -shared -fPIC -o debruijn_graph -O3 debruijn_graph.cpp && \
-    wget http://www.bio8.cs.hku.hk/clair3/clair3_models/clair3_models.tar.gz -P /opt/models && \
-    tar -zxvf /opt/models/clair3_models.tar.gz -C /opt/models && \
-    rm /opt/models/clair3_models.tar.gz && \
-    echo "source activate clair3" > ~/.bashrc
+RUN wget http://www.bio8.cs.hku.hk/clair3/clair3_models/clair3_models.tar.gz -P /opt/models/clair3_models && \
+    tar -zxvf /opt/models/clair3_models/clair3_models.tar.gz -C /opt/models/clair3_models && \
+    rm /opt/models/clair3_models/clair3_models.tar.gz && \
+	wget http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/clair3_trio_models.tar.gz -P /opt/models/clair3_trio_models && \
+    tar -zxvf /opt/models/clair3_trio_models/clair3_trio_models.tar.gz -C /opt/models/clair3_trio_models && \
+    rm /opt/models/clair3_trio_models/clair3_trio_models.tar.gz && \
+    cd /opt/bin && \
+    PREFIX=/opt/conda/envs/clair3 PYTHON=/opt/conda/envs/clair3/bin/python && \
+    rm -rf /opt/bin/samtools-* /opt/bin/longphase-*

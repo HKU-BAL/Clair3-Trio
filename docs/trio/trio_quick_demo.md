@@ -13,9 +13,9 @@ Basecaller: Guppy 4.2.2
 
 ```bash
 # Parameters
-_INPUT_DIR="${HOME}/clair3_trio_quick_demo"
+_INPUT_DIR="${HOME}/clair3_trio_quick_demo"         # note that should Absolute path is needed
 _OUTPUT_DIR="${_INPUT_DIR}/output"
-TAR_URL="http://www.bio8.cs.hku.hk/clair3_trio/demo/"
+_TAR_URL="http://www.bio8.cs.hku.hk/clair3_trio/demo/"
 
 mkdir -p ${_INPUT_DIR}
 mkdir -p ${_OUTPUT_DIR}
@@ -64,36 +64,37 @@ echo -e "${_CONTIGS}\t${START_POS}\t${END_POS}" > ${_INPUT_DIR}/quick_demo.bed
 ### **Run Clair3-Trio**
 
 ```bash
+MODEL_C3='ont'
+MODEL_C3T='c3t_hg002_g422'
 
-cd Clair3-Trio
-_MODEL_DIR_C3=`pwd`"/models/clair3_models/ont"
-_MODEL_DIR_C3T=`pwd`"/models/clair3_trio_models/c3t_hg002_g422"
-
-# Run Clair3-Trio using one command
-./run_clair3_trio.sh \
+docker run -it \
+  -v ${_INPUT_DIR}:${_INPUT_DIR} \
+  -v ${_OUTPUT_DIR}:${_OUTPUT_DIR} \
+  hkubal/clair3-trio:latest \
+  /opt/bin/run_clair3_trio.sh \
+  --ref_fn=${_REF} \
   --bam_fn_c=${_BAM_C} \
   --bam_fn_p1=${_BAM_P1} \
   --bam_fn_p2=${_BAM_P2} \
-  --output=${_OUTPUT_DIR} \
-  --ref_fn=${_REF} \
-  --threads=${_THREADS} \
-  --model_path_clair3="${_MODEL_DIR_C3}" \
-  --model_path_clair3_trio="${_MODEL_DIR_C3T}" \
-  --bed_fn=${_INPUT_DIR}/quick_demo.bed \
   --sample_name_c=${_SAMPLE_C} \
   --sample_name_p1=${_SAMPLE_P1} \
-  --sample_name_p2=${_SAMPLE_P2}
+  --sample_name_p2=${_SAMPLE_P2} \
+  --threads=${_THREADS} \
+  --model_path_clair3="/opt/models/clair3_models/${MODEL_C3}" \
+  --model_path_clair3_trio="/opt/models/clair3_trio_models/${MODEL_C3T}" \
+  --output=${_OUTPUT_DIR}
+
 ```
 
 ### **Run hap.py for benchmarking (optional)**
 
 ```bash
-BASELINE_VCF_FILE_PATH_C="HG002_GRCh38_20.v4.2.1_benchmark.vcf.gz"
-BASELINE_BED_FILE_PATH_C="HG002_GRCh38_20.v4.2.1_benchmark_noinconsistent.bed"
-BASELINE_VCF_FILE_PATH_P1="HG003_GRCh38_20.v4.2.1_benchmark.vcf.gz"
-BASELINE_BED_FILE_PATH_P1="HG003_GRCh38_20.v4.2.1_benchmark_noinconsistent.bed"
-BASELINE_VCF_FILE_PATH_P2="HG004_GRCh38_20.v4.2.1_benchmark.vcf.gz"
-BASELINE_BED_FILE_PATH_P2="HG004_GRCh38_20.v4.2.1_benchmark_noinconsistent.bed"
+BASELINE_VCF_FILE_PATH_C="HG002_GRCh38_20_v4.2.1_benchmark.vcf.gz"
+BASELINE_BED_FILE_PATH_C="HG002_GRCh38_20_v4.2.1_benchmark_noinconsistent.bed"
+BASELINE_VCF_FILE_PATH_P1="HG003_GRCh38_20_v4.2.1_benchmark.vcf.gz"
+BASELINE_BED_FILE_PATH_P1="HG003_GRCh38_20_v4.2.1_benchmark_noinconsistent.bed"
+BASELINE_VCF_FILE_PATH_P2="HG004_GRCh38_20_v4.2.1_benchmark.vcf.gz"
+BASELINE_BED_FILE_PATH_P2="HG004_GRCh38_20_v4.2.1_benchmark_noinconsistent.bed"
 OUTPUT_VCF_FILE_C="HG002.vcf.gz"
 OUTPUT_VCF_FILE_P1="HG003.vcf.gz"
 OUTPUT_VCF_FILE_P2="HG004.vcf.gz"
@@ -239,7 +240,12 @@ docker run \
 staphb/bcftools:1.12 bcftools index ${_TRIO_GIAB_MERGED}
 
 # get de nove variants
-python clair3.py Check_de_novo --call_vcf ${M_VCF} --ctgName ${_CONTIGS} --bed_fn ${_TRIO_BED_PATH} --true_vcf ${_TRIO_GIAB_MERGED} |& tee ${_OUTPUT_DIR}/trio/denovo_rst
+docker run -it \
+  -v ${_INPUT_DIR}:${_INPUT_DIR} \
+  -v ${_OUTPUT_DIR}:${_OUTPUT_DIR} \
+  hkubal/clair3-trio:latest \
+  python /opt/bin/clair3.py \
+  Check_de_novo --call_vcf ${M_VCF} --ctgName ${_CONTIGS} --bed_fn ${_TRIO_BED_PATH} --true_vcf ${_TRIO_GIAB_MERGED} 
 ```
 
 
@@ -261,10 +267,10 @@ SNP,ALL,402,402,0,466,1,62,0,0,1.0,0.997525,0.133047,0.998761,2.5350877193,2.312
 SNP,PASS,402,402,0,466,1,62,0,0,1.0,0.997525,0.133047,0.998761,2.5350877193,2.31205673759,4.64788732394,4.47058823529
 
 Type,Filter,TRUTH.TOTAL,TRUTH.TP,TRUTH.FN,QUERY.TOTAL,QUERY.FP,QUERY.UNK,FP.gt,FP.al,METRIC.Recall,METRIC.Precision,METRIC.Frac_NA,METRIC.F1_Score,TRUTH.TOTAL.TiTv_ratio,QUERY.TOTAL.TiTv_ratio,TRUTH.TOTAL.het_hom_ratio,QUERY.TOTAL.het_hom_ratio
-INDEL,ALL,37,25,12,37,2,9,0,1,0.675676,0.928571,0.243243,0.78219,,,0.478260869565,0.384615384615
-INDEL,PASS,37,25,12,37,2,9,0,1,0.675676,0.928571,0.243243,0.78219,,,0.478260869565,0.384615384615
-SNP,ALL,213,212,1,224,0,12,0,0,0.995305,1.0,0.053571,0.997647,2.73684210526,2.61290322581,0.468965517241,0.493333333333
-SNP,PASS,213,212,1,224,0,12,0,0,0.995305,1.0,0.053571,0.997647,2.73684210526,2.61290322581,0.468965517241,0.493333333333
+INDEL,ALL,37,25,12,39,3,10,0,1,0.675676,0.896552,0.25641,0.770599,,,0.478260869565,0.407407407407
+INDEL,PASS,37,25,12,39,3,10,0,1,0.675676,0.896552,0.25641,0.770599,,,0.478260869565,0.407407407407
+SNP,ALL,213,212,1,224,0,12,0,0,0.995305,1.0,0.053571,0.997647,2.73684210526,2.61290322581,0.468965517241,0.503355704698
+SNP,PASS,213,212,1,224,0,12,0,0,0.995305,1.0,0.053571,0.997647,2.73684210526,2.61290322581,0.468965517241,0.503355704698
 
 ```
 
@@ -272,9 +278,9 @@ SNP,PASS,213,212,1,224,0,12,0,0,0.995305,1.0,0.053571,0.997647,2.73684210526,2.6
 
 ```bash
 Family: [HG003 + HG004] -> [HG002]
-Concordance HG002: F:565/566 (99.82%)  M:558/566 (98.59%)  F+M:554/566 (97.88%)
-0/566 (0.00%) records did not conform to expected call ploidy
-12/566 (2.12%) records contained a violation of Mendelian constraints
+Concordance HG002: F:935/940 (99.47%)  M:926/940 (98.51%)  F+M:920/940 (97.87%)
+0/940 (0.00%) records did not conform to expected call ploidy
+20/940 (2.13%) records contained a violation of Mendelian constraints
 
 in chr20, called de novo sites 1
 in chr20, true de novo sites 39
