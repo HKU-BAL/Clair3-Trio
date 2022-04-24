@@ -29,12 +29,13 @@ Clair3-Trio is fully based on [Clair3](https://github.com/HKU-BAL/Clair3).
 * [Folder Structure and Submodule Descriptions](#folder-structure-and-submodule-descriptions)
 * [Training Data](docs/training_data.md)
 * [Clair3-Trio Model Training](docs/trio/trio_training.md)
+* [Analysis results](http://www.bio8.cs.hku.hk/clair3_trio/analysis_result/)
 
 ----
 
 ## Latest Updates
 
-*v0.1 (March 12, 2022)*: Initial release.
+*v0.1 (April 22, 2022)*: Initial release.
 
 ---
 
