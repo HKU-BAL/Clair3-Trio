@@ -183,7 +183,47 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c
 ```
 ### Bioconda
 
-To be updated
+*For using Clair3 with Illumina data, install [clair3-illumina](https://anaconda.org/bioconda/clair3-illumina) package in bioconda channel instead.*
+
+```bash
+# make sure channels are added in conda
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+
+# create conda environment named "clair3-trio"
+conda create -n clair3-trio -c bioconda clair3-trio python=3.6.10 -y
+conda activate clair3-trio
+
+# run clair3-trio like this afterward
+_INPUT_DIR="[YOUR_INPUT_FOLDER]"            # e.g. ./input
+_BAM_C=${_INPUT_DIR}/input_child.bam        # chnage your child's bam file name here
+_BAM_P1=${_INPUT_DIR}/input_parent1.bam     # chnage your parenet1's bam file name here
+_BAM_P2=${_INPUT_DIR}/input_parent2.bam     # chnage your parenet2's bam file name here
+_SAMPLE_C="[Child sample ID]"               # child sample ID, e.g. HG002
+_SAMPLE_P1="[Parent1 sample ID]"            # parent1 sample ID, e.g. HG003
+_SAMPLE_P2="[Parent2 sample ID]"            # parent2 sample ID, e.g. HG004
+_REF=${_INPUT_DIR}/ref.fa                   # change your reference file name here
+_OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"          # e.g. ./output
+_THREADS="[MAXIMUM_THREADS]"                # e.g. 8
+_MODEL_DIR_C3="[Clair3 MODEL NAME]"         # e.g. ./models/clair3_models/ont
+_MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c3t_hg002_g422
+
+run_clair3_trio.sh \
+  --bam_fn_c=${_BAM_C} \    
+  --bam_fn_p1=${_BAM_P1} \
+  --bam_fn_p2=${_BAM_P2} \
+  --output=${_OUTPUT_DIR} \
+  --ref_fn=${_REF} \
+  --threads=${_THREADS} \
+  --model_path_clair3="${_MODEL_DIR_C3}" \
+  --model_path_clair3_trio="${_MODEL_DIR_C3T}" \
+  --sample_name_c=${_SAMPLE_C} \
+  --sample_name_p1=${_SAMPLE_P1} \
+  --sample_name_p2=${_SAMPLE_P2}
+```
+
+Check [Usage](#Usage) for more options. [Pre-trained models](#pre-trained-models) are already included in the bioconda package.
 
 
 
