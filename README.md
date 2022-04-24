@@ -70,6 +70,40 @@ Download models from [here](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_mo
 
 ## Installation
 
+### Docker pre-built image
+
+A pre-built docker image is available [here](https://hub.docker.com/r/hkubal/clair3-trio). With it you can run Clair3-Trio using a single command.
+
+Caution: Absolute path is needed for both INPUT_DIR and OUTPUT_DIR.
+
+```
+INPUT_DIR="[YOUR_INPUT_FOLDER]"            # e.g. ./input
+REF=${_INPUT_DIR}/ref.fa                   # change your reference file name here
+OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"          # e.g. ./output
+THREADS="[MAXIMUM_THREADS]"                # e.g. 8
+MODEL_C3="[Clair3 MODEL NAME]"         	   # e.g. ont
+MODEL_C3T="[Clair3-Trio MODEL NAME]"       # e.g. c3t_hg002_g422
+
+
+docker run -it \
+  -v ${INPUT_DIR}:${INPUT_DIR} \
+  -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
+  hkubal/clair3-trio:latest \
+  /opt/bin/run_clair3_trio.sh \
+  --ref_fn=${INPUT_DIR}/ref.fa \       				## change your reference file name here
+  --bam_fn_c=${INPUT_DIR}/child_input.bam \         ## change your child's bam file name here 
+  --bam_fn_p1=${INPUT_DIR}/parent1_input.bam \      ## change your parnet 1's bam file name here     
+  --bam_fn_p2=${INPUT_DIR}/parenet2_input.bam \     ## change your parnet 2's bam file name here   
+  --sample_name_c=${SAMPLE_C} \					    ## change your child's name here
+  --sample_name_p1=${SAMPLE_P1} \					## change your parnet 1's name here
+  --sample_name_p2=${SAMPLE_P2} \					## change your parent 2's name here
+  --threads=${THREADS} \               				## maximum threads to be used
+  --model_path_clair3="/opt/models/clair3_models/${MODEL_C3}" \
+  --model_path_clair3_trio="/opt/models/clair3_trio_models/${MODEL_C3T}" \
+  --output=${OUTPUT_DIR}               			    ## absolute output path prefix 
+
+```
+
 ### Build an anaconda virtual environment
 
 **Anaconda install**:
@@ -151,39 +185,6 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c
 
 To be updated
 
-### Docker pre-built image
-
-A pre-built docker image is available here. With it you can run Clair3-Trio using a single command.
-
-Caution: Absolute path is needed for both INPUT_DIR and OUTPUT_DIR.
-
-```
-INPUT_DIR="[YOUR_INPUT_FOLDER]"            # e.g. ./input
-REF=${_INPUT_DIR}/ref.fa                   # change your reference file name here
-OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"          # e.g. ./output
-THREADS="[MAXIMUM_THREADS]"                # e.g. 8
-MODEL_C3="[Clair3 MODEL NAME]"         	   # e.g. ont
-MODEL_C3T="[Clair3-Trio MODEL NAME]"       # e.g. c3t_hg002_g422
-
-
-docker run -it \
-  -v ${INPUT_DIR}:${INPUT_DIR} \
-  -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
-  hkubal/clair3-trio:latest \
-  /opt/bin/run_clair3_trio.sh \
-  --ref_fn=${INPUT_DIR}/ref.fa \       				## change your reference file name here
-  --bam_fn_c=${INPUT_DIR}/child_input.bam \         ## change your child's bam file name here 
-  --bam_fn_p1=${INPUT_DIR}/parent1_input.bam \      ## change your parnet 1's bam file name here     
-  --bam_fn_p2=${INPUT_DIR}/parenet2_input.bam \     ## change your parnet 2's bam file name here   
-  --sample_name_c=${SAMPLE_C} \					    ## change your child's name here
-  --sample_name_p1=${SAMPLE_P1} \					## change your parnet 1's name here
-  --sample_name_p2=${SAMPLE_P2} \					## change your parent 2's name here
-  --threads=${THREADS} \               				## maximum threads to be used
-  --model_path_clair3="/opt/models/clair3_models/${MODEL_C3}" \
-  --model_path_clair3_trio="/opt/models/clair3_trio_models/${MODEL_C3T}" \
-  --output=${OUTPUT_DIR}               			    ## absolute output path prefix 
-
-```
 
 
 
