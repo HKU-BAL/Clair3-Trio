@@ -12,7 +12,7 @@ Email: rbluo@cs.hku.hk, jhsu@cs.hku.hk
 
 Accurate identification of genetic variants from family child-mother-father trio’s sequencing data is important in genomics. However, state-of-the-art approaches formulate the question of variant calling from trios as three independent questions that capped their calling accuracy for the Nanopore long-reads sequencing data. For better trios variant calling, we introduce Clair3-Trio, the first variant caller tailored for family trios from nanopore long-reads. Clair3-Trio employs a Trio-to-Trio deep neural network model that allows it to input the trio’s sequencing information and output all of the trio’s predicted variants within a single model, to perform better variant calling. We also present MCVLoss, aloss function tailor-made for variant calling in trios by leveraging the explicit encoding of the Mendelian inheritance. Clair3-Trio showed comprehensive improvement in experiments. It predicted much fewer Mendelian inheritance violation variations than current state-of-the-art methods. 
 
-A preprint of Clair3-Trio is available in [bioRxiv]().
+A preprint of Clair3-Trio is available in [bioRxiv]().(TBU)
 
 ----
 
