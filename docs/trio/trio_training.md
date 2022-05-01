@@ -179,6 +179,15 @@ time ${PARALLEL} -j ${C3_THREADS} --joblog  ${LOG_PATH}/input_pileup${_LOG_SUF}.
 ## 3. Create and merge trio tensors
 
 ```
+
+# Get output pileup vcf path
+ALL_PILEUP_VCF_FILE_PATH=(
+"${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($0))]}_${DEPTHS[$(($0))]}"
+"${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($1))]}_${DEPTHS[$(($1))]}"
+"${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($2))]}_${DEPTHS[$(($2))]}"
+)
+
+# set up input for trio
 INPUT_PILEUP_VCF_C=()
 INPUT_PILEUP_VCF_P1=()
 INPUT_PILEUP_VCF_P2=()
@@ -193,9 +202,9 @@ DEPTH_S=()
 for i in $(seq 0 $((${#ALL_SAMPLE[@]}-1)))
 do
     if [ $(($i % 3)) -eq 0]; then
-        INPUT_PILEUP_VCF_C+=("${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($i))]}_${DEPTHS[$(($i))]}")
-        INPUT_PILEUP_VCF_P1+=("${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($i+1))]}_${DEPTHS[$(($i+1))]}")
-        INPUT_PILEUP_VCF_P2+=("${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($i+2))]}_${DEPTHS[$(($i+2))]}")
+        INPUT_PILEUP_VCF_C+=("${ALL_PILEUP_VCF_FILE_PATH[$(($i))]}")
+        INPUT_PILEUP_VCF_P1+=("${ALL_PILEUP_VCF_FILE_PATH[$(($i+1))]}")
+        INPUT_PILEUP_VCF_P2+=("${ALL_PILEUP_VCF_FILE_PATH[$(($i+2))]}")
 
         TRUE_RU_FILE_C+=("${ALL_RU_FILE_PATH[$(($i))]}")
         TRUE_RU_FILE_P1+=("${ALL_RU_FILE_PATH[$(($i+1))]}")

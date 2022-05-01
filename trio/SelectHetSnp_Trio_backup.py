@@ -11,22 +11,21 @@ from shared.interval_tree import bed_tree_from, is_region_in
 from shared.utils import subprocess_popen, IUPAC_base_to_ACGT_base_dict as BASE2BASE, IUPAC_base_to_num_dict as BASE2NUM
 from shared.utils import str2bool
 
-def variant_from(var_fn, tree, is_tree_empty, contig_name = None):
+def variant_from(vcf_fn, tree, is_tree_empty, contig_name = None):
     Y = set()
 
-    if var_fn and os.path.exists(var_fn):
-        f = subprocess_popen(shlex.split("gzip -fdc %s" % (var_fn)))
+    if vcf_fn and os.path.exists(vcf_fn):
+        f = subprocess_popen(shlex.split("gzip -fdc %s" % (vcf_fn)))
         for row in f.stdout:
             if row[0] == '#':
                 continue
-            columns = row.rstrip().split()
+            columns = row.rstrip().split('\t')
             ctg_name = columns[0]
             if contig_name and contig_name != ctg_name:
                 continue
             pos = int(columns[1])
             ref_base = columns[3]
             alt_base = columns[4]
-            # import pdb; pdb.set_trace()
 
             if not (is_tree_empty or is_region_in(tree, ctg_name, pos)):
                 continue
@@ -35,7 +34,6 @@ def variant_from(var_fn, tree, is_tree_empty, contig_name = None):
         f.stdout.close()
         f.wait()
     return Y
-
 
 
 
@@ -84,7 +82,6 @@ def FiterHeteSnp(args):
     would select more in low quality variants, which is more challenging for pileup model to predict and using more
     information will benefit calling those variants.
     """
-    random.seed(0)
     
     var_pct_full = args.var_pct_full
     ref_var_max_ratio = args.ref_var_max_ratio
@@ -112,32 +109,37 @@ def FiterHeteSnp(args):
     tree = bed_tree_from(bed_fn, contig_name=contig_name)
     is_tree_empty = len(tree.keys()) == 0
 
+    # legacy
+    # vcf_fn_c=args.vcf_fn_c
+    # vcf_fn_p1=args.vcf_fn_p1
+    # vcf_fn_p2=args.vcf_fn_p2
 
     alt_fn_c = args.alt_fn_c
     alt_fn_p1 = args.alt_fn_p1
     alt_fn_p2 = args.alt_fn_p2
 
+
+    # # legacy
+    # vcf_fn = args.vcf_fn_c
+
     # legacy
     alt_fn = args.alt_fn_c
 
     # import pdb; pdb.set_trace()
-    Y_c, Y_p1, Y_p2, Y_all = None, None, None, None
-    if args.for_train:
-        # legacy
-        var_fn_c=args.var_fn_c
-        var_fn_p1=args.var_fn_p1
-        var_fn_p2=args.var_fn_p2
 
-        Y_c = variant_from(var_fn_c, tree, is_tree_empty, contig_name)
-        Y_p1 = variant_from(var_fn_p1, tree, is_tree_empty, contig_name)
-        Y_p2 = variant_from(var_fn_p2, tree, is_tree_empty, contig_name) 
-        Y_all = Y_c | Y_p1 | Y_p2
-        print('in %s, read true %d, %d, %d, union %d' % (contig_name, len(Y_c), len(Y_p1), len(Y_p2), len(Y_all)))
+    # Y_c = variant_from(vcf_fn_c, tree, is_tree_empty, contig_name)
+    # Y_p1 = variant_from(vcf_fn_p1, tree, is_tree_empty, contig_name)
+    # Y_p2 = variant_from(vcf_fn_p2, tree, is_tree_empty, contig_name) 
+    # Y_all = Y_c | Y_p1 | Y_p2
+    # print('in %s, readed true %d, %d, %d, union %d' % (contig_name, len(Y_c), len(Y_p1), len(Y_p2), len(Y_all)))
 
     candidate_c = candidate_from(alt_fn_c, tree, is_tree_empty, contig_name)
     candidate_p1 = candidate_from(alt_fn_p1, tree, is_tree_empty, contig_name)
     candidate_p2 = candidate_from(alt_fn_p2, tree, is_tree_empty, contig_name)
 
+    # print(len(candidate_c[0]), len(candidate_c[1]))
+    # print(len(candidate_p1[0]), len(candidate_p1[1]))
+    # print(len(candidate_p2[0]), len(candidate_p2[1]))
 
     lq_can_c = get_low_qual_rec(candidate_c, ref_pct_full, var_pct_full)
     lq_can_p1 = get_low_qual_rec(candidate_p1, ref_pct_full, var_pct_full)
@@ -165,61 +167,35 @@ def FiterHeteSnp(args):
     _ori_ref_n = int(sum([len(lq_can_c[0]), len(lq_can_p1[0]), len(lq_can_p2[0])]) / 3)
     _ori_v_n = int(sum([len(lq_can_c[1]), len(lq_can_p1[1]), len(lq_can_p2[1])]) / 3)
 
-    # avg number adjust to child's when parents' in low depth
-    _ori_v_n = max(_ori_v_n, int(len(lq_can_c[1])))
-
 
     ref_set_c = set([item[0] for item in lq_can_c[0]])
     ref_set_p1 = set([item[0] for item in lq_can_p1[0]])
     ref_set_p2 = set([item[0] for item in lq_can_p2[0]])
 
     ref_set_all = ref_set_c | ref_set_p1 | ref_set_p2
-
-    
-
     n_ref_set_size = len(ref_set_all)
 
-
     _r_n_ref_set_size_ind = int(_ori_v_n * ref_var_max_ratio)
-    if args.for_train:
-        _r_n_ref_set_size_ind = int(_ori_v_n * ref_var_max_ratio * 0.8)
 
     _tmp_ref_set_c = set([item[0] for item in lq_can_c[0][:_r_n_ref_set_size_ind]])
     _tmp_ref_set_p1 = set([item[0] for item in lq_can_p1[0][:_r_n_ref_set_size_ind]])
     _tmp_ref_set_p2 = set([item[0] for item in lq_can_p2[0][:_r_n_ref_set_size_ind]])
     _tmp_ref_set_all = _tmp_ref_set_c | _tmp_ref_set_p1 | _tmp_ref_set_p2
-
-    
-
-    # if for training, constraints ref sites to have maximum rate based on all candidates
-    if args.for_train:
-        _tmp_ref_set_all = list(_tmp_ref_set_all)
-        random.shuffle(_tmp_ref_set_all)
-        _tmp_ref_set_all = _tmp_ref_set_all[:int(len(can_set_all) * ref_var_max_ratio)]
     _r_n_ref_set_size = len(_tmp_ref_set_all)
 
 
-    print('check ref site, %s or maximum %s (ind %s)' % (n_ref_set_size, _r_n_ref_set_size, _r_n_ref_set_size_ind))
-    if _r_n_ref_set_size < n_ref_set_size:
+    print('check ref site, %s or maximum %s (ind %s)' % (len(ref_set_all), _r_n_ref_set_size, _r_n_ref_set_size_ind))
+    if _r_n_ref_set_size < len(ref_set_all):
         print('using maximum ref/var ratio %s' % ref_var_max_ratio) 
         n_ref_set_size = _r_n_ref_set_size
+    # n_ref_set_size = min(int(_ori_ref_n / _ori_v_n * len(can_set_all)), len(ref_set_all))
+    # n_ref_set_size = _ori_ref_n
 
     print("ori avg v: %d, ref: %d, new union: v %d, ref %d (%.2f%% /%d)" % (_ori_v_n, _ori_ref_n, len(can_set_all), \
                 n_ref_set_size, n_ref_set_size * 100 / len(ref_set_all), len(ref_set_all)))
 
-
-    if args.only_select_child_for_train:
-        # for internal training only
-        can_set_all = can_set_c
-        _r_n_ref_set_size_ind = int(len(can_set_all) * ref_var_max_ratio)
-        ref_set_all = set([item[0] for item in lq_can_c[0][:_r_n_ref_set_size_ind]])
-        n_ref_set_size = len(ref_set_all)
-        _r_n_ref_set_size = n_ref_set_size
-        Y_all = Y_c 
-        print('only_select_child_for_train enable. v: %s, non v: %s' % (len(can_set_all), n_ref_set_size))
-
-
     tmp_ref_l = list(ref_set_all)
+    random.seed(0)
     random.shuffle(tmp_ref_l)
     n_ref_set_all = set(tmp_ref_l[:n_ref_set_size])
 
@@ -228,19 +204,8 @@ def FiterHeteSnp(args):
 
     # import pdb; pdb.set_trace()
 
-    
-
     need_phasing_row_list = sorted(list(can_set_all | n_ref_set_all))
 
-
-    if args.for_train:
-        all_y_site = (ref_set_all | can_set_all) & Y_all
-        len(set(all_y_site) - set(need_phasing_row_list))
-        print('rescue %s true var sites from non v sites' % (len(set(all_y_site) - set(need_phasing_row_list))))
-        need_phasing_row_list = sorted(list(can_set_all | n_ref_set_all | all_y_site))
-        # import pdb; pdb.set_trace()
-
-    
     if args.get_subtract:
         tmp_s_v = set(can_set_p1 | can_set_p2) - can_set_c
         tmp_s_r = set(ref_set_p1 | ref_set_p2) - ref_set_c
@@ -261,8 +226,8 @@ def FiterHeteSnp(args):
 
         split_output = sorted(split_output, key=lambda x: x[0])
         with open(os.path.join(split_folder,
-                               '{}_{}_{}_{}'.format(sample_name, DEPTH, contig_name[chr_prefix_length:], chunk_idx+1)), # zero-base to one-base
-                  'w') as output_file:
+            '{}_{}_{}_{}'.format(sample_name, DEPTH, contig_name[chr_prefix_length:], chunk_idx+1)), # zero-base to one-base
+            'w') as output_file:
             output_file.write('\n'.join(
                 ['\t'.join([contig_name, str(x[0] - 1), str(x[1] - 1), ]) for x in
                  split_output]) + '\n')  # bed format
@@ -282,10 +247,6 @@ def main():
     parser.add_argument('--alt_fn_c', type=str, default=None, help=SUPPRESS)
     parser.add_argument('--alt_fn_p1', type=str, default=None, help=SUPPRESS)
     parser.add_argument('--alt_fn_p2', type=str, default=None, help=SUPPRESS)
-
-    parser.add_argument('--var_fn_c', type=str, default=None, help=SUPPRESS)
-    parser.add_argument('--var_fn_p1', type=str, default=None, help=SUPPRESS)
-    parser.add_argument('--var_fn_p2', type=str, default=None, help=SUPPRESS)
 
     parser.add_argument('--var_pct_full', type=float, default=0.3,
                         help="Default variant call proportion for raw alignment or remove low quality proportion for whatshap phasing. (default: %(default)f)")
@@ -336,12 +297,6 @@ def main():
         help="constrain select region within bed file, (default: %(default)s)")
 
     parser.add_argument('--get_subtract', type=str2bool, default=False,
-                        help=SUPPRESS)
-
-    parser.add_argument('--for_train', type=str2bool, default=False,
-                        help=SUPPRESS)
-
-    parser.add_argument('--only_select_child_for_train', type=str2bool, default=False,
                         help=SUPPRESS)
 
     args = parser.parse_args()
