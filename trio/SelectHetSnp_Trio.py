@@ -330,7 +330,7 @@ def main():
     parser.add_argument('--chr_prefix', type=str, default='chr', help=SUPPRESS)
 
     ## Default subsample depth for subsample bam file, 1000 means no subsampling
-    parser.add_argument('--depth', type=int, default=1000, help=SUPPRESS)
+    parser.add_argument('--depth', type=str, default=1000, help=SUPPRESS)
 
     parser.add_argument('--bed_fn', type=str, default=None,
         help="constrain select region within bed file, (default: %(default)s)")
