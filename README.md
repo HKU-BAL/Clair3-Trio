@@ -48,6 +48,8 @@ A preprint of Clair3-Trio is available in [bioRxiv](). (To be updated)
 * **Mendelian violations aware.**  Clair3-Trio uses MCVLoss to improve variants calling in trio by penalizing mendelian violoations. 
 * **Improved Performance.** Using only 10x of HG002, 3 and 4 ONT data, Clair3-Trio achieved 97.30% SNP F1-score and 56.48% Indel F1-score. Compared to Clair3, Clair3-Trio reduced SNP errors by **~78%**,  and Indel errors by **~22%**. Clair3-Trio signficantly reduced Mendelian violations from 48,345 to 7,072.
 
+<img src="docs/images/F1_SNP+INDEL.png" width = "600" alt="Clair3">
+
 ----
 
 ## Pre-trained Models
