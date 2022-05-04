@@ -49,7 +49,6 @@ A preprint of Clair3-Trio is available in [bioRxiv](). (To be updated)
 
 ## Pre-trained Models
 
-### HKU-provided Models
 
 Download models from [here](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/) or click on the links below.
 
@@ -73,12 +72,12 @@ Download models from [here](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_mo
 
 A pre-built docker image is available [here](https://hub.docker.com/r/hkubal/clair3-trio). With it you can run Clair3-Trio using a single command.
 
-Caution: Absolute path is needed for both INPUT_DIR and OUTPUT_DIR.
+Caution: Absolute path is needed for both `INPUT_DIR` and `OUTPUT_DIR`.
 
 ```
-INPUT_DIR="[YOUR_INPUT_FOLDER]"            # e.g. ./input
+INPUT_DIR="[YOUR_INPUT_FOLDER]"            # e.g. /input
 REF=${_INPUT_DIR}/ref.fa                   # change your reference file name here
-OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"          # e.g. ./output
+OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"          # e.g. /output
 THREADS="[MAXIMUM_THREADS]"                # e.g. 8
 MODEL_C3="[Clair3 MODEL NAME]"         	   # e.g. ont
 MODEL_C3T="[Clair3-Trio MODEL NAME]"       # e.g. c3t_hg002_g422
@@ -89,17 +88,17 @@ docker run -it \
   -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
   hkubal/clair3-trio:latest \
   /opt/bin/run_clair3_trio.sh \
-  --ref_fn=${INPUT_DIR}/ref.fa \       				## change your reference file name here
+  --ref_fn=${INPUT_DIR}/ref.fa \       				      ## change your reference file name here
   --bam_fn_c=${INPUT_DIR}/child_input.bam \         ## change your child's bam file name here 
-  --bam_fn_p1=${INPUT_DIR}/parent1_input.bam \      ## change your parnet 1's bam file name here     
-  --bam_fn_p2=${INPUT_DIR}/parenet2_input.bam \     ## change your parnet 2's bam file name here   
-  --sample_name_c=${SAMPLE_C} \					    ## change your child's name here
-  --sample_name_p1=${SAMPLE_P1} \					## change your parnet 1's name here
-  --sample_name_p2=${SAMPLE_P2} \					## change your parent 2's name here
-  --threads=${THREADS} \               				## maximum threads to be used
+  --bam_fn_p1=${INPUT_DIR}/parent1_input.bam \      ## change your parnet-1's bam file name here     
+  --bam_fn_p2=${INPUT_DIR}/parenet2_input.bam \     ## change your parnet-2's bam file name here   
+  --sample_name_c=${SAMPLE_C} \					            ## change your child's name here
+  --sample_name_p1=${SAMPLE_P1} \					          ## change your parnet-1's name here
+  --sample_name_p2=${SAMPLE_P2} \					          ## change your parent-2's name here
+  --threads=${THREADS} \               				      ## maximum threads to be used
   --model_path_clair3="/opt/models/clair3_models/${MODEL_C3}" \
   --model_path_clair3_trio="/opt/models/clair3_trio_models/${MODEL_C3T}" \
-  --output=${OUTPUT_DIR}               			    ## absolute output path prefix 
+  --output=${OUTPUT_DIR}               			       ## absolute output path prefix 
 
 ```
 
@@ -274,14 +273,14 @@ docker run -it hkubal/clair3-trio:latest /opt/bin/run_clair3_trio.sh --help
 **Required parameters:**
 
 ```bash
-  --bam_fn_c=FILE             	Child's BAM file input. The input file must be samtools indexed.
-  --bam_fn_p1=FILE             	Parent1's BAM file input (Parent1 can be father or mother). The input file must be samtools indexed.
-  --bam_fn_p2=FILE             	Parent2's BAM file input (Parent2 can be father or mother). The input file must be samtools indexed.
-  -f, --ref_fn=FILE             FASTA reference file input. The input file must be samtools indexed.
-  --model_path_clair3=STR       The folder path containing a Clair3 model (requiring six files in the folder, including pileup.data-00000-of-00002, pileup.data-00001-of-00002 pileup.index, full_alignment.data-00000-of-00002, full_alignment.data-00001-of-00002  and full_alignment.index.
+  --bam_fn_c=FILE             	 Child's BAM file input. The input file must be samtools indexed.
+  --bam_fn_p1=FILE             	 Parent1's BAM file input (Parent1 can be father or mother). The input file must be samtools indexed.
+  --bam_fn_p2=FILE             	 Parent2's BAM file input (Parent2 can be father or mother). The input file must be samtools indexed.
+  -f, --ref_fn=FILE              FASTA reference file input. The input file must be samtools indexed.
+  --model_path_clair3=STR        The folder path containing a Clair3 model (requiring six files in the folder, including pileup.data-00000-of-00002, pileup.data-00001-of-00002 pileup.index, full_alignment.data-00000-of-00002, full_alignment.data-00001-of-00002  and full_alignment.index.
   --model_path_clair3_trio=STR   The folder path containing a Clair3-Trio model.
-  -t, --threads=INT             Max threads to be used. The full genome will be divided into small chunks for parallel processing. Each chunk will use 4 threads. The chunks being processed simultaneously is ceil($threads/4)*3. 3 is the overloading factor.
-  -o, --output=PATH             VCF output directory.
+  -t, --threads=INT              Max threads to be used. The full genome will be divided into small chunks for parallel processing. Each chunk will use 4 threads. The chunks being processed simultaneously is ceil($threads/4)*3. 3 is the overloading factor.
+  -o, --output=PATH              VCF output directory.
 ```
 
 **Other parameters:**
