@@ -269,7 +269,7 @@ time ${PARALLEL} --joblog ${LOG_PATH}/S_merge_tensors${_LOG_SUF}.log -j${THREADS
 --candidate_fn_p1 ${INDEL_PATH}/${ALL_SAMPLE[1]}_{3}_{1}_{2} \
 --candidate_fn_p2 ${INDEL_PATH}/${ALL_SAMPLE[2]}_{3}_{1}_{2} \
 --tensor_fn ${TENSOR_CANDIDATE_FOLDER_PATH}/tensor_can_${TRIO_N}_{3}_{1}_{2} \
---candidate_fn ${INDEL_PATH}/${TRIO_N}_{1}_{2} \
+--candidate_fn ${INDEL_PATH}/${TRIO_N}_{3}_{1}_{2} \
 " ::: ${CHR[@]} ::: ${CHUNK_LIST[@]} ::: ${DEPTH_S[@]} |& tee ${LOG_PATH}/MT${_LOG_SUF}.log
 
 IF_CHECK_MCV=0  # whether filter MCV in training data

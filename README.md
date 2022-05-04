@@ -350,9 +350,9 @@ Submodules in __`clair3/`__ are for variant calling and model training. Submodul
 `model` | define Clair3-Trio model
 `Training` | -
 `SelectHetSnp_Trio` | Select heterozygous SNP candidates from pileup model and true set.
-`MergeTenors_Trio` | Merge three tensors into trio's tensors.
+`Merge_Tenors_Trio` | Merge three tensors into trio's tensors.
 `Tensor2Bin_Trio` | Convert trio's tensors into Bin file for training.
-`Train_Trio` | Training a trio model using the `RectifiedAdam` optimizer. We also use the `Lookahead` optimizer to adjust the `RectifiedAdam` parameters dynamically. The initial learning rate is `1e-3` with `0.1` learning rate warm-up. Input a binary containing tensors created by `Tensor2Bin`. 
+`Train_Trio` | Training a trio model using the `RectifiedAdam` optimizer. We also use the `Lookahead` optimizer to adjust the `RectifiedAdam` parameters dynamically. The initial learning rate is `1e-3` with `0.1` learning rate warm-up. Input a binary containing tensors created by `Tensor2Bin_Trio`. 
 `Evaluation` | -
 `Check_de_novo` | Benchmark calling results in terms of de novo variants.
 
