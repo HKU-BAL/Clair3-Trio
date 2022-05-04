@@ -28,7 +28,7 @@ A preprint of Clair3-Trio is available in [bioRxiv](). (To be updated)
 * [Folder Structure and Submodule Descriptions](#folder-structure-and-submodule-descriptions)
 * [Training Data](docs/trio/training_data.md)
 * [Clair3-Trio Model Training](docs/trio/trio_training.md)
-* [Analysis results](http://www.bio8.cs.hku.hk/clair3_trio/analysis_result/)
+* [Analysis Results](http://www.bio8.cs.hku.hk/clair3_trio/analysis_result/)
 
 ----
 
