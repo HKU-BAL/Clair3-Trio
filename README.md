@@ -74,7 +74,7 @@ A pre-built docker image is available [here](https://hub.docker.com/r/hkubal/cla
 
 Caution: Absolute path is needed for both `INPUT_DIR` and `OUTPUT_DIR`.
 
-```
+```bash
 INPUT_DIR="[YOUR_INPUT_FOLDER]"            # e.g. /input
 REF=${_INPUT_DIR}/ref.fa                   # change your reference file name here
 OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"          # e.g. /output
@@ -88,17 +88,17 @@ docker run -it \
   -v ${OUTPUT_DIR}:${OUTPUT_DIR} \
   hkubal/clair3-trio:latest \
   /opt/bin/run_clair3_trio.sh \
-  --ref_fn=${INPUT_DIR}/ref.fa \       				      ## change your reference file name here
-  --bam_fn_c=${INPUT_DIR}/child_input.bam \         ## change your child's bam file name here 
-  --bam_fn_p1=${INPUT_DIR}/parent1_input.bam \      ## change your parnet-1's bam file name here     
-  --bam_fn_p2=${INPUT_DIR}/parenet2_input.bam \     ## change your parnet-2's bam file name here   
-  --sample_name_c=${SAMPLE_C} \					            ## change your child's name here
-  --sample_name_p1=${SAMPLE_P1} \					          ## change your parnet-1's name here
-  --sample_name_p2=${SAMPLE_P2} \					          ## change your parent-2's name here
-  --threads=${THREADS} \               				      ## maximum threads to be used
+  --ref_fn=${INPUT_DIR}/ref.fa \                  ## change your reference file name here
+  --bam_fn_c=${INPUT_DIR}/child_input.bam \       ## change your child's bam file name here 
+  --bam_fn_p1=${INPUT_DIR}/parent1_input.bam \    ## change your parnet-1's bam file name here     
+  --bam_fn_p2=${INPUT_DIR}/parenet2_input.bam \   ## change your parnet-2's bam file name here   
+  --sample_name_c=${SAMPLE_C} \                   ## change your child's name here
+  --sample_name_p1=${SAMPLE_P1} \                 ## change your parnet-1's name here
+  --sample_name_p2=${SAMPLE_P2} \                 ## change your parent-2's name here
+  --threads=${THREADS} \                          ## maximum threads to be used
   --model_path_clair3="/opt/models/clair3_models/${MODEL_C3}" \
   --model_path_clair3_trio="/opt/models/clair3_trio_models/${MODEL_C3T}" \
-  --output=${OUTPUT_DIR}               			       ## absolute output path prefix 
+  --output=${OUTPUT_DIR}                          ## absolute output path prefix 
 
 ```
 
