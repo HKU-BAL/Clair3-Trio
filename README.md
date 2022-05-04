@@ -12,7 +12,6 @@ Email: rbluo@cs.hku.hk, jhsu@cs.hku.hk
 
 Accurate identification of genetic variants from family child-mother-father trio sequencing data is important in genomics. However, state-of-the-art approaches treat variant calling from trios as three independent tasks, which limits their calling accuracy for Nanopore long-read sequencing data. For better trio variant calling, we introduce Clair3-Trio, the first variant caller tailored for family trio data from Nanopore long-reads. Clair3-Trio employs a Trio-to-Trio deep neural network model, which allows it to input the trio sequencing information and output all of the trio’s predicted variants within a single model to improve variant calling. We also present MCVLoss, a novel loss function tailor-made for variant calling in trios, leveraging the explicit encoding of the Mendelian inheritance. Clair3-Trio showed comprehensive improvement in experiments. It predicted far fewer Mendelian inheritance violation variations than current state-of-the-art methods. 
 
-
 A preprint of Clair3-Trio is available in [bioRxiv](). (To be updated)
 
 ----
@@ -45,19 +44,15 @@ A preprint of Clair3-Trio is available in [bioRxiv](). (To be updated)
 * **Mendelian violations aware.**  Clair3-Trio uses MCVLoss to improve variants calling in trio by penalizing mendelian violoations. 
 * **Improved Performance.** Using only 10x of HG002, 3 and 4 ONT data, Clair3-Trio achieved 97.30% SNP F1-score and 56.48% Indel F1-score. Compared to Clair3, Clair3-Trio reduced SNP errors by **~78%**,  and Indel errors by **~22%**. Clair3-Trio signficantly reduced Mendelian violations from 48,345 to 7,072.
 
-
 ----
 
 ## Pre-trained Models
 
-
 Download models from [here](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/) or click on the links below.
-
 
 |           Model name           |  Platform   |    Training samples         |   Date   |  Basecaller  | File    |          Link            |
 | :----------------------------: | :---------: | :----------------------------------------------------------: | -------------------------------- | :--------------------------: | ----------------| :-------------------: |
 |    c3t_hg002_g422 |     ONT     |                         HG002,3,4      |             20220422 | Guppy4 hac | c3t_hg002_g422.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/c3t_hg002_g422.tar.gz) |
-
 
 ----
 
@@ -69,7 +64,7 @@ Download models from [here](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_mo
 
 ## Installation
 
-### Docker pre-built image
+### Option 1. Docker pre-built image
 
 A pre-built docker image is available [here](https://hub.docker.com/r/hkubal/clair3-trio). With it you can run Clair3-Trio using a single command.
 
@@ -103,7 +98,7 @@ docker run -it \
 
 ```
 
-### Build an anaconda virtual environment
+### Option 2. Build an anaconda virtual environment
 
 **Anaconda install**:
 
@@ -180,7 +175,7 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c
   --sample_name_p2=${_SAMPLE_P2}
 
 ```
-### Bioconda
+### Option 3. Bioconda
 
 
 ```bash
@@ -225,8 +220,7 @@ Check [Usage](#Usage) for more options. [Pre-trained models](#pre-trained-models
 
 
 
-
-### Docker Dockerfile
+### Option 4. Docker Dockerfile
 
 Building a docker image.
 ```
