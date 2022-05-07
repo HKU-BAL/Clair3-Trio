@@ -659,41 +659,7 @@ def train_model_NN(args):
                         random_start_position + chunk_id * chunk_size:random_start_position + (chunk_id + 1) * chunk_size]
                 label[chunk_idx * chunk_size:(chunk_idx + 1) * chunk_size] = x[bin_id].root.label[
                         random_start_position + chunk_id * chunk_size:random_start_position + (chunk_id + 1) * chunk_size]
-                # for _ii, _t in enumerate(range(random_start_position + chunk_id * chunk_size, random_start_position + (chunk_id + 1) * chunk_size)):
-                #     print(_ii, _t)
-                #     print(x[bin_id].root.position[_t], x[bin_id].root.alt_info[_t], x[bin_id].root.label[_t])
-                #     for _i in range(3):
-                #         print(', '.join([str(i) for i in x[bin_id].root.label[_t].reshape(3, -1)[_i, :]]))
 
-                # import pdb; pdb.set_trace()
-
-            # legacy
-            # _tar_label_idx = _tar_lebel_id * label_size_one
-            # yield position_matrix, (
-            #             label[:, _tar_label_idx + 0                 : _tar_label_idx + label_shape_cum[0]],
-            #             label[:, _tar_label_idx + label_shape_cum[0]: _tar_label_idx + label_shape_cum[1]],
-            #             label[:, _tar_label_idx + label_shape_cum[1]: _tar_label_idx + label_shape_cum[2]],
-            #             label[:, _tar_label_idx + label_shape_cum[2]: _tar_label_idx + label_size_one]
-            #         )
-            # if _idx > 10:
-            #     break
-            # _idx += 1
-            # print(len(position_matrix), len(label), label_shape_cum, label[-6])
-            # for i in range(1, 600):
-            #     # print(i)
-            #     if position_matrix[-i].sum() != 0:
-            #         print(i)
-            #         print(position_matrix[-i].sum())
-            #         break
-
-            # for i in range(1, 600):
-            #     # print(i)
-            #     if label[-i].sum() != 0:
-            #         print(i)
-            #         print(label[-i].sum())
-            #         break
-
-            # import pdb; pdb.set_trace()
             _t_cum = [0] + label_shape_cum
             if args.add_mcv_loss:
                 trio_pred_tar = [label[:, _t_cum[_i]: _t_cum[_i+1]] for _i in range(len(label_shape_cum)) if _i % 4 == 0]
@@ -702,13 +668,6 @@ def train_model_NN(args):
             else:
                 yield position_matrix, tuple([label[:, _t_cum[_i]: _t_cum[_i+1]] for _i in range(len(label_shape_cum))]) 
 
-            # trio loss
-            # yield position_matrix, label
-
-            
-            # trio_pred_tar = np.concatenate((label, np.multiply(label[:, :1], 10)), axis=1) 
-            # # trio_pred_tar = np.concatenate((label, np.ones((len(label),1), dtype=np.float32)), axis=1) 
-            # yield position_matrix, tuple([label[:, _t_cum[_i]: _t_cum[_i+1]] for _i in range(len(label_shape_cum))] + [trio_pred_tar]) 
 
 
         # two rounds for generating reversed data
@@ -775,23 +734,6 @@ def train_model_NN(args):
     logging.info("finetune optimizer with RectifiedAdam")
     
 
-    # epochs = max_epoch
-    # steps_per_epoch = train_data_size // batch_size
-    # num_train_steps = steps_per_epoch * epochs
-    # num_warmup_steps = int(0.1*num_train_steps)
-
-    # init_lr = 3e-5
-    # optimizer = model_path.create_BERT_optimizer(init_lr=init_lr,
-    #                                           num_train_steps=num_train_steps,
-    #                                           num_warmup_steps=num_warmup_steps)
-    # logging.info("finetune optimizer with BERT's AdamW")
-    # import pdb; pdb.set_trace()
-
-
-    # import pdb; pdb.set_trace()
-
-    # trio loss
-    # task_num = 1
     loss_func = [FocalLoss(label_shape_cum, task, effective_label_num) for task in range(task_num)]
     loss_task = {"output_{}".format(task + 1): loss_func[task] for task in range(task_num)}
     metrics = {"output_{}".format(task + 1): tfa.metrics.F1Score(num_classes=label_shape[task], average='micro') for
@@ -810,15 +752,6 @@ def train_model_NN(args):
     )
 
 
-    # model.compile(
-    #     loss=MCVLoss,
-    #     metrics=[test_accuracy],
-    #     optimizer=optimizer,
-    # )
-
-
-        # run_eagerly=True
-    # import pdb; pdb.set_trace()
     early_stop_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, mode="min")
     model_save_callback = tf.keras.callbacks.ModelCheckpoint(ochk_prefix + ".{epoch:02d}", period=1, save_weights_only=False)
     model_best_callback = tf.keras.callbacks.ModelCheckpoint("best_val_loss", monitor='val_loss', save_best_only=True, mode="min")
@@ -843,30 +776,6 @@ def train_model_NN(args):
     if args.chkpnt_fn is not None:
         model.load_weights(args.chkpnt_fn)
         logging.info("[INFO] Starting from model {}".format(args.chkpnt_fn))
-
-
-    # import wandb
-    # from wandb.keras import WandbCallback
-    # wandb.login(key='43ff292c29b48569c32e92bbf82356581cc71cae')
-
-    # _train_name = "trio-" + ochk_prefix.split('/')[-2]
-    # wandb.init(project='clair3-trio', entity='junhao', name=_train_name,
-    #        config={
-    #           "learning_rate": learning_rate,
-    #           "epochs": max_epoch,
-    #           "batch_size": batch_size,
-    #           "model_s_type": "NN",
-    #           "output_tensor_shape": label_size,
-    #           "tar_model_type": tar_model_type,
-    #           "add_reverse_23": args.add_reverse_23,
-    #        })
-    # train_history = model.fit(x=train_dataset,
-    #                           epochs=max_epoch,
-    #                           validation_data=validate_dataset,
-    #                           callbacks=[WandbCallback(save_model=False, log_weights=True), early_stop_callback, model_save_callbakck],
-    #                           verbose=1,
-    #                           shuffle=False)
-    
 
 
     # # import pdb; pdb.set_trace()

@@ -532,19 +532,7 @@ class Clair3_Trio_Basic(tf.keras.Model):
 
     def call(self, inputs):
 
-        # if self.is_padding:
-        #     i1 = inputs[:,:,:,:-1]
-        #     i2 = inputs[:,:,:,-1:]
-        #     i1 = tf.cast(i1, tf.float32) / param.NORMALIZE_NUM
-        #     i2 = tf.cast(i2, tf.float32)
-        #     x = tf.concat([i1, i2], -1)
-        #     # import pdb; pdb.set_trace()
-
-        # else:
-        #     x = tf.cast(inputs, tf.float32) / param.NORMALIZE_NUM
         x = tf.cast(inputs, tf.float32) / param.NORMALIZE_NUM
-        # tf.print(x)
-        # import pdb; pdb.set_trace()
 
         x = self.conv1(x)
         x = self.res_block1(x)
