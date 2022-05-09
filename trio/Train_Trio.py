@@ -271,20 +271,6 @@ def train_model_N1(args):
     train_shuffle_chunk_list, validate_shuffle_chunk_list = get_chunk_list(chunk_offset, train_data_size, chunk_size)
     # import pdb; pdb.set_trace()
 
-    # # for _1, _t = 10000, 143614
-    # _t = 10000
-    # _t = 33 # _2
-    # _t = 33 # _2
-    # table_dataset_list[0].root.position_matrix[_t].shape
-    # print(table_dataset_list[0].root.position[_t], table_dataset_list[0].root.alt_info[_t], table_dataset_list[0].root.label[_t])
-    # table_dataset_list[0].root.position[-1]
-    # _s = 1
-    # for _d in range(0, 89):
-    #     print(_d, table_dataset_list[0].root.position_matrix[_t][_d + _s * 89,:,:].reshape(-1)[:20])
-    # len(table_dataset_list[0].root.label)
-    # len(table_dataset_list[0].root.position)
-
-    # print(table_dataset_list[0].root.position[_t], table_dataset_list[0].root.alt_info[_t], table_dataset_list[0].root.label[_t])
 
     def DataGenerator(x, data_size, shuffle_chunk_list, train_flag=True):
 
@@ -460,25 +446,6 @@ def train_model_N1(args):
         model.load_weights(args.chkpnt_fn)
         logging.info("pretrained model at: %s" % (args.chkpnt_fn))
 
-    # import wandb
-    # from wandb.keras import WandbCallback
-    # wandb.login(key='43ff292c29b48569c32e92bbf82356581cc71cae')
-
-    # _train_name = "trio-" + ochk_prefix.split('/')[-2]
-    # #import datetime
-    # #log_dir = ochk_prefix  + "N" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    # #wandb.tensorboard.patch(root_logdir=log_dir)
-    #             #sync_tensorboard=False,
-    # wandb.init(project='clair3-trio', entity='junhao', name=_train_name,
-    #             config={
-    #               "learning_rate": learning_rate,
-    #               "epochs": max_epoch,
-    #               "batch_size": batch_size,
-    #               "model_s_type": "N1",
-    #               "output_tensor_shape": label_size,
-    #               "tar_model_type": tar_model_type,
-    #               "add_reverse_23": args.add_reverse_23,
-    #            })
 
     
     # # import pdb; pdb.set_trace()
