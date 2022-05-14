@@ -19,9 +19,11 @@ We trained the model while holding out chromosome 20 in training stages and pres
 
 We compared the new Guppy5 trained gainst [Clair3 v0.1-r11, r941_prom_sup_g5014](https://github.com/HKU-BAL/Clair3) and [PEPPER r0.8, ont_r9_guppy5_sup](https://github.com/kishwarshafin/pepper). 
 
-![](../images/clair3-trio_Guppy5_snp_indel_f1_score.png)
+<!-- ![](../images/clair3-trio_Guppy5_snp_indel_f1_score.png) -->
+<img src="../images/clair3-trio_Guppy5_snp_indel_f1_score.png" width = "600" alt="Clair3-Trio overall results">
 
-![](../images/clair3-trio_Guppy5_MCV.png)
+<!-- ![](../images/clair3-trio_Guppy5_MCV.png) -->
+<img src="../images/clair3-trio_Guppy5_MCV.png" width = "800" alt="Clair3-Trio overall results">
 
 Detailed results are in [this table](./guppy5_table.md).
 
