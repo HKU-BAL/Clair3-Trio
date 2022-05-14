@@ -67,8 +67,6 @@ print_help_messages()
 
 print_version()
 {
-    # VERSION='v0.1'
-    # echo "Clair3-Trio ${VERSION}"
     echo "Clair3-Trio $1"
     exit 0
 }
