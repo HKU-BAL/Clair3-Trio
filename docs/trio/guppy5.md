@@ -1,4 +1,4 @@
-# Guppy5 model 
+# Guppy5 model (under develop)
 
 You can use the Guppy5 model `c3t_hg002_r941_prom_sup_g5014` for Guppy6 data.
 
@@ -34,8 +34,8 @@ INPUT_DIR="[YOUR_INPUT_FOLDER]"            # e.g. /input
 REF=${_INPUT_DIR}/ref.fa                   # change your reference file name here
 OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"          # e.g. /output
 THREADS="[MAXIMUM_THREADS]"                # e.g. 8
-MODEL_C3="[Clair3 MODEL NAME]"         	   # e.g. ont
-MODEL_C3T="c3t_hg002_r941_prom_sup_g5014"  # Guppy5 data
+MODEL_C3="r941_prom_sup_g5014"         	   # Guppy5 Clair3 model
+MODEL_C3T="c3t_hg002_r941_prom_sup_g5014"  # Guppy5 Clair3-Trio model
 
 
 docker run -it \
