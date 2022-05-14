@@ -11,7 +11,7 @@ You can use the Guppy5 model `c3t_hg002_r941_prom_sup_g5014` for Guppy6 data.
 
 ---
 
-## About `r941_prom_sup_g5014`
+## About `c3t_hg002_r941_prom_sup_g5014`
 
 The Guppy5 data are trained on data same as in [Clair3](https://github.com/HKU-BAL/Clair3/blob/main/docs/guppy5_20220113.md) (basecalled three GIAB samples (HG002, 3, 4) with fast5 available from the Human Pangenome Reference Consortium (HPRC) using Guppy5 and the dna_r9.4.1_450bps_sup mode).
 
@@ -19,9 +19,9 @@ We trained the model while holding out chromosome 20 in training stages and pres
 
 We compared the new Guppy5 trained gainst [Clair3 v0.1-r11, r941_prom_sup_g5014](https://github.com/HKU-BAL/Clair3) and [PEPPER r0.8, ont_r9_guppy5_sup](https://github.com/kishwarshafin/pepper). 
 
-![](images/clair3-trio_Guppy5_snp_indel_f1_score.png)
+![](../images/clair3-trio_Guppy5_snp_indel_f1_score.png)
 
-![](images/clair3-trio_Guppy5_MCV.png)
+![](../images/clair3-trio_Guppy5_MCV.png)
 
 Detailed results are in [this table](./guppy5_table.md).
 
@@ -66,9 +66,11 @@ Check [Usage](https://github.com/HKU-BAL/Clair3-Trio#Usage) for more options.
 [http://www.bio8.cs.hku.hk/guppy5_data/](http://www.bio8.cs.hku.hk/guppy5_data/)
 
 ### FAST5s
-| Sample |   Reference   | Aligner  | Coverage |                   Basecaller                   | Training | Testing |                             link                             |
-| :----: | :-----------: | :------: | :------: | :--------------------------------------------: | -------- | ------- | :----------------------------------------------------------: |
+| Sample |   Reference   | Aligner  | Coverage |                   Basecaller                   |                              link                             |
+| :----: | :-----------: | :------: | :------: | :--------------------------------------------: | :----------------------------------------------------------: |
 | HG002  | GRCh38_no_alt | minimap2 |  117.4   | Guppy v5.0.14 (dna_r9.4.1_450bps_sup_prom.cfg) | [link](https://s3-us-west-2.amazonaws.com/human-pangenomics/index.html?prefix=NHGRI_UCSC_panel/HG002/nanopore/) |
 | HG003  | GRCh38_no_alt | minimap2 |   78.9   | Guppy v5.0.14 (dna_r9.4.1_450bps_hac_prom.cfg) | [link](https://s3-us-west-2.amazonaws.com/human-pangenomics/index.html?prefix=NHGRI_UCSC_panel/HG003/nanopore/) |
 | HG004  | GRCh38_no_alt | minimap2 |   79.0   | Guppy v5.0.14 (dna_r9.4.1_450bps_sup_prom.cfg) | [link](https://s3-us-west-2.amazonaws.com/human-pangenomics/index.html?prefix=NHGRI_UCSC_panel/HG004/nanopore/) |
+
+We trained the model while holding out chromosome 20 in training stages and preserving it for testing.
 
