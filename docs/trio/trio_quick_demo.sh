@@ -1,11 +1,43 @@
 #!/bin/bash
 
 # please update the files path to run this script
-_INPUT_DIR=/autofs/bal31/jhsu/home/projects/git/c3t_server_date/demo_s
-_OUTPUT_DIR=/autofs/bal31/jhsu/home/projects/git/c3t_server_date/demo_s_out
-_MODEL_DIR_C3="/autofs/bal31/jhsu/home/projects/git/clair3-trio/models/ont"
-_MODEL_DIR_C3T="/autofs/bal31/jhsu/home/projects/git/c3t_server_date/clair3_trio_models/c3t_hg002_g422"
+_INPUT_DIR=/autofs/bal31/jhsu/home/projects/git/c3t_server_date/demo_docker
+_OUTPUT_DIR=${_INPUT_DIR}/out
 
+
+#_INPUT_DIR="${HOME}/clair3_trio_quick_demo"         # note that Absolute path is needed
+#_OUTPUT_DIR="${_INPUT_DIR}/output"
+
+_TAR_URL="http://www.bio8.cs.hku.hk/clair3_trio/demo/"
+
+mkdir -p ${_INPUT_DIR}
+mkdir -p ${_OUTPUT_DIR}
+
+# Download quick demo data
+# GRCh38_no_alt reference
+wget -P ${_INPUT_DIR} ${_TAR_URL}/GRCh38_no_alt_chr20.fa
+wget -P ${_INPUT_DIR} ${_TAR_URL}/GRCh38_no_alt_chr20.fa.fai
+# Child's BAM chr20:100000-300000
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG002.bam
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG002.bam.bai
+# Parent1's BAM chr20:100000-300000
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG003.bam
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG003.bam.bai
+# Parent2's BAM chr20:100000-300000
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG004.bam
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG004.bam.bai
+# GIAB Truth VCF and BED for child
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG002_GRCh38_20_v4.2.1_benchmark.vcf.gz
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG002_GRCh38_20_v4.2.1_benchmark.vcf.gz.tbi
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG002_GRCh38_20_v4.2.1_benchmark_noinconsistent.bed
+# GIAB Truth VCF and BED for parent1
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG003_GRCh38_20_v4.2.1_benchmark.vcf.gz
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG003_GRCh38_20_v4.2.1_benchmark.vcf.gz.tbi
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG003_GRCh38_20_v4.2.1_benchmark_noinconsistent.bed
+# GIAB Truth VCF and BED for parent2
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG004_GRCh38_20_v4.2.1_benchmark.vcf.gz
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG004_GRCh38_20_v4.2.1_benchmark.vcf.gz.tbi
+wget -P ${_INPUT_DIR} ${_TAR_URL}/HG004_GRCh38_20_v4.2.1_benchmark_noinconsistent.bed
 
 _BAM_C=${_INPUT_DIR}/HG002.bam        
 _BAM_P1=${_INPUT_DIR}/HG003.bam          
@@ -15,36 +47,41 @@ _SAMPLE_P1="HG003"
 _SAMPLE_P2="HG004"
 _REF=${_INPUT_DIR}/GRCh38_no_alt_chr20.fa
 _THREADS="36"                
-_CONTIGS="chr20"
 
+_CONTIGS="chr20"
 START_POS=100000
 END_POS=300000
 echo -e "${_CONTIGS}\t${START_POS}\t${END_POS}" > ${_INPUT_DIR}/quick_demo.bed
 
-# run Clair3-Trio
-./run_clair3_trio.sh \
+
+MODEL_C3='ont'
+MODEL_C3T='c3t_hg002_g422'
+
+docker run -it \
+  -v ${_INPUT_DIR}:${_INPUT_DIR} \
+  -v ${_OUTPUT_DIR}:${_OUTPUT_DIR} \
+  hkubal/clair3-trio:latest \
+  /opt/bin/run_clair3_trio.sh \
+  --ref_fn=${_REF} \
   --bam_fn_c=${_BAM_C} \
   --bam_fn_p1=${_BAM_P1} \
   --bam_fn_p2=${_BAM_P2} \
-  --output=${_OUTPUT_DIR} \
-  --ref_fn=${_REF} \
-  --threads=${_THREADS} \
-  --model_path_clair3="${_MODEL_DIR_C3}" \
-  --model_path_clair3_trio="${_MODEL_DIR_C3T}" \
-  --bed_fn=${_INPUT_DIR}/quick_demo.bed \
   --sample_name_c=${_SAMPLE_C} \
   --sample_name_p1=${_SAMPLE_P1} \
-  --sample_name_p2=${_SAMPLE_P2}
-   
+  --sample_name_p2=${_SAMPLE_P2} \
+  --threads=${_THREADS} \
+  --bed_fn=${_INPUT_DIR}/quick_demo.bed \
+  --model_path_clair3="/opt/models/clair3_models/${MODEL_C3}" \
+  --model_path_clair3_trio="/opt/models/clair3_trio_models/${MODEL_C3T}" \
+  --output=${_OUTPUT_DIR}
 
-# benchmarking
 
-BASELINE_VCF_FILE_PATH_C="HG002_GRCh38_20.v4.2.1_benchmark.vcf.gz"
-BASELINE_BED_FILE_PATH_C="HG002_GRCh38_20.v4.2.1_benchmark_noinconsistent.bed"
-BASELINE_VCF_FILE_PATH_P1="HG003_GRCh38_20.v4.2.1_benchmark.vcf.gz"
-BASELINE_BED_FILE_PATH_P1="HG003_GRCh38_20.v4.2.1_benchmark_noinconsistent.bed"
-BASELINE_VCF_FILE_PATH_P2="HG004_GRCh38_20.v4.2.1_benchmark.vcf.gz"
-BASELINE_BED_FILE_PATH_P2="HG004_GRCh38_20.v4.2.1_benchmark_noinconsistent.bed"
+BASELINE_VCF_FILE_PATH_C="HG002_GRCh38_20_v4.2.1_benchmark.vcf.gz"
+BASELINE_BED_FILE_PATH_C="HG002_GRCh38_20_v4.2.1_benchmark_noinconsistent.bed"
+BASELINE_VCF_FILE_PATH_P1="HG003_GRCh38_20_v4.2.1_benchmark.vcf.gz"
+BASELINE_BED_FILE_PATH_P1="HG003_GRCh38_20_v4.2.1_benchmark_noinconsistent.bed"
+BASELINE_VCF_FILE_PATH_P2="HG004_GRCh38_20_v4.2.1_benchmark.vcf.gz"
+BASELINE_BED_FILE_PATH_P2="HG004_GRCh38_20_v4.2.1_benchmark_noinconsistent.bed"
 OUTPUT_VCF_FILE_C="HG002.vcf.gz"
 OUTPUT_VCF_FILE_P1="HG003.vcf.gz"
 OUTPUT_VCF_FILE_P2="HG004.vcf.gz"
@@ -114,7 +151,6 @@ ${_OUTPUT_DIR}/${OUTPUT_VCF_FILE_PATH} \
 --pass-only
 
 
-# Calculate number of Mendelian violation and de novo variants
 
 mkdir -p ${_OUTPUT_DIR}/trio
 M_VCF=${_OUTPUT_DIR}/trio/${_SAMPLE_C}_TRIO.vcf.gz
@@ -188,6 +224,9 @@ docker run \
 staphb/bcftools:1.12 bcftools index ${_TRIO_GIAB_MERGED}
 
 # get de nove variants
-python clair3.py Check_de_novo --call_vcf ${M_VCF} --ctgName ${_CONTIGS} --bed_fn ${_TRIO_BED_PATH} --true_vcf ${_TRIO_GIAB_MERGED} |& tee ${_OUTPUT_DIR}/trio/denovo_rst
-
-
+docker run -it \
+  -v ${_INPUT_DIR}:${_INPUT_DIR} \
+  -v ${_OUTPUT_DIR}:${_OUTPUT_DIR} \
+  hkubal/clair3-trio:latest \
+  python /opt/bin/clair3.py \
+  Check_de_novo --call_vcf ${M_VCF} --ctgName ${_CONTIGS} --bed_fn ${_TRIO_BED_PATH} --true_vcf ${_TRIO_GIAB_MERGED} 

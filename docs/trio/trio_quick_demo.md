@@ -80,6 +80,7 @@ docker run -it \
   --sample_name_p1=${_SAMPLE_P1} \
   --sample_name_p2=${_SAMPLE_P2} \
   --threads=${_THREADS} \
+  --bed_fn=${_INPUT_DIR}/quick_demo.bed \
   --model_path_clair3="/opt/models/clair3_models/${MODEL_C3}" \
   --model_path_clair3_trio="/opt/models/clair3_trio_models/${MODEL_C3T}" \
   --output=${_OUTPUT_DIR}
