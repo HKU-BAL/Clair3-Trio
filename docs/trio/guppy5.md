@@ -1,4 +1,4 @@
-# Guppy5 model (under develop)
+# Guppy5 model
 
 You can use the Guppy5 model `c3t_hg002_r941_prom_sup_g5014` for Guppy6 data.
 
