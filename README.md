@@ -22,6 +22,8 @@ A preprint of Clair3-Trio is available in [bioRxiv](https://www.biorxiv.org/cont
 * [Latest Updates](#latest-updates)
 * [What's New in Clair3-Trio](#whats-new-in-clair3-trio)
 * [Pre-trained Models](#pre-trained-models)
+  + [Guppy 5,6](docs/trio/guppy5.md)
+  + [Guppy 4](#pre-trained-models)
 * [Quick Demo](#quick-demo)
 * [Installation](#installation)
   + [Option 1. Docker pre-built image](#option-1-docker-pre-built-image)
@@ -38,6 +40,7 @@ A preprint of Clair3-Trio is available in [bioRxiv](https://www.biorxiv.org/cont
 
 ## Latest Updates
 
+*v0.2 (May 15, 2022)*:  A guppy5 model for Clair3-Trio is available now. Check [this page](doc/trio/guppy5.md) for more infromatin about the Guppy5 model.
 *v0.1 (April 22, 2022)*: Initial release.
 
 ---
@@ -59,6 +62,17 @@ Download models from [here](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_mo
 |           Model name           |  Platform   |    Training samples         |   Date   |  Basecaller  | File    |          Link            |
 | :----------------------------: | :---------: | :----------------------------------------------------------: | -------------------------------- | :--------------------------: | ----------------| :-------------------: |
 |    c3t_hg002_g422 |     ONT     |                         HG002,3,4      |             20220422 | Guppy4 hac | c3t_hg002_g422.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/c3t_hg002_g422.tar.gz) |
+|    c3t_hg002_r941_prom_sup_g5014 |     ONT     |                         HG002,3,4      |             20220514 | Guppy5 sup | c3t_hg002_r941_prom_sup_g5014.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/c3t_hg002_r941_prom_sup_g5014.tar.gz) |
+
+When using model, please make sure to use a coreponing Clair3 model for Pileup calling. Check [here](https://github.com/HKU-BAL/Clair3/edit/main/README.md#pre-trained-models) for more information about Clair3 pretrained model.
+
+## Clair3's Pre-trained Models
+
+|           Model name           |  Platform   |                       Training samples                       | Date   |  Basecaller  | File                                |                             Link                             |
+| :----------------------------: | :---------: | :----------------------------------------------------------: | -------------------------------- | :--------------------------: | :------: | :----------: | ----------------------------------- | :----------------------------------------------------------: |
+|      r941_prom_sup_g5014       |     ONT     |                    HG002,4,5 (Guppy5_sup)                    | 20220112 |  Guppy5 sup  | r941_prom_sup_g5014.tar.gz          | [Download](http://www.bio8.cs.hku.hk/clair3/clair3_models/r941_prom_sup_g5014.tar.gz) |
+|    r941_prom_hac_g360+g422     |     ONT     |                         HG001,2,4,5                          | 20210517 | Guppy3,4 hac | r941_prom_hac_g360+g422.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3/clair3_models/r941_prom_hac_g360+g422.tar.gz) |
+
 
 ----
 
@@ -81,8 +95,8 @@ INPUT_DIR="[YOUR_INPUT_FOLDER]"            # e.g. /input
 REF=${_INPUT_DIR}/ref.fa                   # change your reference file name here
 OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"          # e.g. /output
 THREADS="[MAXIMUM_THREADS]"                # e.g. 8
-MODEL_C3="[Clair3 MODEL NAME]"         	   # e.g. ont
-MODEL_C3T="[Clair3-Trio MODEL NAME]"       # e.g. c3t_hg002_g422
+MODEL_C3="[Clair3 MODEL NAME]"         	   # e.g. ont or r941_prom_hac_g360+g422 for Guppy4 data, r941_prom_sup_g5014 for Guppy5 data
+MODEL_C3T="[Clair3-Trio MODEL NAME]"       # e.g. c3t_hg002_g422 for Guppy4 data, c3t_hg002_r941_prom_sup_g5014 for Guppy5 data
 
 
 docker run -it \
@@ -144,7 +158,7 @@ cd Clair3-Trio
 # download Clair3's pre-trained models
 mkdir -p models/clair3_models
 wget http://www.bio8.cs.hku.hk/clair3/clair3_models/clair3_models.tar.gz 
-tar -zxvf clair3_models.tar.gz -C ./models/cliar3_models
+tar -zxvf clair3_models.tar.gz -C ./models/clair3_models
 
 
 # download Clair3-Trio's pre-trained models

@@ -295,9 +295,9 @@ time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_3_callvarbam
 --sampleName_c ${SAMPLE_C} \
 --sampleName_p1 ${SAMPLE_P1} \
 --sampleName_p2 ${SAMPLE_P2} \
---call_fn_c ${CALL_PATH}/trio_${SAMPLE_C}_{1/}.vcf \
---call_fn_p1 ${CALL_PATH}/trio_${SAMPLE_P1}_{1/}.vcf \
---call_fn_p2 ${CALL_PATH}/trio_${SAMPLE_P2}_{1/}.vcf \
+--call_fn_c ${CALL_PATH}/${SAMPLE_C}/trio_${SAMPLE_C}_{1/}.vcf \
+--call_fn_p1 ${CALL_PATH}/${SAMPLE_P1}/trio_${SAMPLE_P1}_{1/}.vcf \
+--call_fn_p2 ${CALL_PATH}/${SAMPLE_P2}/trio_${SAMPLE_P2}_{1/}.vcf \
 --use_gpu ${use_gpu} \
 --ref_fn ${REFERENCE_FILE_PATH} \
 --ctgName {1/.} \
@@ -309,7 +309,7 @@ time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_3_callvarbam
 
 ${PARALLEL}  -j${THREADS} \
 "${PYPY} ${CLAIR3_TRIO} SortVcf_Trio \
-    --input_dir ${CALL_PATH} \
+    --input_dir ${CALL_PATH}/{1} \
     --vcf_fn_prefix "trio_{1}" \
     --output_fn ${OUTPUT_FOLDER}/{1}.vcf \
     --sampleName {1} \

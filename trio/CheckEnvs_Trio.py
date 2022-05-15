@@ -237,9 +237,10 @@ def CheckEnvs(args):
 
 
     pileup_output_path = folder_path_from(os.path.join(tmp_file_path, 'pileup_output'), create_not_found=True)
-    # folder_path_from(os.path.join(tmp_file_path, 'tensor_can'), create_not_found=True)
-    # folder_path_from(os.path.join(tmp_file_path, 'alt_info'), create_not_found=True)
     trio_output_path = folder_path_from(os.path.join(tmp_file_path, 'trio_output'), create_not_found=True)
+    folder_path_from(os.path.join(trio_output_path, args.sampleName_c), create_not_found=True)
+    folder_path_from(os.path.join(trio_output_path, args.sampleName_p1), create_not_found=True)
+    folder_path_from(os.path.join(trio_output_path, args.sampleName_p2), create_not_found=True)
     folder_path_from(os.path.join(trio_output_path, 'candidate_bed'), create_not_found=True)
 
 

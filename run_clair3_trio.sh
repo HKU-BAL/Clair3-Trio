@@ -5,7 +5,7 @@ Usage="Usage: ./${SCRIPT_NAME} --bam_fn_c=BAM --bam_fn_p1=BAM --bam_fn_p2=BAM --
 
 
 # ENTRANCE SCRIPT FOR CLAIR3-TRIO, SETTING VARIABLE AND CALL TRIO
-VERSION='v0.1'
+VERSION='v0.2'
 
 set -e
 #./run_clair3_trio.sh --bam_fn_c=child_bam --bam_fn_p1=parent1 --bam_fn_p2=parent2 -f ref.fasta -t 32 -o tmp -p --model_path_clair3=model_path --model_path_clair3_trio=model_path
