@@ -40,7 +40,7 @@ A preprint of Clair3-Trio is available in [bioRxiv](https://www.biorxiv.org/cont
 
 ## Latest Updates
 
-*v0.2 (May 15, 2022)*:  A guppy5 model for Clair3-Trio is available now. Check [this page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/guppy5.md) for more infromatin about the Guppy5 model.
+*v0.2 (May 15, 2022)*:  A guppy5 model for Clair3-Trio is available now. Check [this page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/guppy5.md) for more information about the Guppy5 model.
 
 *v0.1 (April 22, 2022)*: Initial release.
 
