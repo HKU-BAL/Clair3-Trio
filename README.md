@@ -98,8 +98,8 @@ INPUT_DIR="[YOUR_INPUT_FOLDER]"            # e.g. /input
 REF=${_INPUT_DIR}/ref.fa                   # change your reference file name here
 OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"          # e.g. /output
 THREADS="[MAXIMUM_THREADS]"                # e.g. 8
-MODEL_C3="[Clair3 MODEL NAME]"         	   # e.g. ont or r941_prom_hac_g360+g422 for Guppy4 data, r941_prom_sup_g5014 for Guppy5 data
-MODEL_C3T="[Clair3-Trio MODEL NAME]"       # e.g. c3t_hg002_g422 for Guppy4 data, c3t_hg002_r941_prom_sup_g5014 for Guppy5 data
+MODEL_C3="[Clair3 MODEL NAME]"         	   # e.g. Clair3 model, r941_prom_hac_g360+g422 for Guppy4 data, r941_prom_sup_g5014 for Guppy5 data
+MODEL_C3T="[Clair3-Trio MODEL NAME]"       # e.g. Clair3-Trio model, c3t_hg002_g422 for Guppy4 data, c3t_hg002_r941_prom_sup_g5014 for Guppy5 data
 
 
 docker run -it \
