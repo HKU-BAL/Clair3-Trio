@@ -2,6 +2,14 @@
 
 This document shows how to train and fine-tune a deep learning model for Clair3-trio trio calling. For training a model for pileup calling, please check [here](../pileup_training.md). The training materials are grouped according to sample, coverage, and chromosome. The groups are converted into tensor binaries. The binaries are much space-efficient and easier to process. As required, multiples tensor binaries can be used together for model training and fine-tuning. 
 
+We provided a step by step scripts to train a Clair3-Trio with the example of data from HG002 trio, please check it if needed.
+- [0_generate_trio_bed.sh](0_generate_trio_bed.sh)
+- [1_run_RU.sh](1_run_RU.sh)
+- [2_genreate_downsample_phased_bam.sh](2_genreate_downsample_phased_bam.sh)
+- [3_generate_downsample_pileup.sh](3_generate_downsample_pileup.sh)
+- [4_create_tensors.sh](4_create_tensors.sh)
+- [5_train.sh](5_train.sh)
+
 
 ---
 
