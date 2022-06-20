@@ -32,8 +32,8 @@ A preprint of Clair3-Trio is available in [bioRxiv](https://www.biorxiv.org/cont
   + [Option 4. Docker Dockerfile](#option-4-docker-dockerfile)
 * [Usage](#usage)
 * [Folder Structure and Submodule Descriptions](#folder-structure-and-submodule-descriptions)
-* [Training Data](docs/trio/training_data.md)
 * [Clair3-Trio Model Training](docs/trio/trio_training.md)
+* [Training Data](docs/trio/training_data.md)
 * [Analysis Results](http://www.bio8.cs.hku.hk/clair3_trio/analysis_result/)
 
 ----
@@ -333,9 +333,6 @@ docker run -it hkubal/clair3-trio:latest /opt/bin/run_clair3_trio.sh --help
   --ref_pct_full=FLOAT      EXPERIMENTAL: Specify an expected percentage of low quality 0/0 variants called in the pileup mode for full-alignment mode calling, default: 0.3 for ilmn and hifi, 0.1 for ont.
   --var_pct_phasing=FLOAT   EXPERIMENTAL: Specify an expected percentage of high quality 0/1 variants used in Clair3 WhatsHap phasing, default: 0.8 for ont guppy5 and 0.7 for other platforms.
   
-  --fast_mode               [XXX] EXPERIMENTAL: Skip variant candidates with AF <= 0.15, default: disable.
-  --pileup_only             [XXX] Use the pileup model only when calling, default: disable.
-  --gvcf                    [XXX] Enable GVCF output, default: disable.
   --enable_phasing          [XXX] Output phased variants using whatshap, default: disable.
   --remove_intermediate_dir [XXX] Remove intermediate directory, including intermediate phased BAM, pileup and full-alignment results. default: disable.
   --haploid_precise         [XXX] EXPERIMENTAL: Enable haploid calling mode. Only 1/1 is considered as a variant, default: disable.
