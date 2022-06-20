@@ -40,7 +40,7 @@ A preprint of Clair3-Trio is available in [bioRxiv](https://www.biorxiv.org/cont
 ----
 
 ## Latest Updates
-*v0.3 (June 20, 2022)*: Optimized Clair3-Trio speed, the runtime of Clair3-Trio to call variants from the whole genome is about 2.2 times of calling a single sample form Clair3 (v0.1-r10).
+*v0.3 (June 20, 2022)*: Optimized Clair3-Trio speed, the runtime of Clair3-Trio to call variants from the whole genome is about 2.4 times of calling a single sample form Clair3 (v0.1-r10).
 
 *v0.2 (May 15, 2022)*:  A guppy5 model for Clair3-Trio is available now. Check [this page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/guppy5.md) for more information about the Guppy5 model.
 
@@ -307,7 +307,7 @@ docker run -it hkubal/clair3-trio:latest /opt/bin/run_clair3_trio.sh --help
 
  **Caution**:  Use `=value` for optional parameters, e.g., `--bed_fn=fn.bed` instead of `--bed_fn fn.bed`
  
- **[XXX]**: Parameters to be updated and not supported at this moment. 
+ **[X]**: Not supported parameters at this moment. 
 
 ```bash
   --sample_name_c=STR       Define the sample name for Child to be shown in the VCF file.[Child].
@@ -335,13 +335,13 @@ docker run -it hkubal/clair3-trio:latest /opt/bin/run_clair3_trio.sh --help
   --ref_pct_full=FLOAT      EXPERIMENTAL: Specify an expected percentage of low quality 0/0 variants called in the pileup mode for full-alignment mode calling, default: 0.3 for ilmn and hifi, 0.1 for ont.
   --var_pct_phasing=FLOAT   EXPERIMENTAL: Specify an expected percentage of high quality 0/1 variants used in Clair3 WhatsHap phasing, default: 0.8 for ont guppy5 and 0.7 for other platforms.
   
-  --enable_phasing          [XXX] Output phased variants using whatshap, default: disable.
-  --remove_intermediate_dir [XXX] Remove intermediate directory, including intermediate phased BAM, pileup and full-alignment results. default: disable.
-  --haploid_precise         [XXX] EXPERIMENTAL: Enable haploid calling mode. Only 1/1 is considered as a variant, default: disable.
-  --haploid_sensitive       [XXX] EXPERIMENTAL: Enable haploid calling mode. 0/1 and 1/1 are considered as a variant, default: disable.
-  --no_phasing_for_fa       [XXX] EXPERIMENTAL: Call variants without whatshap phasing in full alignment calling, default: disable.
-  --call_snp_only           [XXX] EXPERIMENTAL: Call candidates pass SNP minimum AF only, ignore Indel candidates, default: disable.
-  --enable_long_indel       [XXX] EXPERIMENTAL: Call long Indel variants(>50 bp), default: disable.
+  --enable_phasing          [X] Output phased variants using whatshap, default: disable.
+  --remove_intermediate_dir [X] Remove intermediate directory, including intermediate phased BAM, pileup and full-alignment results. default: disable.
+  --haploid_precise         [X] EXPERIMENTAL: Enable haploid calling mode. Only 1/1 is considered as a variant, default: disable.
+  --haploid_sensitive       [X] EXPERIMENTAL: Enable haploid calling mode. 0/1 and 1/1 are considered as a variant, default: disable.
+  --no_phasing_for_fa       [X] EXPERIMENTAL: Call variants without whatshap phasing in full alignment calling, default: disable.
+  --call_snp_only           [X] EXPERIMENTAL: Call candidates pass SNP minimum AF only, ignore Indel candidates, default: disable.
+  --enable_long_indel       [X] EXPERIMENTAL: Call long Indel variants(>50 bp), default: disable.
 ```
 
 
