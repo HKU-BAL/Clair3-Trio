@@ -1,7 +1,8 @@
 # Clair3-Trio: variant calling in trio using Nanopore long-reads
 
 
-[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)  
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)  [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/clair3-trio/README.html)
+
 
 Contact: Ruibang Luo, Junhao Su  
 Email: rbluo@cs.hku.hk, jhsu@cs.hku.hk  
@@ -39,6 +40,7 @@ A preprint of Clair3-Trio is available in [bioRxiv](https://www.biorxiv.org/cont
 ----
 
 ## Latest Updates
+*v0.3 (June 20, 2022)*: Optimized Clair3-Trio speed, the runtime of Clair3-Trio to call variants from the whole genome is about 2.2 times of calling a single sample form Clair3 (v0.1-r10).
 
 *v0.2 (May 15, 2022)*:  A guppy5 model for Clair3-Trio is available now. Check [this page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/guppy5.md) for more information about the Guppy5 model.
 
