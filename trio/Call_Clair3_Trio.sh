@@ -273,8 +273,9 @@ time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_2_fiter_hete
 --alt_fn_p2 ${INPUT_PILEUP_VCF[2]} \
 --candidate_bed ${CANDIDATE_BED_PATH} \
 --sampleName ${TRIO_N} \
---ref_pct_full 0.2 \
+--ref_pct_full 0.03 \
 --var_pct_full 1.0 \
+--ref_var_max_ratio 1.2 \
 --ctgName {1}" ::: ${CHR[@]} |& tee ${LOG_PATH}/2_FHSP.log
 
 #--chunk_num ${chunk_num} \
@@ -304,9 +305,9 @@ time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_3_callvarbam
 --samtools ${SAMTOOLS} \
 --platform ${PLATFORM} \
 --full_aln_regions {1} \
---showRef \
 --phasing_info_in_bam" :::: ${CANDIDATE_BED_PATH}/FULL_ALN_FILES |& tee ${LOG_PATH}/3_CV.log
 
+#--showRef \
 ${PARALLEL}  -j${THREADS} \
 "${PYPY} ${CLAIR3_TRIO} SortVcf_Trio \
     --input_dir ${CALL_PATH}/{1} \
