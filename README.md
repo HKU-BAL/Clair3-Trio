@@ -13,7 +13,7 @@ Email: rbluo@cs.hku.hk, jhsu@cs.hku.hk
 
 Accurate identification of genetic variants from family child-mother-father trio sequencing data is important in genomics. However, state-of-the-art approaches treat variant calling from trios as three independent tasks, which limits their calling accuracy for Nanopore long-read sequencing data. For better trio variant calling, we introduce Clair3-Trio, the first variant caller tailored for family trio data from Nanopore long-reads. Clair3-Trio employs a Trio-to-Trio deep neural network model, which allows it to input the trio sequencing information and output all of the trio’s predicted variants within a single model to improve variant calling. We also present MCVLoss, a novel loss function tailor-made for variant calling in trios, leveraging the explicit encoding of the Mendelian inheritance. Clair3-Trio showed comprehensive improvement in experiments. It predicted far fewer Mendelian inheritance violation variations than current state-of-the-art methods. 
 
-A preprint of Clair3-Trio is available in [bioRxiv](https://www.biorxiv.org/content/10.1101/2022.05.03.490460v1).
+Detailed descriptions of the methodology and results for Clair3-Trio are available in [this paper](https://academic.oup.com/bib/advance-article/doi/10.1093/bib/bbac301/6645484).
 
 ----
 
@@ -36,7 +36,7 @@ A preprint of Clair3-Trio is available in [bioRxiv](https://www.biorxiv.org/cont
 * [Clair3-Trio Model Training](docs/trio/trio_training.md)
 * [Training Data](docs/trio/training_data.md)
 * [Analysis Results](http://www.bio8.cs.hku.hk/clair3_trio/analysis_result/)
-
+* [Publication](#publication)
 ----
 
 ## Latest Updates
@@ -387,4 +387,9 @@ Clair3-Trio trained its trio models using four GIAB samples (HG002, HG003 and HG
 
 
 ----
+
+## Publication
+
+- Zhenxian Zheng, Shumin Li, Junhao Su, Amy Wing-Sze Leung, Tak-Wah Lam, Ruibang Luo, Symphonizing pileup and full-alignment for deep learning-based long-read variant calling, bioRxiv, 2021; 2021.12.29.474431, [https://doi.org/10.1101/2021.12.29.474431](https://doi.org/10.1101/2021.12.29.474431)
+- Junhao Su, Zhenxian Zheng, Syed Shakeel Ahmed, Tak-Wah Lam, Ruibang Luo, Clair3-trio: high-performance Nanopore long-read variant calling in family trios with trio-to-trio deep neural networks, Briefings in Bioinformatics, 2022; bbac301, [https://doi.org/10.1093/bib/bbac301](https://doi.org/10.1093/bib/bbac301)
 
