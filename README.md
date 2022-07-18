@@ -390,6 +390,5 @@ Clair3-Trio trained its trio models using four GIAB samples (HG002, HG003 and HG
 
 ## Publication
 
-- Zhenxian Zheng, Shumin Li, Junhao Su, Amy Wing-Sze Leung, Tak-Wah Lam, Ruibang Luo, Symphonizing pileup and full-alignment for deep learning-based long-read variant calling, bioRxiv, 2021; 2021.12.29.474431, [https://doi.org/10.1101/2021.12.29.474431](https://doi.org/10.1101/2021.12.29.474431)
-- Junhao Su, Zhenxian Zheng, Syed Shakeel Ahmed, Tak-Wah Lam, Ruibang Luo, Clair3-trio: high-performance Nanopore long-read variant calling in family trios with trio-to-trio deep neural networks, Briefings in Bioinformatics, 2022; bbac301, [https://doi.org/10.1093/bib/bbac301](https://doi.org/10.1093/bib/bbac301)
-
+- Zhenxian Zheng, Shumin Li, Junhao Su, Amy Wing-Sze Leung, Tak-Wah Lam, Ruibang Luo, Symphonizing pileup and full-alignment for deep learning-based long-read variant calling, bioRxiv, 2021; 2021.12.29.474431
+- Junhao Su, Zhenxian Zheng, Syed Shakeel Ahmed, Tak-Wah Lam, Ruibang Luo, Clair3-trio: high-performance Nanopore long-read variant calling in family trios with trio-to-trio deep neural networks, Briefings in Bioinformatics, 2022; bbac301
