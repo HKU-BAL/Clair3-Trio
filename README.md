@@ -349,7 +349,7 @@ docker run -it hkubal/clair3-trio:latest /opt/bin/run_clair3_trio.sh --help
 
 ## Folder Structure and Submodule Descriptions
 
-Clair3 shares the same folder structure as Clair3, except for an additional folder `trio`. For descriptions for Clair3 folder, please check [Clair3's Descriptions](https://github.com/HKU-BAL/Clair3#folder-structure-and-submodule-descriptions) for more inforamtion.
+Clair3-Trio shares the same folder structure as Clair3, except for an additional folder `trio`. For descriptions for Clair3 folder, please check [Clair3's Descriptions](https://github.com/HKU-BAL/Clair3#folder-structure-and-submodule-descriptions) for more inforamtion.
 
 Submodules in __`clair3/`__ are for variant calling and model training. Submodules in __`preprocess`__ are for data preparation.
 
