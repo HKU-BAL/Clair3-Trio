@@ -46,6 +46,7 @@ tri_scripts_folder = [
     "CallVarBam_Trio",
     "CheckEnvs_Trio",
     'MergeTensorsBam_Trio',
+    'MergeBin_Trio',
     'SortVcf_Trio',
 ]
 

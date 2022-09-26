@@ -1,4 +1,4 @@
-# Train a model for Clair3-trio trio calling (revision 1)
+# Train a model for Clair3-trio trio calling (v2)
 
 This document shows how to train and fine-tune a deep learning model for Clair3-trio trio calling. For training a model for pileup calling, please check [here](../pileup_training.md). The training materials are grouped according to sample, coverage, and chromosome. The groups are converted into tensor binaries. The binaries are much space-efficient and easier to process. As required, multiples tensor binaries can be used together for model training and fine-tuning. 
 
@@ -303,7 +303,7 @@ time ${PARALLEL} --joblog ${LOG_PATH}/S_tensor2Bin${_LOG_SUF}.log -j${THREADS} \
 ALL_BINS_FOLDER_PATH="${BINS_FOLDER_PATH}/../all_bins"
 mkdir -p ${ALL_BINS_FOLDER_PATH}
 ${PARALLEL} --joblog ${LOG_PATH}/S_mergeBin${_LOG_SUF}.log -j${THREADS} \
-echo "${PYTHON3} ${CLAIR3_TRIO} MergeBin_Trio \
+"${PYTHON3} ${CLAIR3_TRIO} MergeBin_Trio \
     ${BINS_FOLDER_PATH}/${TRIO_N}_{2}_{1}_* \
     --out_fn ${ALL_BINS_FOLDER_PATH}/bin_{2}_{1}" ::: ${CHR[@]} ::: ${DEPTH_S[@]}
 ```
