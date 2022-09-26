@@ -6,9 +6,9 @@ Usage="Usage: ./${SCRIPT_NAME} --bam_fn_c=BAM --bam_fn_p1=BAM --bam_fn_p2=BAM --
 set -e
 ARGS=`getopt -o f:t:p:o:r::c::s::h::g \
 -l bam_fn_c:,bam_fn_p1:,bam_fn_p2:,ref_fn:,threads:,model_path_clair3:,model_path_clair3_trio:,platform:,output:,\
-bed_fn::,vcf_fn::,ctg_name::,sample_name_c::,sample_name_p1::,sample_name_p2::,help::,qual::,samtools::,python::,pypy::,parallel::,whatshap::,chunk_num::,chunk_size::,var_pct_full::,\
+bed_fn::,vcf_fn::,ctg_name::,sample_name_c::,sample_name_p1::,sample_name_p2::,help::,qual::,samtools::,python::,pypy::,parallel::,whatshap::,chunk_num::,chunk_size::,var_pct_full::,var_pct_phasing::,\
 snp_min_af::,indel_min_af::,ref_pct_full::,pileup_only::,pileup_phasing::,fast_mode::,gvcf::,print_ref_calls::,haploid_precise::,haploid_sensitive::,include_all_ctgs::,\
-no_phasing_for_fa::,pileup_model_prefix::,trio_model_prefix::,call_snp_only:: -n 'run_clair3_trio.sh' -- "$@"`
+no_phasing_for_fa::,pileup_model_prefix::,trio_model_prefix::,call_snp_only::,remove_intermediate_dir::,enable_phasing::,enable_long_indel:: -n 'run_clair3_trio.sh' -- "$@"`
 
 if [ $? != 0 ] ; then echo"No input. Terminating...">&2 ; exit 1 ; fi
 eval set -- "${ARGS}"
@@ -46,6 +46,9 @@ INCLUDE_ALL_CTGS=False
 NO_PHASING=False
 PILEUP_PREFIX="pileup"
 TRIO_PREFIX="trio"
+RM_TMP_DIR=False
+ENABLE_PHASING=False
+ENABLE_LONG_INDEL=False
 
 
 
@@ -76,6 +79,7 @@ while true; do
     --whatshap ) WHATSHAP="$2"; shift 2 ;;
     --var_pct_full ) PRO="$2"; shift 2 ;;
     --ref_pct_full ) REF_PRO="$2"; shift 2 ;;
+    --var_pct_phasing ) PHASING_PCT="$2"; shift 2 ;;
     --pileup_only ) PILEUP_ONLY="$2"; shift 2 ;;
     --pileup_phasing ) PILEUP_PHASING="$2"; shift 2 ;;
     --fast_mode ) FAST_MODE="$2"; shift 2 ;;
@@ -90,6 +94,9 @@ while true; do
     --haploid_sensitive ) HAP_SEN="$2"; shift 2 ;;
     --include_all_ctgs ) INCLUDE_ALL_CTGS="$2"; shift 2 ;;
     --no_phasing_for_fa ) NO_PHASING="$2"; shift 2 ;;
+    --remove_intermediate_dir ) RM_TMP_DIR="$2"; shift 2 ;;
+    --enable_long_indel ) ENABLE_LONG_INDEL="$2"; shift 2 ;;
+    --enable_phasing ) ENABLE_PHASING="$2"; shift 2 ;;
 
     -- ) shift; break; ;;
     -h|--help ) print_help_messages; break ;;
@@ -117,10 +124,13 @@ INDEL_PATH="${TMP_FILE_PATH}/trio_input/alt_info"
 PILEUP_VCF_PATH="${TMP_FILE_PATH}/pileup_output"
 GVCF_TMP_PATH="${TMP_FILE_PATH}/gvcf_tmp_output"
 PHASE_OUTPUT_PATH="${TMP_FILE_PATH}/phase_output"
+PILEUP_VCF_PATH="${TMP_FILE_PATH}/pileup_output"
 TRIO_ALIGNMENT_OUTPUT_PATH="${TMP_FILE_PATH}/trio_alignment_output"
 PHASE_VCF_PATH="${PHASE_OUTPUT_PATH}/phase_vcf"
 PHASE_BAM_PATH="${PHASE_OUTPUT_PATH}/phase_bam"
 CANDIDATE_BED_PATH="${FULL_ALIGNMENT_OUTPUT_PATH}/candidate_bed"
+CALL_PATH="${TMP_FILE_PATH}/trio_output"
+CANDIDATE_BED_PATH="${CALL_PATH}/candidate_bed"
 export OPENBLAS_NUM_THREADS=1
 export GOTO_NUM_THREADS=1
 export OMP_NUM_THREADS=1
@@ -139,11 +149,11 @@ ${PYTHON} ${CLAIR3_TRIO} CheckEnvs_Trio \
     --bam_fn_c ${BAM_FILE_PATH_C} \
     --bam_fn_p1 ${BAM_FILE_PATH_P1} \
     --bam_fn_p2 ${BAM_FILE_PATH_P2} \
-    --bed_fn ${BED_FILE_PATH} \
     --output_fn_prefix ${OUTPUT_FOLDER} \
+    --ctg_name ${CONTIGS} \
+    --bed_fn ${BED_FILE_PATH} \
     --ref_fn ${REFERENCE_FILE_PATH} \
     --vcf_fn ${VCF_FILE_PATH} \
-    --ctg_name ${CONTIGS} \
     --chunk_num ${CHUNK_NUM} \
     --chunk_size ${CHUNK_SIZE} \
     --include_all_ctgs ${INCLUDE_ALL_CTGS} \
@@ -221,7 +231,9 @@ ${PARALLEL} -j3 --joblog  ${LOG_PATH}/parallel_1_clair3_pileup.log \
     --ref_pct_full=${REF_PRO} \
     --snp_min_af=${SNP_AF} \
     --indel_min_af=${INDEL_AF} \
-    --pileup_only=True \
+    --var_pct_phasing=${PHASING_PCT} \
+    --pileup_only=False \
+    --pileup_phasing=True \
     --gvcf=${GVCF} \
     --fast_mode=${FAST_MODE} \
     --call_snp_only=${SNP_ONLY} \
@@ -230,6 +242,9 @@ ${PARALLEL} -j3 --joblog  ${LOG_PATH}/parallel_1_clair3_pileup.log \
     --haploid_sensitive=${HAP_SEN} \
     --include_all_ctgs=${INCLUDE_ALL_CTGS} \
     --no_phasing_for_fa=${NO_PHASING} \
+    --remove_intermediate_dir=${RM_TMP_DIR} \
+    --enable_phasing=${ENABLE_PHASING} \
+    --enable_long_indel=${ENABLE_LONG_INDEL} \
     --pileup_model_prefix=${PILEUP_PREFIX} \
     --fa_model_prefix=full_alignment" ::: ${ALL_SAMPLE[@]} :::+ ${ALL_UNPHASED_BAM_FILE_PATH[@]} |& tee ${LOG_PATH}/1_call_var_bam_pileup.log
 
@@ -267,28 +282,30 @@ time ${PARALLEL} --joblog ${LOG_PATH}/parallel_2_fiter_hete_snp_pileup.log -j${T
 --alt_fn_p2 ${INPUT_PILEUP_VCF[2]} \
 --split_folder ${SPLIT_BED_PATH} \
 --sampleName ${TRIO_N} \
---ref_pct_full 0.2 \
+--ref_pct_full 0.03 \
 --var_pct_full 1.0 \
+--ref_var_max_ratio 1.2 \
 --chunk_num ${chunk_num} \
 --chr_prefix '' \
 --ctgName {1}" ::: ${CHR[@]} |& tee ${LOG_PATH}/2_FHSP.log
 
+
 echo 'check newcode'
 
-echo "[INFO] * 3/7 running Clair3-Trio model"
-time ${PARALLEL}  --joblog ${LOG_PATH}/parallel_3_run_model.log -j${THREADS} \
-echo "${PYPY} ${CLAIR3_TRIO} CallVarBam_Trio \
---bam_fn {3}/{1}.bam \
---ref_fn ${REFERENCE_FILE_PATH} \
---tensor_can_fn ${TENSOR_CANDIDATE_FOLDER_PATH}/tensor_can_{2}_{1}_{4} \
---indel_fn ${INDEL_PATH}/{2}_{1}_{4} \
---ctgName {1} \
---samtools ${SAMTOOLS} \
---platform ${PLATFORM} \
---full_aln_regions ${SPLIT_BED_PATH}/${TRIO_N}_1000_{1}_{4} \
---phasing_info_in_bam" ::: ${CHR[@]} ::: ${ALL_SAMPLE[@]} :::+ ${ALL_PHASED_BAM_FILE_DIR[@]} ::: ${CHUNK_LIST[@]} |& tee ${LOG_PATH}/3_RM.log
-
-exit 0
+#echo "[INFO] * 3/7 running Clair3-Trio model"
+#time ${PARALLEL}  --joblog ${LOG_PATH}/parallel_3_run_model.log -j${THREADS} \
+#echo "${PYPY} ${CLAIR3_TRIO} CallVarBam_Trio \
+#--bam_fn {3}/{1}.bam \
+#--ref_fn ${REFERENCE_FILE_PATH} \
+#--tensor_can_fn ${TENSOR_CANDIDATE_FOLDER_PATH}/tensor_can_{2}_{1}_{4} \
+#--indel_fn ${INDEL_PATH}/{2}_{1}_{4} \
+#--ctgName {1} \
+#--samtools ${SAMTOOLS} \
+#--platform ${PLATFORM} \
+#--full_aln_regions ${SPLIT_BED_PATH}/${TRIO_N}_1000_{1}_{4} \
+#--phasing_info_in_bam" ::: ${CHR[@]} ::: ${ALL_SAMPLE[@]} :::+ ${ALL_PHASED_BAM_FILE_DIR[@]} ::: ${CHUNK_LIST[@]} |& tee ${LOG_PATH}/3_RM.log
+#
+#exit 0
 
 # note that in training included the add_no_phasing_data_training
 # no using the giab bed files
@@ -376,6 +393,7 @@ ALL_SAMPLE_IDX=(
 2
 )
 
+
 echo "[INFO] * 7/7 Calling Trio Variants, Genreate VCFs"
 time ${PARALLEL}  --joblog ${LOG_PATH}/parallel_7_call.log  -j ${THREADS} \
 "${PYTHON} ${CLAIR3_TRIO} CallVariants_Trio \
@@ -388,7 +406,6 @@ time ${PARALLEL}  --joblog ${LOG_PATH}/parallel_7_call.log  -j ${THREADS} \
 --platform ${PLATFORM} \
 --model_arc ${MODEL_ARC} \
 --trio_n_id {3} \
---showRef \
 --input_probabilities" ::: ${CHR[@]} ::: ${ALL_SAMPLE[@]} :::+ ${ALL_SAMPLE_IDX[@]} ::: ${BIN_CHUNK_LIST[@]} ::: ${CALL_CHUNK_LIST[@]} |& tee ${LOG_PATH}/7_CV.log
 
 time ${PARALLEL}  --joblog ${LOG_PATH}/parallel_8_sort.log  -j ${THREADS} \
