@@ -1,10 +1,12 @@
 import sys
 import gc
+import copy
 import shlex
 import os
 import tables
 import numpy as np
 from random import random
+from collections import Counter
 
 from clair3.task.main import *
 from shared.interval_tree import bed_tree_from, is_region_in
@@ -38,6 +40,7 @@ def batches_from(iterable, item_from, batch_size=1):
                 return
         yield chunk
 
+
 def tensor_generator_from(tensor_file_path, batch_size, pileup, platform):
     global param
     float_type = 'int32'
@@ -50,7 +53,6 @@ def tensor_generator_from(tensor_file_path, batch_size, pileup, platform):
     else:
         fo = sys.stdin
 
-
     processed_tensors = 0
 
     #legacy
@@ -61,23 +63,8 @@ def tensor_generator_from(tensor_file_path, batch_size, pileup, platform):
 
     prod_tensor_shape = np.prod(tensor_shape_trio)
 
-    #import pdb; pdb.set_trace()
     def item_from(row):
         chrom, coord, seq, string_c, alt_info_c, string_p1, alt_info_p1, string_p2, alt_info_p2 = row.rstrip().split("\t")
-
-        #import pdb; pdb.set_trace()
-        # legacy
-        #chrom, coord, seq, tensor, alt_info = row.split("\t")
-        ## need add padding if depth is lower than maximum depth.
-        #tensor = [int(item) for item in tensor.split()]
-        #tensor_depth = len(tensor) // tensor_shape[1] // tensor_shape[2]
-        #padding_depth = tensor_shape[0] - tensor_depth
-        #prefix_padding_depth = int(padding_depth / 2)
-        #suffix_padding_depth = padding_depth - int(padding_depth / 2)
-        #prefix_zero_padding = [0] * prefix_padding_depth * tensor_shape[1] * tensor_shape[2]
-        #suffix_zero_padding = [0] * suffix_padding_depth * tensor_shape[1] * tensor_shape[2]
-        #tensor = prefix_zero_padding + tensor + suffix_zero_padding
-        #tensor = np.array(tensor, dtype=np.dtype(float_type))
 
         new_position_matrix_c = padded_tensor(string_c, tensor_shape_one)
         new_position_matrix_p1 = padded_tensor(string_p1, tensor_shape_one)
@@ -118,7 +105,6 @@ def tensor_generator_from(tensor_file_path, batch_size, pileup, platform):
         f.wait()
 
 def ori_tensor_generator_from(tensor_file_path, batch_size, pileup, platform):
-    print('asd')
     global param
     float_type = 'int32'
     if pileup:
@@ -132,8 +118,6 @@ def ori_tensor_generator_from(tensor_file_path, batch_size, pileup, platform):
         fo = f.stdout
     else:
         fo = sys.stdin
-
-    import pdb; pdb.set_trace()
 
     processed_tensors = 0
     tensor_shape = param.ont_input_shape if platform == 'ont' else param.input_shape
@@ -191,18 +175,53 @@ def ori_tensor_generator_from(tensor_file_path, batch_size, pileup, platform):
         fo.close()
         f.wait()
 
+
+
+def remove_common_suffix(ref_base, alt_base):
+    min_length = min(len(ref_base) - 1, min([len(item) - 1 for item in alt_base]))  # keep at least one base
+    prefix = ref_base[::-1]
+    for string in alt_base:
+        string = string[::-1]
+        while string[:len(prefix)] != prefix and prefix:
+            prefix = prefix[:len(prefix) - 1]
+        if not prefix:
+            break
+    res_length = len(prefix)
+    if res_length > min_length:
+        return ref_base, alt_base
+    return ref_base[:len(ref_base) - res_length], [item[:len(item) - res_length] for item in alt_base]
+
+    return ref_base[-min_length], [item[-min_length] for item in alt_base]
+
+
+def decode_alt(ref_base, alt_base):
+    if ',' not in alt_base:
+        return [ref_base], [alt_base]
+    alt_base = alt_base.split(',')
+    ref_base_list, alt_base_list = [], []
+    for ab in alt_base:
+        rb,ab = remove_common_suffix(ref_base, [ab])
+        ref_base_list.append(rb)
+        alt_base_list.append(ab[0])
+    return ref_base_list, alt_base_list
+
+
 ALL_Y_INFO = {}
 def variant_map_from(var_fn, tree, is_tree_empty, check_mcv_id = 0):
     Y = {}
+    truth_alt_dict = {}
     miss_variant_set = set()
     if var_fn is None:
         return Y, miss_variant_set
 
     f = subprocess_popen(shlex.split("gzip -fdc %s" % (var_fn)))
     for row in f.stdout:
-        columns = row.split()
-        ctg_name, position_str = columns[0], columns[1]
-        genotype1, genotype2 = columns[-2], columns[-1]
+        if row[0] == "#":
+            continue
+        columns = row.strip().split()
+        # ctg_name, position_str, ref_base = columns[0], columns[1], columns[2]
+        # genotype1, genotype2 = columns[-2], columns[-1]
+        ctg_name, position_str, ref_base, alt_base, genotype1, genotype2 = columns
         key = ctg_name + ":" + position_str
         if genotype1 == '-1' or genotype2 == '-1':
             miss_variant_set.add(key)
@@ -210,8 +229,9 @@ def variant_map_from(var_fn, tree, is_tree_empty, check_mcv_id = 0):
         if not (is_tree_empty or is_region_in(tree, ctg_name, int(position_str))):
             continue
 
-        # import pdb; pdb.set_trace()
         Y[key] = output_labels_from_vcf_columns(columns)
+        ref_base_list, alt_base_list = decode_alt(ref_base, alt_base)
+        truth_alt_dict[int(position_str)] = (ref_base_list, alt_base_list)
 
         if check_mcv_id != 0:
             if key not in ALL_Y_INFO:
@@ -220,8 +240,8 @@ def variant_map_from(var_fn, tree, is_tree_empty, check_mcv_id = 0):
 
     f.stdout.close()
     f.wait()
-    return Y, miss_variant_set
-
+    # return Y, miss_variant_set
+    return Y, miss_variant_set, truth_alt_dict
 
 def padded_tensor(string, tensor_shape, add_padding=False, padding_value='100'):
     if len(string) == 1:
@@ -279,8 +299,8 @@ def write_table_dict(table_dict, pos, \
     table_dict['label'].append(label_c + label_p1 + label_p2)
     table_dict['alt_info'].append('%s\t%s\t%s' % (alt_info_c, alt_info_p1, alt_info_p2))
 
-    # if len(table_dict['alt_info'][-1]) > param.max_alt_info_length:
-    #     print('[W], in pos %s, alt len overflow  %d < %d, %s' % (pos, param.max_alt_info_length, len(table_dict['alt_info'][-1]), table_dict['alt_info'][-1][:20]))
+    if len(table_dict['alt_info'][-1]) > param.max_alt_info_length:
+        print('[W], in pos %s, alt len overflow  %d < %d, %s' % (pos, param.max_alt_info_length, len(table_dict['alt_info'][-1]), table_dict['alt_info'][-1][:20]))
 
     table_dict['position'].append(pos)
 
@@ -336,10 +356,41 @@ def print_bin_size(path, prefix=None):
         total += len(table.root.label)
     print('[INFO] total: {}'.format(total))
 
+  
+def find_read_support(pos, truth_alt_dict, alt_info):
+    alt_info = alt_info.rstrip().split('-')
+    seqs = alt_info[1].split(' ') if len(alt_info) > 1 else ''
+    seq_alt_bases_dict = dict(zip(seqs[::2], [int(item) for item in seqs[1::2]])) if len(seqs) else {}
 
-def bin_reader_generator_from(subprocess_list, Y_c, Y_p1, Y_p2, \
+    pos = int(pos)
+    if pos not in truth_alt_dict:
+        # candidate position not in the truth vcf or unified truth vcf
+        return None
+    ref_base_list, alt_base_list = truth_alt_dict[pos]
+    found = 0
+    for alt_type in seq_alt_bases_dict:
+        if '*' in alt_type or '#' in alt_type or 'R' in alt_type:
+            continue
+        if alt_type[0] == 'X':
+            if alt_type[1] in alt_base_list:
+                found += 1
+        elif alt_type[0] == 'I':
+            if alt_type[1:] in alt_base_list:
+                found += 1
+        elif alt_type[0] == 'D':
+            del_cigar = alt_type[1:]
+            for rb, ab in zip(ref_base_list, alt_base_list):
+                if rb[1:] == del_cigar and len(ab) == 1:
+                    found += 1
+    if found >= len(alt_base_list):
+        return True
+    # return False if we find any alternative bases missed in subsampled bam, then remove the position from training
+    return False                                                   
+
+def bin_reader_generator_from(subprocess_list, Y_true_var_c, Y_true_var_p1, Y_true_var_p2, Y_c, Y_p1, Y_p2, \
     is_tree_empty, tree, miss_variant_set_c, miss_variant_set_p1, miss_variant_set_p2, \
-    is_allow_duplicate_chr_pos=False, non_variant_subsample_ratio=1.0):
+    truth_alt_dict_c, truth_alt_dict_p1, truth_alt_dict_p2, \
+    is_allow_duplicate_chr_pos=False, maximum_non_variant_ratio=1.0):
 
     """
     Bin reader generator for bin file generation.
@@ -348,7 +399,7 @@ def bin_reader_generator_from(subprocess_list, Y_c, Y_p1, Y_p2, \
     tree: dictionary(contig name : intervaltree) for quick region querying.
     miss_variant_set (c, p1, p2):  sometimes there will have true variant missing after downsampling reads.
     is_allow_duplicate_chr_pos: whether allow duplicate positions when training, if there exists downsampled data, lower depth will add a random prefix character.
-    non_variant_subsample_ratio: define a maximum non variant ratio for training, we always expect use more non variant data, while it would greatly increase training
+    maximum_non_variant_ratio: define a maximum non variant ratio for training, we always expect use more non variant data, while it would greatly increase training
     time, especially in ont data, here we usually use 1:1 or 1:2 for variant candidate: non variant candidate.
     """
 
@@ -358,6 +409,10 @@ def bin_reader_generator_from(subprocess_list, Y_c, Y_p1, Y_p2, \
 
     X = {}
     total = 0
+    find_rst = []
+    ref_list = []
+    variant_set_with_read_support = set()
+    variants_without_read_support = 0
     for f in subprocess_list:
         for row_idx, row in enumerate(f.stdout):
             chrom, coord, seq, string_c, alt_info_c, string_p1, alt_info_p1, string_p2, alt_info_p2 = row.rstrip().split("\t")
@@ -378,13 +433,36 @@ def bin_reader_generator_from(subprocess_list, Y_c, Y_p1, Y_p2, \
             if key in miss_variant_set_c:
                 continue
 
-            # generate tensors, subsample, only based on the child gt
-            is_reference = key not in Y_c
-            if is_reference and non_variant_subsample_ratio < 1.0 and random() >= non_variant_subsample_ratio:
-                continue
+            is_reference = (key not in Y_true_var_c) and (key not in Y_true_var_p1) and (key not in Y_true_var_p2)
+
+            have_read_support_c = find_read_support(pos=coord, truth_alt_dict=truth_alt_dict_c, alt_info=alt_info_c)
+            have_read_support_p1 = find_read_support(pos=coord, truth_alt_dict=truth_alt_dict_p1, alt_info=alt_info_p1)
+            have_read_support_p2 = find_read_support(pos=coord, truth_alt_dict=truth_alt_dict_p2, alt_info=alt_info_p2)
+
+            find_rst.append((have_read_support_c, have_read_support_p1, have_read_support_p2))
+           
+            if have_read_support_c is not None and not have_read_support_c:
+                miss_variant_set_c.add(key)
+                variants_without_read_support += 1
+                continue 
+
+            if have_read_support_p1 is not None and not have_read_support_p1:
+                miss_variant_set_p1.add(key)
+                variants_without_read_support += 1
+                continue 
+
+            if have_read_support_p2 is not None and not have_read_support_p2:
+                miss_variant_set_p2.add(key)
+                variants_without_read_support += 1
+                continue 
+            variant_set_with_read_support.add(key)
+
 
             if key not in X:
                 X[key] = (string_c, alt_info_c, string_p1, alt_info_p1, string_p2, alt_info_p2, seq)
+                if is_reference:
+                    # import pdb; pdb.set_trace()
+                    ref_list.append(key)
             elif is_allow_duplicate_chr_pos:
                 new_key = ""
                 for character in PREFIX_CHAR_STR:
@@ -394,8 +472,11 @@ def bin_reader_generator_from(subprocess_list, Y_c, Y_p1, Y_p2, \
                         break
                 if len(new_key) > 0:
                     X[new_key] = (string_c, alt_info_c, string_p1, alt_info_p1, string_p2, alt_info_p2, seq)
+                if is_reference:
+                    # import pdb; pdb.set_trace()
+                    ref_list.append(new_key)
 
-            # update all Y info if is reference
+            # update all Y info if is reference, Y my be del for not allow duplicate_chr_pos reason !!!
             if key not in Y_c:
                 Y_c[key] = output_labels_from_reference(BASE2BASE[seq[param.flankingBaseNum]])
             if key not in Y_p1:
@@ -404,16 +485,42 @@ def bin_reader_generator_from(subprocess_list, Y_c, Y_p1, Y_p2, \
                 Y_p2[key] = output_labels_from_reference(BASE2BASE[seq[param.flankingBaseNum]])
 
             if len(X) == shuffle_bin_size:
+                if maximum_non_variant_ratio is not None:
+                    _filter_non_variants(X, ref_list, maximum_non_variant_ratio)
                 yield X, total
                 X = {}
+                ref_list = []
             total += 1
             if total % 100000 == 0:
                 print("[INFO] Processed %d tensors" % total, file=sys.stderr)
         f.stdout.close()
         f.wait()
+
+
+    _cnt = Counter(find_rst)
+    _all_none_cnt = sum([_cnt[_i] for _i in _cnt if (_i == (None, None, None))])
+    _false_cnt = sum([_cnt[_i] for _i in _cnt if False in _i])
+    _true_cnt = len(find_rst) - _all_none_cnt - _false_cnt
+    print('[INFO] read all sites, None, True, False hit', len(find_rst), _all_none_cnt, _true_cnt, _false_cnt)
+    for key, value in _cnt.most_common():
+        print('[INFO] ', key, value) 
+    print("[INFO] Variants with read support/variants without read support: {}/{}".format(len(variant_set_with_read_support), variants_without_read_support))
+    # import pdb; pdb.set_trace()
+    if maximum_non_variant_ratio is not None:
+        _filter_non_variants(X, ref_list, maximum_non_variant_ratio)
     yield X, total
     yield None, total
 
+
+def _filter_non_variants(X, ref_list, maximum_non_variant_ratio):
+    non_variant_num = len(ref_list)
+    variant_num = len(X) - non_variant_num
+    if non_variant_num > variant_num * maximum_non_variant_ratio:
+        non_variant_keep_fraction = maximum_non_variant_ratio * variant_num / (1. * non_variant_num)
+        probabilities = np.random.random_sample((non_variant_num,))
+        for key, p in zip(ref_list, probabilities):
+            if p > non_variant_keep_fraction:
+                X.pop(key)
 
 
 def get_training_array(tensor_fn, var_fn_c, var_fn_p1, var_fn_p2, bed_fn, bin_fn, shuffle=True, is_allow_duplicate_chr_pos=True, chunk_id=None,
@@ -444,9 +551,13 @@ def get_training_array(tensor_fn, var_fn_c, var_fn_p1, var_fn_p2, bed_fn, bin_fn
     is_tree_empty = len(tree.keys()) == 0
 
     # read true Y info
-    Y_c, miss_variant_set_c = variant_map_from(var_fn_c, tree, is_tree_empty, 'c' if check_mcv else 0)
-    Y_p1, miss_variant_set_p1 = variant_map_from(var_fn_p1, tree, is_tree_empty, 'p1' if check_mcv else 0)
-    Y_p2, miss_variant_set_p2 = variant_map_from(var_fn_p2, tree, is_tree_empty, 'p2' if check_mcv else 0)
+    Y_true_var_c, miss_variant_set_c, truth_alt_dict_c = variant_map_from(var_fn_c, tree, is_tree_empty, 'c' if check_mcv else 0)
+    Y_true_var_p1, miss_variant_set_p1, truth_alt_dict_p1 = variant_map_from(var_fn_p1, tree, is_tree_empty, 'p1' if check_mcv else 0)
+    Y_true_var_p2, miss_variant_set_p2, truth_alt_dict_p2 = variant_map_from(var_fn_p2, tree, is_tree_empty, 'p2' if check_mcv else 0)
+    Y_c = copy.deepcopy(Y_true_var_c)
+    Y_p1 = copy.deepcopy(Y_true_var_p1)
+    Y_p2 = copy.deepcopy(Y_true_var_p2)
+    # import pdb; pdb.set_trace()
 
 
     print('read true ', len(Y_c), len(Y_p1), len(Y_p2))
@@ -454,8 +565,6 @@ def get_training_array(tensor_fn, var_fn_c, var_fn_p1, var_fn_p2, bed_fn, bin_fn
 
     # legacy
     # Y, miss_variant_set = variant_map_from(var_fn, tree, is_tree_empty)
-
-    # import pdb; pdb.set_trace()
 
     global param
     import trio.param_t as param
@@ -478,28 +587,8 @@ def get_training_array(tensor_fn, var_fn_c, var_fn_p1, var_fn_p2, bed_fn, bin_fn
     label_size_one = param.label_size
     label_size_trio = param.label_size_trio
 
-
-    # read alt to quickly get the variants number counts
-    variant_num, non_variant_num, non_variant_subsample_ratio = 0, 0, 1.0
-    if maximum_non_variant_ratio is not None and candidate_details_fn_prefix:
-        candidate_details_fn_prefix = candidate_details_fn_prefix.split('/')
-        directry, file_prefix = '/'.join(candidate_details_fn_prefix[:-1]), candidate_details_fn_prefix[-1]
-        file_list = [f for f in os.listdir(directry) if f.startswith(file_prefix)]
-        for f in file_list:
-            for row in open(os.path.join(directry, f), 'r'):
-                chr_pos = row.split('\t')[0]
-                key = chr_pos.replace(' ', ':')
-                if key in Y:
-                    variant_num += 1
-                else:
-                    non_variant_num += 1
-
-        max_non_variant_num = variant_num * maximum_non_variant_ratio
-        if max_non_variant_num < non_variant_num:
-            non_variant_subsample_ratio = float(max_non_variant_num / non_variant_num)
-        print("[INFO] variants/non variants/subsample ratio: {}/{}/{}".format(variant_num, non_variant_num,
-              round(non_variant_subsample_ratio, 4)), file=sys.stderr)
-
+    if maximum_non_variant_ratio != None:
+        print("[INFO] non variants/ variants subsample ratio set to: {}".format(maximum_non_variant_ratio))
 
     
     # get all tensors files name and split into different chunck set
@@ -528,13 +617,11 @@ def get_training_array(tensor_fn, var_fn_c, var_fn_p1, var_fn_p2, bed_fn, bin_fn
         for file_name in all_file_name:
             subprocess_list.append(subprocess_popen(shlex.split("{} -fdc {}".format(param.zstd, os.path.join(directry, file_name)))))
 
-    os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
     tables.set_blosc_max_threads(64)
     int_atom = tables.Atom.from_dtype(np.dtype(float_type))
     string_atom = tables.StringAtom(itemsize=param.no_of_positions + 50)
     long_string_atom = tables.StringAtom(itemsize=param.max_alt_info_length)  # max alt_info length
-    # import pdb; pdb.set_trace()
     table_file = tables.open_file(bin_fn, mode='w', filters=FILTERS)
     table_file.create_earray(where='/', name='position_matrix', atom=int_atom, shape=[0] + tensor_shape_trio,
                              filters=FILTERS)
@@ -547,6 +634,9 @@ def get_training_array(tensor_fn, var_fn_c, var_fn_p1, var_fn_p2, bed_fn, bin_fn
 
     # generator to avoid high memory occupy
     bin_reader_generator = bin_reader_generator_from(subprocess_list=subprocess_list,
+                                                     Y_true_var_c=Y_true_var_c,
+                                                     Y_true_var_p1=Y_true_var_p1,
+                                                     Y_true_var_p2=Y_true_var_p2,
                                                      Y_c=Y_c,
                                                      Y_p1=Y_p1,
                                                      Y_p2=Y_p2,
@@ -555,8 +645,11 @@ def get_training_array(tensor_fn, var_fn_c, var_fn_p1, var_fn_p2, bed_fn, bin_fn
                                                      miss_variant_set_c=miss_variant_set_c,
                                                      miss_variant_set_p1=miss_variant_set_p1,
                                                      miss_variant_set_p2=miss_variant_set_p2,
+                                                     truth_alt_dict_c=truth_alt_dict_c,
+                                                     truth_alt_dict_p1=truth_alt_dict_p1,
+                                                     truth_alt_dict_p2=truth_alt_dict_p2,
                                                      is_allow_duplicate_chr_pos=is_allow_duplicate_chr_pos,
-                                                     non_variant_subsample_ratio=non_variant_subsample_ratio)
+                                                     maximum_non_variant_ratio=maximum_non_variant_ratio)
 
     def get_label(key, Y, is_allow_duplicate_chr_pos):
         label, new_key = None, ''
@@ -577,10 +670,6 @@ def get_training_array(tensor_fn, var_fn_c, var_fn_p1, var_fn_p2, bed_fn, bin_fn
     total_compressed = 0
     while True:
         X, total = next(bin_reader_generator)
-        # import pdb; pdb.set_trace()
-        # for i in range(7):
-        #     print(X['chr1:10021'][i][:20])
-        # import pdb; pdb.set_trace()
 
         if X is None or not len(X):
             break
@@ -672,18 +761,6 @@ def get_training_array(tensor_fn, var_fn_c, var_fn_p1, var_fn_p2, bed_fn, bin_fn
                     cnt_mvc += 1
                     # import pdb; pdb.set_trace()
                     continue
-
-            # if key in Y:
-            #     print(key, alt_info_c, alt_info_p1, alt_info_p2)
-            #     print(label_c)
-            #     print(label_p1)
-            #     print(label_p2)
-            # if '121150585' in key:
-            #     print(key, alt_info_c, alt_info_p1, alt_info_p2)
-            #     print(label_c)
-            #     print(label_p1)
-            #     print(label_p2)
-            #     import pdb; pdb.set_trace()
 
             # continue
             cnt_pass += 1
