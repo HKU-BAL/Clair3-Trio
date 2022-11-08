@@ -212,7 +212,7 @@ def variant_map_from(var_fn, tree, is_tree_empty, check_mcv_id = 0):
     truth_alt_dict = {}
     miss_variant_set = set()
     if var_fn is None:
-        return Y, miss_variant_set
+        return Y, miss_variant_set, truth_alt_dict
 
     f = subprocess_popen(shlex.split("gzip -fdc %s" % (var_fn)))
     for row in f.stdout:
