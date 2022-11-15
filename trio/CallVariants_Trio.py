@@ -1729,11 +1729,11 @@ def DataGenerator(dataset, num_epoch, batch_size, chunk_start_pos, chunk_end_pos
         position = dataset.position[start_pos:end_pos]  # .flatten()
         alt_info_list = dataset.alt_info[start_pos:end_pos]  # .flatten()
 
-
-        tmp_l = position_matrix[:,:,:,-1:]
-        tmp_l[:, :89, :, :][tmp_l[:, :89, :, :] == 100] = 90
-        tmp_l[:, 89:89*2, :, :][tmp_l[:, 89:89*2, :, :] == 100] = 60
-        tmp_l[:, 89*2:, :, :][tmp_l[:, 89*2:, :, :] == 100] = 30
+        # legacy
+        #tmp_l = position_matrix[:,:,:,-1:]
+        #tmp_l[:, :89, :, :][tmp_l[:, :89, :, :] == 100] = 90
+        #tmp_l[:, 89:89*2, :, :][tmp_l[:, 89:89*2, :, :] == 100] = 60
+        #tmp_l[:, 89*2:, :, :][tmp_l[:, 89*2:, :, :] == 100] = 30
         # tmp_l[tmp_l == 100] = 60
         # tmp_l[tmp_l == 100] = 30
         # import pdb; pdb.set_trace()
