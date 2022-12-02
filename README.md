@@ -111,10 +111,10 @@ docker run -it \
   /opt/bin/run_clair3_trio.sh \
   --ref_fn=${INPUT_DIR}/ref.fa \                  ## change your reference file name here
   --bam_fn_c=${INPUT_DIR}/child_input.bam \       ## change your child's bam file name here 
-  --bam_fn_p1=${INPUT_DIR}/parent1_input.bam \    ## change your parnet-1's bam file name here     
-  --bam_fn_p2=${INPUT_DIR}/parenet2_input.bam \   ## change your parnet-2's bam file name here   
+  --bam_fn_p1=${INPUT_DIR}/parent1_input.bam \    ## change your parent-1's bam file name here     
+  --bam_fn_p2=${INPUT_DIR}/parenet2_input.bam \   ## change your parent-2's bam file name here   
   --sample_name_c=${SAMPLE_C} \                   ## change your child's name here
-  --sample_name_p1=${SAMPLE_P1} \                 ## change your parnet-1's name here
+  --sample_name_p1=${SAMPLE_P1} \                 ## change your parent-1's name here
   --sample_name_p2=${SAMPLE_P2} \                 ## change your parent-2's name here
   --threads=${THREADS} \                          ## maximum threads to be used
   --model_path_clair3="/opt/models/clair3_models/${MODEL_C3}" \
@@ -175,8 +175,8 @@ tar -zxvf clair3_trio_models.tar.gz -C ./models/clair3_trio_models
 # run clair3-trio
 _INPUT_DIR="[YOUR_INPUT_FOLDER]"            # e.g. ./input
 _BAM_C=${_INPUT_DIR}/input_child.bam        # chnage your child's bam file name here
-_BAM_P1=${_INPUT_DIR}/input_parent1.bam     # chnage your parenet1's bam file name here
-_BAM_P2=${_INPUT_DIR}/input_parent2.bam     # chnage your parenet2's bam file name here
+_BAM_P1=${_INPUT_DIR}/input_parent1.bam     # chnage your parent-1's bam file name here
+_BAM_P2=${_INPUT_DIR}/input_parent2.bam     # chnage your parent-2's bam file name here
 _SAMPLE_C="[Child sample ID]"               # child sample ID, e.g. HG002
 _SAMPLE_P1="[Parent1 sample ID]"            # parent1 sample ID, e.g. HG003
 _SAMPLE_P2="[Parent2 sample ID]"            # parent2 sample ID, e.g. HG004
@@ -216,8 +216,8 @@ conda activate clair3-trio
 # run clair3-trio like this afterward
 _INPUT_DIR="[YOUR_INPUT_FOLDER]"            # e.g. ./input
 _BAM_C=${_INPUT_DIR}/input_child.bam        # chnage your child's bam file name here
-_BAM_P1=${_INPUT_DIR}/input_parent1.bam     # chnage your parenet1's bam file name here
-_BAM_P2=${_INPUT_DIR}/input_parent2.bam     # chnage your parenet2's bam file name here
+_BAM_P1=${_INPUT_DIR}/input_parent1.bam     # chnage your parent-1's bam file name here
+_BAM_P2=${_INPUT_DIR}/input_parent2.bam     # chnage your parent-2's bam file name here
 _SAMPLE_C="[Child sample ID]"               # child sample ID, e.g. HG002
 _SAMPLE_P1="[Parent1 sample ID]"            # parent1 sample ID, e.g. HG003
 _SAMPLE_P2="[Parent2 sample ID]"            # parent2 sample ID, e.g. HG004
