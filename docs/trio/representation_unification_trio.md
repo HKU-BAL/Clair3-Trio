@@ -225,6 +225,6 @@ ${PARALLEL} --joblog ${RU_VAR_OUTPUT_PATH}/get_truth.log -j${THREADS} \
 
 #### 9. Merge all phased bam 
 ```
-${SAMTOOLS} merge -@48 -o ${OUTPUT_DIR}/merged.bam ${PHASE_BAM_PATH}/*.bam 
+${SAMTOOLS} merge -@48 ${OUTPUT_DIR}/merged.bam ${PHASE_BAM_PATH}/*.bam 
 ${SAMTOOLS} index -@48 ${OUTPUT_DIR}/merged.bam ::: ${CHR[@]}
 ```
