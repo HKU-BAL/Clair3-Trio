@@ -29,7 +29,7 @@ export CUDA_VISIBLE_DEVICES="1"
 echo "[INFO] Model training"
 time ${PYTHON3} ${CLAIR3_TRIO} Train_Trio \
 --bin_fn ${ALL_BINS_FOLDER_PATH} \
---ochk_prefix ${MODEL_FOLDER_PATH} \
+--ochk_prefix ${MODEL_FOLDER_PATH}\trio \
 --add_indel_length ${add_indel_length} \
 --platform ${PLATFORM} \
 --validation_dataset \
