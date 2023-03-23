@@ -46,7 +46,7 @@ RUN /bin/bash -c "source activate clair3" && \
 
 COPY . .
 
-RUN wget http://www.bio8.cs.hku.hk/clair3/clair3_models/clair3_models.tar.gz -P /opt/models/clair3_models && \
+RUN wget http://www.bio8.cs.hku.hk/clair3_trio/clair3_models/clair3_models.tar.gz -P /opt/models/clair3_models && \
     tar -zxvf /opt/models/clair3_models/clair3_models.tar.gz -C /opt/models/clair3_models && \
     rm /opt/models/clair3_models/clair3_models.tar.gz && \
 	wget http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/clair3_trio_models.tar.gz -P /opt/models/clair3_trio_models && \

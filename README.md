@@ -23,6 +23,7 @@ Detailed descriptions of the methodology and results for Clair3-Trio are availab
 * [Latest Updates](#latest-updates)
 * [What's New in Clair3-Trio](#whats-new-in-clair3-trio)
 * [Pre-trained Models](#pre-trained-models)
+  + [R10.4 with the Kit 12 chemistry (Q20) Model](docs/trio/q20.md)
   + [Guppy 5,6](docs/trio/guppy5.md)
   + [Guppy 4](#pre-trained-models)
 * [Quick Demo](docs/trio/trio_quick_demo.md)
@@ -40,6 +41,9 @@ Detailed descriptions of the methodology and results for Clair3-Trio are availab
 ----
 
 ## Latest Updates
+
+*v0.4 (Mar 22, 2023)*: A model for R10.4 with the Kit 12 chemistry (Q20) is available now. Check [this page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/q20.md) for more information about the model.
+
 *v0.3 (June 20, 2022)*: Optimized Clair3-Trio speed, the runtime of Clair3-Trio to call variants from the whole genome is about 2.4 times of calling a single sample form Clair3 (v0.1-r10).
 
 *v0.2 (May 15, 2022)*:  A guppy5 model for Clair3-Trio is available now. Check [this page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/guppy5.md) for more information about the Guppy5 model.
@@ -64,19 +68,21 @@ Download models from [here](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_mo
 
 |           Model name           |  Platform   |    Training samples         |   Date   |  Basecaller  | File    |          Link            |
 | :----------------------------: | :---------: | :----------------------------------------------------------: | -------------------------------- | :--------------------------: | ----------------| :-------------------: |
-|    c3t_hg002_r941_prom_sup_g5014 |     ONT     |                         HG002,3,4      |             20220514 | Guppy5 sup | c3t_hg002_r941_prom_sup_g5014.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/c3t_hg002_r941_prom_sup_g5014.tar.gz) |
-|    c3t_hg002_g422 |     ONT     |                         HG002,3,4      |             20220422 | Guppy4 hac | c3t_hg002_g422.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/c3t_hg002_g422.tar.gz) |
+|    c3t_hg002_dna_r1041_e82_400bps_sup |     ONT 10.4.1    |                         HG002,3,4      |             20230322 | dorado | c3t_hg002_dna_r1041_e82_400bps_sup.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/c3t_hg002_dna_r1041_e82_400bps_sup.tar.gz) |
+|    c3t_hg002_r941_prom_sup_g5014 |     ONT r9.4.1    |                         HG002,3,4      |             20220514 | Guppy5 sup | c3t_hg002_r941_prom_sup_g5014.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/c3t_hg002_r941_prom_sup_g5014.tar.gz) |
+|    c3t_hg002_g422 |     ONT r9.4.1     |                         HG002,3,4      |             20220422 | Guppy4 hac | c3t_hg002_g422.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/c3t_hg002_g422.tar.gz) |
 
 
 
 ### Clair3's Pre-trained Models
 
-When using the Clair3-Trio model, please use a corresponding Clair3 model for Pileup calling. Check [here](https://github.com/HKU-BAL/Clair3#pre-trained-models) for more information about Clair3 pretrained model.
+When using the Clair3-Trio model, please use a corresponding Clair3 model for Pileup calling. Check [here](https://github.com/HKU-BAL/Clair3#pre-trained-models) or [here](https://github.com/nanoporetech/rerio) for more information about Clair3 pretrained model.
 
 |           Model name           |  Platform   |                       Training samples                       | Date   |  Basecaller  | File                                |                             Link                             |
 | :----------------------------: | :---------: | :----------------------------------------------------------: | -------------------------------- | :--------------------------: | ----------------------------------- | :----------------------------------------------------------: |
-|      r941_prom_sup_g5014       |     ONT     |                    HG002,4,5 (Guppy5_sup)                    | 20220112 |  Guppy5 sup  | r941_prom_sup_g5014.tar.gz          | [Download](http://www.bio8.cs.hku.hk/clair3/clair3_models/r941_prom_sup_g5014.tar.gz) |
-|    r941_prom_hac_g360+g422     |     ONT     |                         HG001,2,4,5                          | 20210517 | Guppy3,4 hac | r941_prom_hac_g360+g422.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3/clair3_models/r941_prom_hac_g360+g422.tar.gz) |
+|      r1041_e82_400bps_sup_v400       |     ONT r10.4.1   |                    HG002,4,5  | - |  dorado | r1041_e82_400bps_sup_v400.tar.gz          | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_models/r1041_e82_400bps_sup_v400.tar.gz) |
+|      r941_prom_sup_g5014       |     ONT r9.4.1     |                    HG002,4,5 (Guppy5_sup)                    | 20220112 |  Guppy5 sup  | r941_prom_sup_g5014.tar.gz          | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_models/r941_prom_sup_g5014.tar.gz) |
+|    r941_prom_hac_g360+g422     |     ONT r9.4.1    |                         HG001,2,4,5                          | 20210517 | Guppy3,4 hac | r941_prom_hac_g360+g422.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_models/r941_prom_hac_g360+g422.tar.gz) |
 
 
 ----
@@ -162,7 +168,7 @@ cd Clair3-Trio
 
 # download Clair3's pre-trained models
 mkdir -p models/clair3_models
-wget http://www.bio8.cs.hku.hk/clair3/clair3_models/clair3_models.tar.gz 
+wget http://www.bio8.cs.hku.hk/clair3_trio/clair3_models/clair3_models.tar.gz 
 tar -zxvf clair3_models.tar.gz -C ./models/clair3_models
 
 
