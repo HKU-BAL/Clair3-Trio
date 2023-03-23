@@ -385,7 +385,7 @@ Submodules in __`clair3/`__ are for variant calling and model training. Submodul
 
 ## Training Data
 
-Clair3-Trio trained its trio models using four GIAB samples (HG002, HG003 and HG004). All models were trained with chr20 excluded (including only chr1-19, 21, 22). All data link can be found at this [page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/training_data.md).
+Clair3-Trio trained its trio models using four GIAB samples (HG002, HG003 and HG004). All models were trained with chr20 excluded (including only chr1-19, 21, 22). All data links can be found at this [page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/training_data.md).
 
 |  Platform   |   Reference   |      Aligner      | Training samples |
 | :---------: | :-----------: | :---------------: | :--------------: |
