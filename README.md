@@ -68,7 +68,7 @@ Download models from [here](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_mo
 
 |           Model name           |  Platform   |    Training samples         |   Date   |  Basecaller  | File    |          Link            |
 | :----------------------------: | :---------: | :----------------------------------------------------------: | -------------------------------- | :--------------------------: | ----------------| :-------------------: |
-|    c3t_hg002_dna_r1041_e82_400bps_sup |     ONT 10.4.1    |                         HG002,3,4      |             20230322 | dorado | c3t_hg002_dna_r1041_e82_400bps_sup.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/c3t_hg002_dna_r1041_e82_400bps_sup.tar.gz) |
+|    c3t_hg002_dna_r1041_e82_400bps_sup |     ONT 10.4.1    |                         HG002,3,4      |             20230322 | Dorado v4.0.0 SUP | c3t_hg002_dna_r1041_e82_400bps_sup.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/c3t_hg002_dna_r1041_e82_400bps_sup.tar.gz) |
 |    c3t_hg002_r941_prom_sup_g5014 |     ONT r9.4.1    |                         HG002,3,4      |             20220514 | Guppy5 sup | c3t_hg002_r941_prom_sup_g5014.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/c3t_hg002_r941_prom_sup_g5014.tar.gz) |
 |    c3t_hg002_g422 |     ONT r9.4.1     |                         HG002,3,4      |             20220422 | Guppy4 hac | c3t_hg002_g422.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_trio_models/c3t_hg002_g422.tar.gz) |
 
@@ -80,7 +80,7 @@ When using the Clair3-Trio model, please use a corresponding Clair3 model for Pi
 
 |           Model name           |  Platform   |                       Training samples                       | Date   |  Basecaller  | File                                |                             Link                             |
 | :----------------------------: | :---------: | :----------------------------------------------------------: | -------------------------------- | :--------------------------: | ----------------------------------- | :----------------------------------------------------------: |
-|      r1041_e82_400bps_sup_v400       |     ONT r10.4.1   |                    HG002,4,5  | - |  dorado | r1041_e82_400bps_sup_v400.tar.gz          | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_models/r1041_e82_400bps_sup_v400.tar.gz) |
+|      r1041_e82_400bps_sup_v400       |     ONT r10.4.1   |                    HG002,4,5  | - |  Dorado v4.0.0 SUP | r1041_e82_400bps_sup_v400.tar.gz          | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_models/r1041_e82_400bps_sup_v400.tar.gz) |
 |      r941_prom_sup_g5014       |     ONT r9.4.1     |                    HG002,4,5 (Guppy5_sup)                    | 20220112 |  Guppy5 sup  | r941_prom_sup_g5014.tar.gz          | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_models/r941_prom_sup_g5014.tar.gz) |
 |    r941_prom_hac_g360+g422     |     ONT r9.4.1    |                         HG001,2,4,5                          | 20210517 | Guppy3,4 hac | r941_prom_hac_g360+g422.tar.gz      | [Download](http://www.bio8.cs.hku.hk/clair3_trio/clair3_models/r941_prom_hac_g360+g422.tar.gz) |
 
