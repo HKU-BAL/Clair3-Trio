@@ -23,7 +23,7 @@ Detailed descriptions of the methodology and results for Clair3-Trio are availab
 * [Latest Updates](#latest-updates)
 * [What's New in Clair3-Trio](#whats-new-in-clair3-trio)
 * [Pre-trained Models](#pre-trained-models)
-  + [R10.4 with the Kit 14 chemistry (Q20) Model](docs/trio/q20.md)
+  + [R10.4 with the Kit 14 chemistry (Q20+) Model](docs/trio/q20.md)
   + [Guppy 5,6](docs/trio/guppy5.md)
   + [Guppy 4](#pre-trained-models)
 * [Quick Demo](docs/trio/trio_quick_demo.md)
@@ -42,7 +42,7 @@ Detailed descriptions of the methodology and results for Clair3-Trio are availab
 
 ## Latest Updates
 
-*v0.4 (Mar 22, 2023)*: A model for R10.4 with the Kit 14 chemistry (Q20) is available now. Check [this page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/q20.md) for more information about the model.
+*v0.4 (Mar 22, 2023)*: A model for R10.4 pore with the Kit 14 chemistry (Q20+) is available now. Check [this page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/q20.md) for more information about the model.
 
 *v0.3 (June 20, 2022)*: Optimized Clair3-Trio speed, the runtime of Clair3-Trio to call variants from the whole genome is about 2.4 times of calling a single sample form Clair3 (v0.1-r10).
 
