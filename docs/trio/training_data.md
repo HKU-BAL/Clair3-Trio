@@ -2,7 +2,7 @@
 # Training Data
 
 
-[r10](https://labs.epi2me.io/askenazi-kit14-2022-12/)
+[q20](https://labs.epi2me.io/askenazi-kit14-2022-12/)
 
 [guppy5](https://labs.epi2me.io/gm24385_2021.05/)
 
