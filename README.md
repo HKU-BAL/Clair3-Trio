@@ -23,7 +23,7 @@ Detailed descriptions of the methodology and results for Clair3-Trio are availab
 * [Latest Updates](#latest-updates)
 * [What's New in Clair3-Trio](#whats-new-in-clair3-trio)
 * [Pre-trained Models](#pre-trained-models)
-  + [R10.4 with the Kit 12 chemistry (Q20) Model](docs/trio/q20.md)
+  + [R10.4 with the Kit 14 chemistry (Q20) Model](docs/trio/q20.md)
   + [Guppy 5,6](docs/trio/guppy5.md)
   + [Guppy 4](#pre-trained-models)
 * [Quick Demo](docs/trio/trio_quick_demo.md)
