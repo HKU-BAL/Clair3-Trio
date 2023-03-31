@@ -45,7 +45,6 @@ print_help_messages()
     echo $'--chunk_size=INT               The size of each chuck for parallel processing, default: 5000000.'
     echo $'--print_ref_calls              Show reference calls (0/0) in VCF file, default: disable.'
     echo $'--include_all_ctgs             Call variants on all contigs, otherwise call in chr{1..22,X,Y} and {1..22,X,Y}, default: disable.'
-    echo $'--gvcf                         Enable GVCF output, default: disable.'
     echo $'--snp_min_af=FLOAT             Minimum SNP AF required for a candidate variant. Lowering the value might increase a bit of sensitivity in trade of speed and accuracy, default: ont:0.08,hifi:0.08,ilmn:0.08.'
     echo $'--indel_min_af=FLOAT           Minimum Indel AF required for a candidate variant. Lowering the value might increase a bit of sensitivity in trade of speed and accuracy, default: ont:0.15,hifi:0.08,ilmn:0.08.'
     echo $'--remove_intermediate_dir      Remove intermediate directory, including intermediate phased BAM, pileup and full-alignment results. default: disable.'
