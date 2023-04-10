@@ -10,6 +10,7 @@ from argparse import ArgumentParser, SUPPRESS
 from threading import Thread
 from math import log, e
 from collections import namedtuple
+from distutils.util import strtobool
 
 from clair3.task.gt21 import (
     GT21_Type, gt21_enum_from_label,
@@ -1971,7 +1972,9 @@ def main():
 
     ## Output reference calls
     # parser.add_argument('--showRef', type=str2bool, default=False, help=SUPPRESS)
-    parser.add_argument('--showRef', action='store_true', help=SUPPRESS)
+    # parser.add_argument('--showRef', action='store_true', help=SUPPRESS)
+    parser.add_argument('--showRef', dest='showRef', 
+                    type=lambda x: bool(strtobool(x)))
 
     parser.add_argument('--add_padding', action='store_true',
                         help=SUPPRESS)

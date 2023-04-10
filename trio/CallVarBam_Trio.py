@@ -9,7 +9,7 @@ from os.path import dirname
 from time import sleep
 from argparse import ArgumentParser, SUPPRESS
 import logging
-
+from distutils.util import strtobool
 logging.getLogger().setLevel(logging.INFO)
 
 
@@ -111,9 +111,10 @@ def Run(args):
     temp_file_dir = command_option_from(args.temp_file_dir, 'temp_file_dir')
     haploid_precise_mode = CommandOption('haploid_precise', args.haploid_precise)
     haploid_sensitive_mode = CommandOption('haploid_sensitive', args.haploid_sensitive)
-    showRef_mode = command_option_from(None, None)
-    if args.showRef:
-        showRef_mode = command_option_from(True, 'showRef')
+    # showRef_mode = command_option_from(None, None)
+    # if args.showRef:
+    #     showRef_mode = command_option_from(True, 'showRef')
+    showRef_mode = CommandOption('showRef', args.showRef)
     add_indel_length_mode = CommandOption('add_indel_length', True)
     phasing_info_in_bam_mode = command_option_from(args.phasing_info_in_bam, 'phasing_info_in_bam')
     need_phasing_mode = command_option_from(args.need_phasing, 'need_phasing')
@@ -433,8 +434,9 @@ def main():
    
     # output options
     ## Output reference calls
-    parser.add_argument('--showRef', action='store_true',
-                        help=SUPPRESS)
+    # parser.add_argument('--showRef', type=str2bool, default=False)
+    parser.add_argument('--showRef', dest='showRef', 
+                    type=lambda x: bool(strtobool(x)))
 
     parser.add_argument('--qual', type=int, default=2,
                         help="If set, variants with >=$qual will be marked 'PASS', or 'LowQual' otherwise, optional")

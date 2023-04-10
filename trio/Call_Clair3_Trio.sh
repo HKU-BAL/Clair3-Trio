@@ -104,7 +104,10 @@ while true; do
    esac
 done
 
-
+if [ ${GVCF} == True ]
+then
+SHOW_REF=True
+fi
 
 SHELL_FOLDER=$(cd "$(dirname "$0")";pwd)
 CLAIR3_TRIO="${SHELL_FOLDER}/../clair3.py"
@@ -264,7 +267,7 @@ TRIO_N="${ALL_SAMPLE}_TRIO"
 #chunk_num=20
 #CHUNK_LIST=`seq 1 ${chunk_num}`
 
-# # select candidate from trio input
+# select candidate from trio input
 echo "[TRIO INFO] 2 Select Trio Candidates"
 time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_2_fiter_hete_snp_pileup.log -j${THREADS} \
 "${PYPY} ${CLAIR3_TRIO}  SelectCandidates_Trio \
@@ -277,8 +280,6 @@ time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_2_fiter_hete
 --var_pct_full 1.0 \
 --ref_var_max_ratio 1.2 \
 --ctgName {1}" ::: ${CHR[@]} |& tee ${LOG_PATH}/2_FHSP.log
-
-#--chunk_num ${chunk_num} \
 
 # using gpu are preserved for debugging only
 use_gpu=0
@@ -305,23 +306,93 @@ time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_3_callvarbam
 --samtools ${SAMTOOLS} \
 --platform ${PLATFORM} \
 --full_aln_regions {1} \
+--showRef ${SHOW_REF} \
 --phasing_info_in_bam" :::: ${CANDIDATE_BED_PATH}/FULL_ALN_FILES |& tee ${LOG_PATH}/3_CV.log
 
-#--showRef \
 ${PARALLEL}  -j${THREADS} \
 "${PYPY} ${CLAIR3_TRIO} SortVcf_Trio \
     --input_dir ${CALL_PATH}/{1} \
     --vcf_fn_prefix "trio_{1}" \
+    --output_fn ${OUTPUT_FOLDER}/{1}_c3t.vcf \
+    --sampleName {1} \
+    --ref_fn ${REFERENCE_FILE_PATH} \
+    --contigs_fn ${TMP_FILE_PATH}/CONTIGS" ::: ${ALL_SAMPLE[@]}
+
+if [ "$( gzip -fdc ${OUTPUT_FOLDER}/${SAMPLE_C}_c3t.vcf.gz | grep -v '#' | wc -l )" -eq 0 ]; then echo "[INFO] Exit in trio variant calling"; exit 0; fi
+
+
+INPUT_PILEUP_GVCF_PATH=(
+${PILEUP_VCF_PATH}/${SAMPLE_C}/tmp/gvcf_tmp_output/
+${PILEUP_VCF_PATH}/${SAMPLE_P1}/tmp/gvcf_tmp_output/
+${PILEUP_VCF_PATH}/${SAMPLE_P2}/tmp/gvcf_tmp_output/
+)
+
+TRIO_M_OUTPUT_VCF=(
+${OUTPUT_FOLDER}/${SAMPLE_C}_c3t.vcf.gz
+${OUTPUT_FOLDER}/${SAMPLE_P1}_c3t.vcf.gz
+${OUTPUT_FOLDER}/${SAMPLE_P2}_c3t.vcf.gz
+)
+
+mkdir -p ${GVCF_TMP_PATH}/${SAMPLE_C}
+mkdir -p ${GVCF_TMP_PATH}/${SAMPLE_P1}
+mkdir -p ${GVCF_TMP_PATH}/${SAMPLE_P2}
+
+
+echo $''
+echo "[TRIO INFO] * 4 Merge trio VCF"
+time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_4_merge_vcf.log -j${THREADS} \
+"${PYPY} ${CLAIR3_TRIO} MergeVcf_Trio \
+    --pileup_vcf_fn {3} \
+    --bed_fn_prefix ${CANDIDATE_BED_PATH} \
+    --trio_vcf_fn {4} \
+    --output_fn ${GVCF_TMP_PATH}/{2}/merge_{1}.vcf \
+    --gvcf_fn ${GVCF_TMP_PATH}/{2}/merge_{1}.gvcf \
+    --platform ${PLATFORM} \
+    --print_ref_calls ${SHOW_REF} \
+    --gvcf ${GVCF} \
+    --haploid_precise ${HAP_PRE} \
+    --haploid_sensitive ${HAP_SEN} \
+    --non_var_gvcf_fn {5}/non_var.gvcf \
+    --ref_fn ${REFERENCE_FILE_PATH} \
+    --ctgName {1}" ::: ${CHR[@]} ::: ${ALL_SAMPLE[@]} :::+ ${INPUT_PILEUP_VCF[@]} :::+ ${TRIO_M_OUTPUT_VCF[@]} :::+ ${INPUT_PILEUP_GVCF_PATH[@]} |& tee ${LOG_PATH}/4_MV.log
+
+#--showRef \
+${PARALLEL}  -j${THREADS} \
+"${PYPY} ${CLAIR3_TRIO} SortVcf_Trio \
+    --input_dir ${GVCF_TMP_PATH}/{1} \
+    --vcf_fn_prefix "merge" \
     --output_fn ${OUTPUT_FOLDER}/{1}.vcf \
     --sampleName {1} \
     --ref_fn ${REFERENCE_FILE_PATH} \
     --contigs_fn ${TMP_FILE_PATH}/CONTIGS" ::: ${ALL_SAMPLE[@]}
 
 if [ "$( gzip -fdc ${OUTPUT_FOLDER}/${SAMPLE_C}.vcf.gz | grep -v '#' | wc -l )" -eq 0 ]; then echo "[INFO] Exit in trio variant calling"; exit 0; fi
-if [ ${GVCF} == True ]; then cat ${GVCF_TMP_PATH}/*.tmp.g.vcf | ${PYPY} ${CLAIR3} SortVcf --output_fn ${GVCF_TMP_PATH}/non_var.gvcf; fi
+
+if [ ${GVCF} == True ]
+then
+${PARALLEL}  -j${THREADS} \
+${PYPY} ${CLAIR3_TRIO} SortVcf \
+        --input_dir ${GVCF_TMP_PATH}/{1} \
+        --vcf_fn_prefix "merge" \
+        --vcf_fn_suffix ".gvcf" \
+        --output_fn ${OUTPUT_FOLDER}/{1}.gvcf \
+        --sampleName {1} \
+        --ref_fn ${REFERENCE_FILE_PATH} \
+        --contigs_fn ${TMP_FILE_PATH}/CONTIGS ::: ${ALL_SAMPLE[@]}
+fi
+
+
+# if [ ${GVCF} == True ]; then cat ${GVCF_TMP_PATH}/*.tmp.g.vcf | ${PYPY} ${CLAIR3} SortVcf --output_fn ${GVCF_TMP_PATH}/non_var.gvcf; fi
 
 echo $''
-echo "[INFO] Finish calling, output file [Child]: ${OUTPUT_FOLDER}/${SAMPLE_C}.vcf.gz"
-echo "[INFO] Finish calling, output file [Parent 1]: ${OUTPUT_FOLDER}/${SAMPLE_P1}.vcf.gz"
-echo "[INFO] Finish calling, output file [Parent 2]: ${OUTPUT_FOLDER}/${SAMPLE_P2}.vcf.gz"
+echo "[INFO] Finish calling, output VCF file [Child]: ${OUTPUT_FOLDER}/${SAMPLE_C}.vcf.gz"
+echo "[INFO] Finish calling, output VCF file [Parent 1]: ${OUTPUT_FOLDER}/${SAMPLE_P1}.vcf.gz"
+echo "[INFO] Finish calling, output VCF file [Parent 2]: ${OUTPUT_FOLDER}/${SAMPLE_P2}.vcf.gz"
 
+if [ ${GVCF} == True ]
+then
+echo $''
+echo "[INFO] Finish calling, output gVCF file [Child]: ${OUTPUT_FOLDER}/${SAMPLE_C}.gvcf.gz"
+echo "[INFO] Finish calling, output gVCF file [Parent 1]: ${OUTPUT_FOLDER}/${SAMPLE_P1}.gvcf.gz"
+echo "[INFO] Finish calling, output gVCF file [Parent 2]: ${OUTPUT_FOLDER}/${SAMPLE_P2}.gvcf.gz"
+fi

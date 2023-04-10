@@ -203,6 +203,17 @@ else
 fi
 
 
+# Compress GVCF output using lz4
+if [ ${GVCF} == True ]
+then
+    ${PYPY} ${CLAIR3} SortVcf \
+        --input_dir ${GVCF_TMP_PATH} \
+        --vcf_fn_suffix ".tmp.gvcf" \
+        --output_fn ${GVCF_TMP_PATH}/non_var.gvcf \
+        --ref_fn ${REFERENCE_FILE_PATH} \
+        --contigs_fn ${TMP_FILE_PATH}/CONTIGS
+fi
+
 if [ ${PILEUP_PHASING} == True ]; then
     echo "[INFO] Only call pileup output and phasing, output file: ${OUTPUT_FOLDER}/pileup.vcf.gz"
     echo "[INFO] SAMPLE ${SAMPLE} Finish calling!"
@@ -255,16 +266,16 @@ ${PYPY} ${CLAIR3} SortVcf \
     --contigs_fn ${TMP_FILE_PATH}/CONTIGS
 
 if [ "$( gzip -fdc ${OUTPUT_FOLDER}/full_alignment.vcf.gz | grep -v '#' | wc -l )" -eq 0 ]; then echo "[INFO] Exit in full-alignment variant calling"; exit 0; fi
-# Compress GVCF output using lz4
-if [ ${GVCF} == True ]
-then
-    ${PYPY} ${CLAIR3} SortVcf \
-        --input_dir ${GVCF_TMP_PATH} \
-        --vcf_fn_suffix ".tmp.gvcf" \
-        --output_fn ${GVCF_TMP_PATH}/non_var.gvcf \
-        --ref_fn ${REFERENCE_FILE_PATH} \
-        --contigs_fn ${TMP_FILE_PATH}/CONTIGS
-fi
+# # Compress GVCF output using lz4
+# if [ ${GVCF} == True ]
+# then
+#     ${PYPY} ${CLAIR3} SortVcf \
+#         --input_dir ${GVCF_TMP_PATH} \
+#         --vcf_fn_suffix ".tmp.gvcf" \
+#         --output_fn ${GVCF_TMP_PATH}/non_var.gvcf \
+#         --ref_fn ${REFERENCE_FILE_PATH} \
+#         --contigs_fn ${TMP_FILE_PATH}/CONTIGS
+# fi
 
 ##Merge pileup and full alignment vcf
 ##-----------------------------------------------------------------------------------------------------------------------

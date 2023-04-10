@@ -5,7 +5,7 @@ Usage="Usage: ./${SCRIPT_NAME} --bam_fn_c=BAM --bam_fn_p1=BAM --bam_fn_p2=BAM --
 
 
 # ENTRANCE SCRIPT FOR CLAIR3-TRIO, SETTING VARIABLE AND CALL TRIO
-VERSION='v0.4'
+VERSION='v0.5'
 
 set -e
 #./run_clair3_trio.sh --bam_fn_c=child_bam --bam_fn_p1=parent1 --bam_fn_p2=parent2 -f ref.fasta -t 32 -o tmp -p --model_path_clair3=model_path --model_path_clair3_trio=model_path
@@ -36,6 +36,7 @@ print_help_messages()
     echo $'--sample_name_c=STR            Define the sample name for Child to be shown in the VCF file.[Child]'
     echo $'--sample_name_p1=STR           Define the sample name for Parent1 to be shown in the VCF file.[Parent1]'
     echo $'--sample_name_p2=STR           Define the sample name for Parent2 to be shown in the VCF file.[Parent2]'
+    echo $'--gvcf                         Enable GVCF output, default: disable.'
     echo $'--qual=INT                     If set, variants with >=$qual will be marked PASS, or LowQual otherwise.'
     echo $'--samtools=STR                 Path of samtools, samtools version >= 1.10 is required.'
     echo $'--python=STR                   Path of python, python3 >= 3.6 is required.'
@@ -77,7 +78,7 @@ NC="\\033[0m"
 ARGS=`getopt -o b:f:t:p:o:hv \
 -l bam_fn_c:,bam_fn_p1:,bam_fn_p2:,ref_fn:,threads:,model_path_clair3:,model_path_clair3_trio:,platform:,output:,\
 bed_fn::,vcf_fn::,ctg_name::,sample_name_c::,sample_name_p1::,sample_name_p2::,qual::,samtools::,python::,pypy::,parallel::,whatshap::,chunk_num::,chunk_size::,var_pct_full::,ref_pct_full::,var_pct_phasing::,\
-resumn::,snp_min_af::,indel_min_af::,pileup_model_prefix::,trio_model_prefix::,fast_mode,gvcf,pileup_only,pileup_phasing,print_ref_calls,haploid_precise,haploid_sensitive,include_all_ctgs,no_phasing_for_fa,call_snp_only,remove_intermediate_dir,enable_phasing,enable_long_indel,help,version -n 'run_clair3_trio.sh' -- "$@"`
+resumn::,snp_min_af::,indel_min_af::,pileup_model_prefix::,trio_model_prefix::,fast_mode,gvcf,pileup_only,pileup_phasing,print_ref_calls,haploid_precise,haploid_sensitive,include_all_ctgs,no_phasing_for_fa,call_snp_only,remove_intermediate_dir,enable_phasing,enable_long_indel,gvcf,help,version -n 'run_clair3_trio.sh' -- "$@"`
 
 if [ $? != 0 ] ; then echo"No input. Terminating...">&2 ; exit 1 ; fi
 eval set -- "${ARGS}"
@@ -227,6 +228,7 @@ if [ "${BASE_MODEL}" = "r941_prom_sup_g5014" ] || [ "${BASE_MODEL}" = "r941_prom
 OUTPUT_FOLDER=$(echo ${OUTPUT_FOLDER%*/})
 MODEL_PATH_C3=$(echo ${MODEL_PATH_C3%*/})
 MODEL_PATH_C3T=$(echo ${MODEL_PATH_C3T%*/})
+if [ ${GVCF} ]; then SHOW_REF=True ; fi
 
 # optional parameters should use "="
 (time (

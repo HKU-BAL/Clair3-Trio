@@ -48,6 +48,7 @@ tri_scripts_folder = [
     'MergeTensorsBam_Trio',
     'MergeBin_Trio',
     'SortVcf_Trio',
+    'MergeVcf_Trio',
 ]
 
 def directory_for(submodule_name):
