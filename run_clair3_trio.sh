@@ -49,12 +49,12 @@ print_help_messages()
     echo $'--snp_min_af=FLOAT             Minimum SNP AF required for a candidate variant. Lowering the value might increase a bit of sensitivity in trade of speed and accuracy, default: ont:0.08,hifi:0.08,ilmn:0.08.'
     echo $'--indel_min_af=FLOAT           Minimum Indel AF required for a candidate variant. Lowering the value might increase a bit of sensitivity in trade of speed and accuracy, default: ont:0.15,hifi:0.08,ilmn:0.08.'
     echo $'--remove_intermediate_dir      Remove intermediate directory, including intermediate phased BAM, pileup and full-alignment results. default: disable.'
-    echo $'--enable_phasing               Output phased variants using whatshap, default: disable.'
+    echo $'--trio_model_prefix=STR        Model prefix in trio calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index, default: trio.'
+    echo $'--enable_phasing               EXPERIMENTAL: Output phased variants using whatshap, default: disable.'
     echo $'--var_pct_full=FLOAT           EXPERIMENTAL: Specify an expected percentage of low quality 0/1 and 1/1 variants called in the pileup mode for full-alignment mode calling, default: 0.3.'
-    echo $'--ref_pct_full=FLOAT           EXPERIMENTAL: Specify an expected percentage of low quality 0/0 variants called in the pileup mode for full-alignment mode calling, default: 0.3 for ilmn and hifi, 0.1 for ont.'
+    echo $'--ref_pct_full=FLOAT           EXPERIMENTAL: Specify an expected percentage of low quality 0/0 variants called in the pileup mode for full-alignment mode calling, default:  0.1 .'
     echo $'--var_pct_phasing=FLOAT        EXPERIMENTAL: Specify an expected percentage of high quality 0/1 variants used in WhatsHap phasing, default: 0.8 for ont guppy5 and 0.7 for other platforms.'
     echo $'--pileup_model_prefix=STR      EXPERIMENTAL: Model prefix in pileup calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index. default: pileup.'
-    echo $'--trio_model_prefix=STR        EXPERIMENTAL: Model prefix in trio calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index, default: trio.'
     echo $'--fast_mode                    EXPERIMENTAL: Skip variant candidates with AF <= 0.15, default: disable.'
     echo $'--haploid_precise              EXPERIMENTAL: Enable haploid calling mode. Only 1/1 is considered as a variant, default: disable.'
     echo $'--haploid_sensitive            EXPERIMENTAL: Enable haploid calling mode. 0/1 and 1/1 are considered as a variant, default: disable.'
@@ -270,7 +270,7 @@ echo "[INFO] ENABLE CALLING SNP CANDIDATES ONLY: ${SNP_ONLY}"
 echo "[INFO] ENABLE PRINTING REFERENCE CALLS: ${SHOW_REF}"
 echo "[INFO] ENABLE OUTPUT GVCF: ${GVCF}"
 echo "[INFO] ENABLE HAPLOID PRECISE MODE: ${HAP_PRE}"
-echo "[INFO] ENABLE HAPLOID SENSITIVE MODE: ${GVCF}"
+echo "[INFO] ENABLE HAPLOID SENSITIVE MODE: ${HAP_SEN}"
 echo "[INFO] ENABLE INCLUDE ALL CTGS CALLING: ${INCLUDE_ALL_CTGS}"
 echo "[INFO] ENABLE NO PHASING FOR FULL ALIGNMENT: ${NO_PHASING}"
 echo "[INFO] ENABLE REMOVING INTERMEDIATE FILES: ${RM_TMP_DIR}"

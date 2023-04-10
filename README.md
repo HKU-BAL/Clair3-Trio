@@ -42,7 +42,9 @@ Detailed descriptions of the methodology and results for Clair3-Trio are availab
 
 ## Latest Updates
 
-*v0.4 (Mar 22, 2023)*: A model for R10.4 pore with the Kit 14 chemistry (Q20+) is available now. Check [this page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/q20.md) for more information about the model.
+*v0.5 (April 10, 2023)*: Added **gVCF support**. Using the "--gvcf" flag to enable gVCF output.
+
+*v0.4 (March 22, 2023)*: A model for R10.4 pore with the Kit 14 chemistry (**Q20+**) is available now. Check [this page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/q20.md) for more information about the model.
 
 *v0.3 (June 20, 2022)*: Optimized Clair3-Trio speed, the runtime of Clair3-Trio to call variants from the whole genome is about 2.4 times of calling a single sample form Clair3 (v0.1-r10).
 
@@ -329,6 +331,7 @@ docker run -it hkubal/clair3-trio:latest /opt/bin/run_clair3_trio.sh --help
   --parallel=STR            Path of parallel, parallel >= 20191122 is required.
   --whatshap=STR            Path of whatshap, whatshap >= 1.0 is required.
   --chunk_size=INT          The size of each chuck for parallel processing, default: 5Mbp.
+  --gvcf                    Enable GVCF output, default: disable.
   --print_ref_calls         Show reference calls (0/0) in vcf file, default: disable.
   --include_all_ctgs        Call variants on all contigs, otherwise call in chr{1..22,X,Y} and {1..22,X,Y}, default: disable.
   --snp_min_af=FLOAT        Minimum SNP AF required for a candidate variant. Lowering the value might increase a bit of sensitivity in trade of speed and accuracy, default: ont:0.08.
