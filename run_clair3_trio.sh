@@ -12,6 +12,7 @@ set -e
 print_help_messages()
 {
     echo $''
+    echo "Clair3-Trio ${VERSION}"
     echo ${Usage}
     echo $''
     echo $'Required parameters:'
