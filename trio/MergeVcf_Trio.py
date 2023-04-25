@@ -199,6 +199,9 @@ def main():
     parser.add_argument('--gvcf', type=str2bool, default=False,
                         help="Enable GVCF output, default: disabled")
 
+    parser.add_argument('--merge_gvcf_only', type=str2bool, default=False,
+                        help="Enable Merge GVCF output only, default: disabled")
+
     parser.add_argument('--non_var_gvcf_fn', type=str, default=None,
                         help='Path to the non-variant GVCF')
 
@@ -245,6 +248,10 @@ def main():
         parser.print_help()
         sys.exit(1)
     
+    if (args.merge_gvcf_only):
+        mergeNonVariant(args)
+        sys.exit(0)
+
     # realignment region merge
     MergeVcf(args=args)
     

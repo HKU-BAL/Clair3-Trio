@@ -5,7 +5,7 @@ Usage="Usage: ./${SCRIPT_NAME} --bam_fn_c=BAM --bam_fn_p1=BAM --bam_fn_p2=BAM --
 
 
 # ENTRANCE SCRIPT FOR CLAIR3-TRIO, SETTING VARIABLE AND CALL TRIO
-VERSION='v0.5'
+VERSION='v0.6'
 
 set -e
 #./run_clair3_trio.sh --bam_fn_c=child_bam --bam_fn_p1=parent1 --bam_fn_p2=parent2 -f ref.fasta -t 32 -o tmp -p --model_path_clair3=model_path --model_path_clair3_trio=model_path
@@ -49,20 +49,14 @@ print_help_messages()
     echo $'--include_all_ctgs             Call variants on all contigs, otherwise call in chr{1..22,X,Y} and {1..22,X,Y}, default: disable.'
     echo $'--snp_min_af=FLOAT             Minimum SNP AF required for a candidate variant. Lowering the value might increase a bit of sensitivity in trade of speed and accuracy, default: ont:0.08,hifi:0.08,ilmn:0.08.'
     echo $'--indel_min_af=FLOAT           Minimum Indel AF required for a candidate variant. Lowering the value might increase a bit of sensitivity in trade of speed and accuracy, default: ont:0.15,hifi:0.08,ilmn:0.08.'
-    echo $'--remove_intermediate_dir      Remove intermediate directory, including intermediate phased BAM, pileup and full-alignment results. default: disable.'
     echo $'--trio_model_prefix=STR        Model prefix in trio calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index, default: trio.'
-    echo $'--enable_phasing               EXPERIMENTAL: Output phased variants using whatshap, default: disable.'
+    echo $'--enable_output_phasing        Output phased variants using whatshap, default: disable.'
+    echo $'--enable_output_haplotagging   Output enable_output_haplotagging BAM variants using whatshap, default: disable.'
+    echo $'--enable_phasing               It means `--enable_output_phasing`. The option is retained for backward compatibility.'
     echo $'--var_pct_full=FLOAT           EXPERIMENTAL: Specify an expected percentage of low quality 0/1 and 1/1 variants called in the pileup mode for full-alignment mode calling, default: 0.3.'
     echo $'--ref_pct_full=FLOAT           EXPERIMENTAL: Specify an expected percentage of low quality 0/0 variants called in the pileup mode for full-alignment mode calling, default:  0.1 .'
     echo $'--var_pct_phasing=FLOAT        EXPERIMENTAL: Specify an expected percentage of high quality 0/1 variants used in WhatsHap phasing, default: 0.8 for ont guppy5 and 0.7 for other platforms.'
     echo $'--pileup_model_prefix=STR      EXPERIMENTAL: Model prefix in pileup calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index. default: pileup.'
-    echo $'--fast_mode                    EXPERIMENTAL: Skip variant candidates with AF <= 0.15, default: disable.'
-    echo $'--haploid_precise              EXPERIMENTAL: Enable haploid calling mode. Only 1/1 is considered as a variant, default: disable.'
-    echo $'--haploid_sensitive            EXPERIMENTAL: Enable haploid calling mode. 0/1 and 1/1 are considered as a variant, default: disable.'
-    echo $'--call_snp_only                EXPERIMENTAL: Call candidates pass SNP minimum AF only, ignore Indel candidates, default: disable.'
-    echo $'--enable_long_indel            EXPERIMENTAL: Call long Indel variants(>50 bp), default: disable.'
-    echo $'--no_phasing_for_fa            EXPERIMENTAL: Call variants without whatshap phasing in full alignment calling, default: disable.'
-    echo $'-p, --platform=STR             EXPERIMENTAL: [DO NOT CHANGE] Select the sequencing platform of the input. Possible options: {ont}.'
     echo $''
 }
 
@@ -79,7 +73,7 @@ NC="\\033[0m"
 ARGS=`getopt -o b:f:t:p:o:hv \
 -l bam_fn_c:,bam_fn_p1:,bam_fn_p2:,ref_fn:,threads:,model_path_clair3:,model_path_clair3_trio:,platform:,output:,\
 bed_fn::,vcf_fn::,ctg_name::,sample_name_c::,sample_name_p1::,sample_name_p2::,qual::,samtools::,python::,pypy::,parallel::,whatshap::,chunk_num::,chunk_size::,var_pct_full::,ref_pct_full::,var_pct_phasing::,\
-resumn::,snp_min_af::,indel_min_af::,pileup_model_prefix::,trio_model_prefix::,fast_mode,gvcf,pileup_only,pileup_phasing,print_ref_calls,haploid_precise,haploid_sensitive,include_all_ctgs,no_phasing_for_fa,call_snp_only,remove_intermediate_dir,enable_phasing,enable_long_indel,gvcf,help,version -n 'run_clair3_trio.sh' -- "$@"`
+resumn::,snp_min_af::,indel_min_af::,pileup_model_prefix::,trio_model_prefix::,fast_mode,gvcf,pileup_only,pileup_phasing,print_ref_calls,haploid_precise,haploid_sensitive,include_all_ctgs,no_phasing_for_fa,call_snp_only,remove_intermediate_dir,enable_output_phasing,enable_output_haplotagging,enable_phasing,enable_long_indel,gvcf,help,version -n 'run_clair3_trio.sh' -- "$@"`
 
 if [ $? != 0 ] ; then echo"No input. Terminating...">&2 ; exit 1 ; fi
 eval set -- "${ARGS}"
@@ -118,6 +112,8 @@ INCLUDE_ALL_CTGS=False
 NO_PHASING=False
 RM_TMP_DIR=False
 ENABLE_PHASING=False
+ENABLE_OUTPUT_PHASING=False
+ENABLE_OUTPUT_HAPLOTAGGING=False
 ENABLE_LONG_INDEL=False
 PILEUP_PREFIX="pileup"
 TRIO_PREFIX="trio"
@@ -168,6 +164,8 @@ while true; do
     --remove_intermediate_dir ) RM_TMP_DIR=True; shift 1 ;;
     --enable_long_indel ) ENABLE_LONG_INDEL=True; shift 1 ;;
     --enable_phasing ) ENABLE_PHASING=True; shift 1 ;;
+    --enable_output_phasing ) ENABLE_OUTPUT_PHASING=True; shift 1 ;;
+    --enable_output_haplotagging ) ENABLE_OUTPUT_HAPLOTAGGING=True; shift 1 ;;
 
     -- ) shift; break; ;;
     -h|--help ) print_help_messages; exit 0 ;;
@@ -230,6 +228,8 @@ OUTPUT_FOLDER=$(echo ${OUTPUT_FOLDER%*/})
 MODEL_PATH_C3=$(echo ${MODEL_PATH_C3%*/})
 MODEL_PATH_C3T=$(echo ${MODEL_PATH_C3T%*/})
 if [ ${GVCF} ]; then SHOW_REF=True ; fi
+if [ ${ENABLE_PHASING} ]; then ENABLE_OUTPUT_PHASING=True ; fi
+if [ ${ENABLE_OUTPUT_HAPLOTAGGING} ]; then ENABLE_OUTPUT_PHASING=True ; fi
 
 # optional parameters should use "="
 (time (
@@ -264,19 +264,12 @@ echo "[INFO] FULL ALIGN REFERENCE PROPORTION: ${REF_PRO}"
 echo "[INFO] PHASING PROPORTION: ${PHASING_PCT}"
 if [ ${SNP_AF} -gt 0 ]; then echo "[INFO] USER DEFINED SNP THRESHOLD: ${SNP_AF}"; fi
 if [ ${INDEL_AF} -gt 0 ]; then echo "[INFO] USER DEFINED INDEL THRESHOLD: ${INDEL_AF}"; fi
-echo "[INFO] ENABLE FILEUP ONLY CALLING: ${PILEUP_ONLY}"
 echo "[INFO] ENABLE PILEUP CALLING AND PHASING: ${PILEUP_PHASING}"
-echo "[INFO] ENABLE FAST MODE CALLING: ${FAST_MODE}"
-echo "[INFO] ENABLE CALLING SNP CANDIDATES ONLY: ${SNP_ONLY}"
 echo "[INFO] ENABLE PRINTING REFERENCE CALLS: ${SHOW_REF}"
 echo "[INFO] ENABLE OUTPUT GVCF: ${GVCF}"
-echo "[INFO] ENABLE HAPLOID PRECISE MODE: ${HAP_PRE}"
-echo "[INFO] ENABLE HAPLOID SENSITIVE MODE: ${HAP_SEN}"
 echo "[INFO] ENABLE INCLUDE ALL CTGS CALLING: ${INCLUDE_ALL_CTGS}"
-echo "[INFO] ENABLE NO PHASING FOR FULL ALIGNMENT: ${NO_PHASING}"
-echo "[INFO] ENABLE REMOVING INTERMEDIATE FILES: ${RM_TMP_DIR}"
-echo "[INFO] ENABLE PHASING VCF OUTPUT: ${ENABLE_PHASING}"
-echo "[INFO] ENABLE LONG INDEL CALLING: ${ENABLE_LONG_INDEL}"
+echo "[INFO] ENABLE PHASING VCF OUTPUT: ${ENABLE_OUTPUT_PHASING}"
+echo "[INFO] ENABLE HAPLOTAGGING BAM OUTPUT: ${ENABLE_OUTPUT_HAPLOTAGGING}"
 echo $''
 
 # file check
@@ -381,7 +374,8 @@ ${SCRIPT_PATH}/trio/Call_Clair3_Trio.sh \
     --pileup_model_prefix=${PILEUP_PREFIX} \
     --trio_model_prefix=${TRIO_PREFIX} \
     --remove_intermediate_dir=${RM_TMP_DIR} \
-    --enable_phasing=${ENABLE_PHASING} \
+    --enable_phasing=${ENABLE_OUTPUT_PHASING} \
+    --enable_output_haplotagging=${ENABLE_OUTPUT_HAPLOTAGGING} \
     --enable_long_indel=${ENABLE_LONG_INDEL}
 
 

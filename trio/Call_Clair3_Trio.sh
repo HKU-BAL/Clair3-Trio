@@ -8,7 +8,7 @@ ARGS=`getopt -o f:t:p:o:r::c::s::h::g \
 -l bam_fn_c:,bam_fn_p1:,bam_fn_p2:,ref_fn:,threads:,model_path_clair3:,model_path_clair3_trio:,platform:,output:,\
 bed_fn::,vcf_fn::,ctg_name::,sample_name_c::,sample_name_p1::,sample_name_p2::,help::,qual::,samtools::,python::,pypy::,parallel::,whatshap::,chunk_num::,chunk_size::,var_pct_full::,var_pct_phasing::,\
 snp_min_af::,indel_min_af::,ref_pct_full::,pileup_only::,pileup_phasing::,fast_mode::,gvcf::,print_ref_calls::,haploid_precise::,haploid_sensitive::,include_all_ctgs::,\
-no_phasing_for_fa::,pileup_model_prefix::,trio_model_prefix::,call_snp_only::,remove_intermediate_dir::,enable_phasing::,enable_long_indel:: -n 'run_clair3_trio.sh' -- "$@"`
+no_phasing_for_fa::,pileup_model_prefix::,trio_model_prefix::,call_snp_only::,remove_intermediate_dir::,enable_phasing::,enable_output_haplotagging::,enable_long_indel:: -n 'run_clair3_trio.sh' -- "$@"`
 
 if [ $? != 0 ] ; then echo"No input. Terminating...">&2 ; exit 1 ; fi
 eval set -- "${ARGS}"
@@ -49,7 +49,7 @@ TRIO_PREFIX="trio"
 RM_TMP_DIR=False
 ENABLE_PHASING=False
 ENABLE_LONG_INDEL=False
-
+ENABLE_OUTPUT_HAPLOTAGGING=False
 
 
 while true; do
@@ -97,6 +97,7 @@ while true; do
     --remove_intermediate_dir ) RM_TMP_DIR="$2"; shift 2 ;;
     --enable_long_indel ) ENABLE_LONG_INDEL="$2"; shift 2 ;;
     --enable_phasing ) ENABLE_PHASING="$2"; shift 2 ;;
+    --enable_output_haplotagging ) ENABLE_OUTPUT_HAPLOTAGGING="$2"; shift 2 ;;
 
     -- ) shift; break; ;;
     -h|--help ) print_help_messages; break ;;
@@ -137,31 +138,31 @@ echo "[TRIO INFO] * Clir3-Trio pipeline start"
 echo "[TRIO INFO] * 0 Check environment variables"
 
 ${PYTHON} ${CLAIR3_TRIO} CheckEnvs_Trio \
-    --bam_fn_c ${BAM_FILE_PATH_C} \
-    --bam_fn_p1 ${BAM_FILE_PATH_P1} \
-    --bam_fn_p2 ${BAM_FILE_PATH_P2} \
-    --output_fn_prefix ${OUTPUT_FOLDER} \
-    --ctg_name ${CONTIGS} \
-    --bed_fn ${BED_FILE_PATH} \
-    --ref_fn ${REFERENCE_FILE_PATH} \
-    --vcf_fn ${VCF_FILE_PATH} \
-    --chunk_num ${CHUNK_NUM} \
-    --chunk_size ${CHUNK_SIZE} \
-    --include_all_ctgs ${INCLUDE_ALL_CTGS} \
-    --threads ${THREADS} \
-    --python ${PYTHON} \
-    --pypy ${PYPY} \
-    --samtools ${SAMTOOLS} \
-    --whatshap ${WHATSHAP} \
-    --parallel ${PARALLEL} \
-    --qual ${QUAL} \
-    --sampleName_c ${SAMPLE_C} \
-    --sampleName_p1 ${SAMPLE_P1} \
-    --sampleName_p2 ${SAMPLE_P2} \
-    --var_pct_full ${PRO} \
-    --ref_pct_full ${REF_PRO} \
-    --snp_min_af ${SNP_AF} \
-    --indel_min_af ${INDEL_AF}
+   --bam_fn_c ${BAM_FILE_PATH_C} \
+   --bam_fn_p1 ${BAM_FILE_PATH_P1} \
+   --bam_fn_p2 ${BAM_FILE_PATH_P2} \
+   --output_fn_prefix ${OUTPUT_FOLDER} \
+   --ctg_name ${CONTIGS} \
+   --bed_fn ${BED_FILE_PATH} \
+   --ref_fn ${REFERENCE_FILE_PATH} \
+   --vcf_fn ${VCF_FILE_PATH} \
+   --chunk_num ${CHUNK_NUM} \
+   --chunk_size ${CHUNK_SIZE} \
+   --include_all_ctgs ${INCLUDE_ALL_CTGS} \
+   --threads ${THREADS} \
+   --python ${PYTHON} \
+   --pypy ${PYPY} \
+   --samtools ${SAMTOOLS} \
+   --whatshap ${WHATSHAP} \
+   --parallel ${PARALLEL} \
+   --qual ${QUAL} \
+   --sampleName_c ${SAMPLE_C} \
+   --sampleName_p1 ${SAMPLE_P1} \
+   --sampleName_p2 ${SAMPLE_P2} \
+   --var_pct_full ${PRO} \
+   --ref_pct_full ${REF_PRO} \
+   --snp_min_af ${SNP_AF} \
+   --indel_min_af ${INDEL_AF}
 
 
 readarray -t CHR < "${OUTPUT_FOLDER}/tmp/CONTIGS"
@@ -199,46 +200,45 @@ echo "running pileup model"
 
 ${PARALLEL} --retries ${RETRIES} -j3 --joblog  ${LOG_PATH}/parallel_1_clair3_pileup.log \
 "${SHELL_FOLDER}/..//scripts/clair3.sh \
-    --bam_fn={2} \
-    --ref_fn=${REFERENCE_FILE_PATH} \
-    --threads=${CLAIR3_THREADS} \
-    --model_path=${MODEL_PATH_C3} \
-    --output=${PILEUP_VCF_PATH}/{1} \
-    --platform="ont" \
-    --bed_fn=${BED_FILE_PATH} \
-    --vcf_fn=${VCF_FILE_PATH} \
-    --ctg_name=${CONTIGS} \
-    --sample_name={1} \
-    --chunk_num=${CHUNK_NUM} \
-    --chunk_size=${CHUNK_SIZE} \
-    --samtools=${SAMTOOLS} \
-    --python=${PYTHON} \
-    --pypy=${PYPY} \
-    --parallel=${PARALLEL} \
-    --whatshap=${WHATSHAP} \
-    --qual=${QUAL} \
-    --var_pct_full=${PRO} \
-    --ref_pct_full=${REF_PRO} \
-    --snp_min_af=${SNP_AF} \
-    --indel_min_af=${INDEL_AF} \
-    --var_pct_phasing=${PHASING_PCT} \
-    --pileup_only=False \
-    --pileup_phasing=True \
-    --gvcf=${GVCF} \
-    --fast_mode=${FAST_MODE} \
-    --call_snp_only=${SNP_ONLY} \
-    --print_ref_calls=${SHOW_REF} \
-    --haploid_precise=${HAP_PRE} \
-    --haploid_sensitive=${HAP_SEN} \
-    --include_all_ctgs=${INCLUDE_ALL_CTGS} \
-    --no_phasing_for_fa=${NO_PHASING} \
-    --remove_intermediate_dir=${RM_TMP_DIR} \
-    --enable_phasing=${ENABLE_PHASING} \
-    --enable_long_indel=${ENABLE_LONG_INDEL} \
-    --pileup_model_prefix=${PILEUP_PREFIX} \
-    --fa_model_prefix=full_alignment" ::: ${ALL_SAMPLE[@]} :::+ ${ALL_UNPHASED_BAM_FILE_PATH[@]} |& tee ${LOG_PATH}/1_call_var_bam_pileup.log
+   --bam_fn={2} \
+   --ref_fn=${REFERENCE_FILE_PATH} \
+   --threads=${CLAIR3_THREADS} \
+   --model_path=${MODEL_PATH_C3} \
+   --output=${PILEUP_VCF_PATH}/{1} \
+   --platform="ont" \
+   --bed_fn=${BED_FILE_PATH} \
+   --vcf_fn=${VCF_FILE_PATH} \
+   --ctg_name=${CONTIGS} \
+   --sample_name={1} \
+   --chunk_num=${CHUNK_NUM} \
+   --chunk_size=${CHUNK_SIZE} \
+   --samtools=${SAMTOOLS} \
+   --python=${PYTHON} \
+   --pypy=${PYPY} \
+   --parallel=${PARALLEL} \
+   --whatshap=${WHATSHAP} \
+   --qual=${QUAL} \
+   --var_pct_full=${PRO} \
+   --ref_pct_full=${REF_PRO} \
+   --snp_min_af=${SNP_AF} \
+   --indel_min_af=${INDEL_AF} \
+   --var_pct_phasing=${PHASING_PCT} \
+   --pileup_only=False \
+   --pileup_phasing=True \
+   --gvcf=${GVCF} \
+   --fast_mode=${FAST_MODE} \
+   --call_snp_only=${SNP_ONLY} \
+   --print_ref_calls=${SHOW_REF} \
+   --haploid_precise=${HAP_PRE} \
+   --haploid_sensitive=${HAP_SEN} \
+   --include_all_ctgs=${INCLUDE_ALL_CTGS} \
+   --no_phasing_for_fa=${NO_PHASING} \
+   --remove_intermediate_dir=${RM_TMP_DIR} \
+   --enable_phasing=${ENABLE_PHASING} \
+   --enable_long_indel=${ENABLE_LONG_INDEL} \
+   --pileup_model_prefix=${PILEUP_PREFIX} \
+   --fa_model_prefix=full_alignment" ::: ${ALL_SAMPLE[@]} :::+ ${ALL_UNPHASED_BAM_FILE_PATH[@]} |& tee ${LOG_PATH}/1_call_var_bam_pileup.log
 
-# echo "pileup alignment log at ${LOG_PATH}/1_call_var_bam_pileup.log"
 
 echo "[TRIO INFO] Finish Pileup model"
 
@@ -263,9 +263,6 @@ TRIO_N="${ALL_SAMPLE}_TRIO"
 
 # note that the phased bam stored in separate files between chromosome
 #echo ${CHR[@]}
-
-#chunk_num=20
-#CHUNK_LIST=`seq 1 ${chunk_num}`
 
 # select candidate from trio input
 echo "[TRIO INFO] 2 Select Trio Candidates"
@@ -306,17 +303,18 @@ time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_3_callvarbam
 --samtools ${SAMTOOLS} \
 --platform ${PLATFORM} \
 --full_aln_regions {1} \
+--gvcf=${GVCF} \
 --showRef ${SHOW_REF} \
 --phasing_info_in_bam" :::: ${CANDIDATE_BED_PATH}/FULL_ALN_FILES |& tee ${LOG_PATH}/3_CV.log
 
 ${PARALLEL}  -j${THREADS} \
 "${PYPY} ${CLAIR3_TRIO} SortVcf_Trio \
-    --input_dir ${CALL_PATH}/{1} \
-    --vcf_fn_prefix "trio_{1}" \
-    --output_fn ${OUTPUT_FOLDER}/{1}_c3t.vcf \
-    --sampleName {1} \
-    --ref_fn ${REFERENCE_FILE_PATH} \
-    --contigs_fn ${TMP_FILE_PATH}/CONTIGS" ::: ${ALL_SAMPLE[@]}
+   --input_dir ${CALL_PATH}/{1} \
+   --vcf_fn_prefix "trio_{1}" \
+   --output_fn ${OUTPUT_FOLDER}/{1}_c3t.vcf \
+   --sampleName {1} \
+   --ref_fn ${REFERENCE_FILE_PATH} \
+   --contigs_fn ${TMP_FILE_PATH}/CONTIGS" ::: ${ALL_SAMPLE[@]}
 
 if [ "$( gzip -fdc ${OUTPUT_FOLDER}/${SAMPLE_C}_c3t.vcf.gz | grep -v '#' | wc -l )" -eq 0 ]; then echo "[INFO] Exit in trio variant calling"; exit 0; fi
 
@@ -342,47 +340,124 @@ echo $''
 echo "[TRIO INFO] * 4 Merge trio VCF"
 time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_4_merge_vcf.log -j${THREADS} \
 "${PYPY} ${CLAIR3_TRIO} MergeVcf_Trio \
-    --pileup_vcf_fn {3} \
-    --bed_fn_prefix ${CANDIDATE_BED_PATH} \
-    --trio_vcf_fn {4} \
-    --output_fn ${GVCF_TMP_PATH}/{2}/merge_{1}.vcf \
-    --gvcf_fn ${GVCF_TMP_PATH}/{2}/merge_{1}.gvcf \
-    --platform ${PLATFORM} \
-    --print_ref_calls ${SHOW_REF} \
-    --gvcf ${GVCF} \
-    --haploid_precise ${HAP_PRE} \
-    --haploid_sensitive ${HAP_SEN} \
-    --non_var_gvcf_fn {5}/non_var.gvcf \
-    --ref_fn ${REFERENCE_FILE_PATH} \
-    --ctgName {1}" ::: ${CHR[@]} ::: ${ALL_SAMPLE[@]} :::+ ${INPUT_PILEUP_VCF[@]} :::+ ${TRIO_M_OUTPUT_VCF[@]} :::+ ${INPUT_PILEUP_GVCF_PATH[@]} |& tee ${LOG_PATH}/4_MV.log
+   --pileup_vcf_fn {3} \
+   --bed_fn_prefix ${CANDIDATE_BED_PATH} \
+   --trio_vcf_fn {4} \
+   --output_fn ${GVCF_TMP_PATH}/{2}/merge_{1}.vcf \
+   --gvcf_fn ${GVCF_TMP_PATH}/{2}/merge_{1}.gvcf \
+   --platform ${PLATFORM} \
+   --print_ref_calls ${SHOW_REF} \
+   --gvcf ${GVCF} \
+   --haploid_precise ${HAP_PRE} \
+   --haploid_sensitive ${HAP_SEN} \
+   --non_var_gvcf_fn {5}/non_var.gvcf \
+   --ref_fn ${REFERENCE_FILE_PATH} \
+   --ctgName {1}" ::: ${CHR[@]} ::: ${ALL_SAMPLE[@]} :::+ ${INPUT_PILEUP_VCF[@]} :::+ ${TRIO_M_OUTPUT_VCF[@]} :::+ ${INPUT_PILEUP_GVCF_PATH[@]} |& tee ${LOG_PATH}/4_MV.log
 
-#--showRef \
 ${PARALLEL}  -j${THREADS} \
 "${PYPY} ${CLAIR3_TRIO} SortVcf_Trio \
-    --input_dir ${GVCF_TMP_PATH}/{1} \
-    --vcf_fn_prefix "merge" \
-    --output_fn ${OUTPUT_FOLDER}/{1}.vcf \
-    --sampleName {1} \
-    --ref_fn ${REFERENCE_FILE_PATH} \
-    --contigs_fn ${TMP_FILE_PATH}/CONTIGS" ::: ${ALL_SAMPLE[@]}
+   --input_dir ${GVCF_TMP_PATH}/{1} \
+   --vcf_fn_prefix "merge" \
+   --output_fn ${OUTPUT_FOLDER}/{1}.vcf \
+   --sampleName {1} \
+   --ref_fn ${REFERENCE_FILE_PATH} \
+   --contigs_fn ${TMP_FILE_PATH}/CONTIGS" ::: ${ALL_SAMPLE[@]}
 
 if [ "$( gzip -fdc ${OUTPUT_FOLDER}/${SAMPLE_C}.vcf.gz | grep -v '#' | wc -l )" -eq 0 ]; then echo "[INFO] Exit in trio variant calling"; exit 0; fi
 
 if [ ${GVCF} == True ]
 then
 ${PARALLEL}  -j${THREADS} \
-${PYPY} ${CLAIR3_TRIO} SortVcf \
-        --input_dir ${GVCF_TMP_PATH}/{1} \
-        --vcf_fn_prefix "merge" \
-        --vcf_fn_suffix ".gvcf" \
-        --output_fn ${OUTPUT_FOLDER}/{1}.gvcf \
-        --sampleName {1} \
-        --ref_fn ${REFERENCE_FILE_PATH} \
-        --contigs_fn ${TMP_FILE_PATH}/CONTIGS ::: ${ALL_SAMPLE[@]}
+${PYPY} ${CLAIR3_TRIO} SortVcf_Trio \
+       --input_dir ${GVCF_TMP_PATH}/{1} \
+       --vcf_fn_prefix "merge" \
+       --vcf_fn_suffix ".gvcf" \
+       --output_fn ${OUTPUT_FOLDER}/{1}.gvcf \
+       --sampleName {1} \
+       --ref_fn ${REFERENCE_FILE_PATH} \
+       --contigs_fn ${TMP_FILE_PATH}/CONTIGS ::: ${ALL_SAMPLE[@]}
 fi
 
 
-# if [ ${GVCF} == True ]; then cat ${GVCF_TMP_PATH}/*.tmp.g.vcf | ${PYPY} ${CLAIR3} SortVcf --output_fn ${GVCF_TMP_PATH}/non_var.gvcf; fi
+
+if [ ${ENABLE_PHASING} == True ]
+then
+    echo "[INFO] Phasing VCF output in parallel using WhatsHap"
+    time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_5_phase_vcf_output.log -j${THREADS} \
+    "${WHATSHAP} phase \
+        --output ${GVCF_TMP_PATH}/{2}/phased_merge_{1}.vcf \
+        --reference ${REFERENCE_FILE_PATH} \
+        --ignore-read-groups \
+        ${GVCF_TMP_PATH}/{2}/merge_{1}.vcf \
+        {3}" ::: ${CHR[@]} ::: ${ALL_SAMPLE[@]} :::+ ${ALL_UNPHASED_BAM_FILE_PATH[@]} |& tee ${LOG_PATH}/5_phase_vcf_output.log
+
+
+    ${PARALLEL}  -j${THREADS} \
+    "${PYPY} ${CLAIR3_TRIO} SortVcf_Trio \
+        --input_dir ${GVCF_TMP_PATH}/{1} \
+        --vcf_fn_prefix "phased_merge" \
+        --output_fn ${OUTPUT_FOLDER}/phased_{1}.vcf \
+        --sampleName {1} \
+        --ref_fn ${REFERENCE_FILE_PATH} \
+        --contigs_fn ${TMP_FILE_PATH}/CONTIGS" ::: ${ALL_SAMPLE[@]}
+    echo "[INFO] Finish Phasing calling, output phased VCF file: ${OUTPUT_FOLDER}/phased_*.vcf.gz"
+
+
+    # if [ ${GVCF} == True ]
+    # then
+    # echo "[INFO] merge phased gvcf"
+    # time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_4_merge_vcf.log -j${THREADS} \
+    # "${PYPY} ${CLAIR3_TRIO} MergeVcf_Trio \
+    #     --output_fn ${GVCF_TMP_PATH}/{2}/phased_merge_{1}.vcf \
+    #     --gvcf_fn ${GVCF_TMP_PATH}/{2}/phased_merge_{1}.gvcf \
+    #     --platform ${PLATFORM} \
+    #     --print_ref_calls ${SHOW_REF} \
+    #     --gvcf ${GVCF} \
+    #     --haploid_precise ${HAP_PRE} \
+    #     --haploid_sensitive ${HAP_SEN} \
+    #     --non_var_gvcf_fn {5}/non_var.gvcf \
+    #     --ref_fn ${REFERENCE_FILE_PATH} \
+    #     --merge_gvcf_only True \
+    #     --ctgName {1}" ::: ${CHR[@]} ::: ${ALL_SAMPLE[@]} :::+ ${INPUT_PILEUP_VCF[@]} :::+ ${TRIO_M_OUTPUT_VCF[@]} :::+ ${INPUT_PILEUP_GVCF_PATH[@]} |& tee ${LOG_PATH}/4_MV.log
+
+    # ${PARALLEL}  -j${THREADS} \
+    # ${PYPY} ${CLAIR3_TRIO} SortVcf_Trio \
+    #         --input_dir ${GVCF_TMP_PATH}/{1} \
+    #         --vcf_fn_prefix "phased_merge" \
+    #         --vcf_fn_suffix ".gvcf" \
+    #         --output_fn ${OUTPUT_FOLDER}/phased_{1}.gvcf \
+    #         --sampleName {1} \
+    #         --ref_fn ${REFERENCE_FILE_PATH} \
+    #         --contigs_fn ${TMP_FILE_PATH}/CONTIGS ::: ${ALL_SAMPLE[@]}
+
+    # fi
+
+fi
+
+
+
+if [ ${ENABLE_OUTPUT_HAPLOTAGGING} == True ]
+then
+    echo "[INFO] Haplotagging input BAM file using Whatshap, need some time to finish!"
+
+    time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_5_haptag.log -j${THREADS} \
+    "${WHATSHAP} haplotag \
+        --output ${OUTPUT_FOLDER}/phased_{1}.bam \
+        --reference ${REFERENCE_FILE_PATH} \
+        --ignore-read-groups \
+        ${OUTPUT_FOLDER}/phased_{1}.vcf.gz \
+        {2}"  ::: ${ALL_SAMPLE[@]} :::+ ${ALL_UNPHASED_BAM_FILE_PATH[@]} |& tee ${LOG_PATH}/5_haplotag.log
+
+    time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_5_haptag.log -j${THREADS} \
+    "${SAMTOOLS} index -@12 \
+        ${OUTPUT_FOLDER}/phased_{1}.bam" ::: ${ALL_SAMPLE[@]}
+
+    echo $''
+    echo "[INFO] Finish Haplotagging, output haplotagged file [Child]: ${OUTPUT_FOLDER}/phased_${SAMPLE_C}.bam"
+    echo "[INFO] Finish Haplotagging, output haplotagged file [Parent 1]: ${OUTPUT_FOLDER}/phased_${SAMPLE_P1}.bam"
+    echo "[INFO] Finish Haplotagging, output haplotagged file [Parent 2]: ${OUTPUT_FOLDER}/phased_${SAMPLE_P2}.bam"
+fi
+
 
 echo $''
 echo "[INFO] Finish calling, output VCF file [Child]: ${OUTPUT_FOLDER}/${SAMPLE_C}.vcf.gz"

@@ -256,6 +256,7 @@ def CreateTensorPileup(args):
     if is_ctg_range_given:
         extend_start = ctg_start - no_of_positions
         extend_end = ctg_end + no_of_positions
+        extend_start = max(1, extend_start)
         reads_regions.append(region_from(ctg_name=ctg_name, ctg_start=extend_start, ctg_end=extend_end))
         reference_start, reference_end = ctg_start - param.expandReferenceRegion, ctg_end + param.expandReferenceRegion
         reference_start = 1 if reference_start < 1 else reference_start

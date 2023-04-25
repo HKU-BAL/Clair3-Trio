@@ -572,6 +572,7 @@ class variantInfoCalculator(object):
             ##FILTER=<ID=RefCall,Description="Reference call">
             ##INFO=<ID=P,Number=0,Type=Flag,Description="Result from pileup calling">
             ##INFO=<ID=F,Number=0,Type=Flag,Description="Result from full-alignment calling">
+            ##INFO=<ID=T,Number=0,Type=Flag,Description="Result from trio model calling">
             ##ALT=<ID=NON_REF,Description="Represents any possible alternative allele at this location">
             ##INFO=<ID=END,Number=1,Type=Integer,Description="End position (for use with symbolic alleles)">
             ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">

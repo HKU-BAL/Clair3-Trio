@@ -21,10 +21,10 @@ major_contigs_order = ["chr" + str(a) for a in list(range(1, 23)) + ["X", "Y"]] 
                                                                                    list(range(1, 23)) + ["X", "Y"]]
 
 required_tool_version = {
-    'python': LooseVersion('3.6.10'),
+    'python': LooseVersion('3.9'),
     'pypy': LooseVersion('3.6'),
-    'samtools': LooseVersion('1.10'),
-    'whatshap': LooseVersion('1.0'),
+    'samtools': LooseVersion('1.15'),
+    'whatshap': LooseVersion('1.7'),
     'parallel': LooseVersion('20191122'),
 }
 
@@ -251,7 +251,7 @@ def CheckEnvs(args):
         'python': LooseVersion(sys.version.split()[0]),
         'pypy': check_version(tool=pypy, pos=0, is_pypy=True),
         'samtools': check_version(tool=samtools, pos=1),
-        'whatshap': check_version(tool=whatshap, pos=1),
+        'whatshap': check_version(tool=whatshap, pos=0),
         'parallel': check_version(tool=parallel, pos=2),
     }
     check_tools_version(tool_version, required_tool_version)

@@ -42,6 +42,8 @@ Detailed descriptions of the methodology and results for Clair3-Trio are availab
 
 ## Latest Updates
 
+*v0.6 (April 25, 2023)*: Upgraded Python 3.6 to 3.9. Upgraded Whatshap to [v1.7](https://github.com/HKU-BAL/Clair3/issues/193). Fix gVCF format [error](https://github.com/HKU-BAL/Clair3-Trio/issues/3). Added and [fixed](https://github.com/HKU-BAL/Clair3-Trio/issues/4) "--enable_phasing" support. and "--enable_output_phasing" and "enable_output_haplotagging" supports.
+
 *v0.5 (April 10, 2023)*: Added **gVCF support**. Using the "--gvcf" flag to enable gVCF output.
 
 *v0.4 (March 22, 2023)*: A model for R10.4 pore with the Kit 14 chemistry (**Q20+**) is available now. Check [this page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/q20.md) for more information about the model.
@@ -148,7 +150,7 @@ chmod +x ./Miniconda3-latest-Linux-x86_64.sh
 
 ```bash
 # create and activate an environment named clair3
-conda create -n clair3 python=3.6.10 -y
+conda create -n clair3 python=3.9.0 -y
 source activate clair3
 
 # install pypy and packages in the environemnt
@@ -157,12 +159,15 @@ pypy3 -m ensurepip
 pypy3 -m pip install mpmath==1.2.1
 
 # install python packages in environment
-pip3 install tensorflow==2.2.0
-pip3 install tensorflow-addons==0.11.2 tables==3.6.1
-conda install -c anaconda pigz==2.4 -y
-conda install -c conda-forge parallel=20191122 zstd=1.4.4 -y
-conda install -c conda-forge -c bioconda samtools=1.10 -y
-conda install -c conda-forge -c bioconda whatshap=1.0 -y
+conda install -c conda-forge tensorflow==2.8.0 -y
+conda install -c conda-forge pytables -y
+conda install -c anaconda pigz cffi==1.14.4 -y
+conda install -c conda-forge parallel=20191122 zstd -y
+conda install -c conda-forge -c bioconda samtools=1.15.1 -y
+conda install -c conda-forge -c bioconda whatshap=1.7 -y
+conda install -c conda-forge xz zlib bzip2 automake curl -y
+# tensorflow-addons is required in training
+pip install tensorflow-addons
 
 # clone Clair3-Trio
 git clone https://github.com/HKU-BAL/Clair3-Trio.git
@@ -339,18 +344,13 @@ docker run -it hkubal/clair3-trio:latest /opt/bin/run_clair3_trio.sh --help
 
   --pileup_model_prefix=STR EXPERIMENTAL: Model prefix in pileup calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index. default: pileup.
   --fa_model_prefix=STR     EXPERIMENTAL: Model prefix in full-alignment calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index, default: full_alignment.
-  --trio_model_prefix=STR   EXPERIMENTAL: Model prefix in trio calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index, default: trio.'
+  --trio_model_prefix=STR   EXPERIMENTAL: Model prefix in trio calling, including $prefix.data-00000-of-00002, $prefix.data-00001-of-00002 $prefix.index, default: trio.
   --var_pct_full=FLOAT      EXPERIMENTAL: Specify an expected percentage of low quality 0/1 and 1/1 variants called in the pileup mode for full-alignment mode calling, default: 0.3.
   --ref_pct_full=FLOAT      EXPERIMENTAL: Specify an expected percentage of low quality 0/0 variants called in the pileup mode for full-alignment mode calling, default: 0.3 for ilmn and hifi, 0.1 for ont.
   --var_pct_phasing=FLOAT   EXPERIMENTAL: Specify an expected percentage of high quality 0/1 variants used in Clair3 WhatsHap phasing, default: 0.8 for ont guppy5 and 0.7 for other platforms.
-  
-  --enable_phasing          [X] Output phased variants using whatshap, default: disable.
-  --remove_intermediate_dir [X] Remove intermediate directory, including intermediate phased BAM, pileup and full-alignment results. default: disable.
-  --haploid_precise         [X] EXPERIMENTAL: Enable haploid calling mode. Only 1/1 is considered as a variant, default: disable.
-  --haploid_sensitive       [X] EXPERIMENTAL: Enable haploid calling mode. 0/1 and 1/1 are considered as a variant, default: disable.
-  --no_phasing_for_fa       [X] EXPERIMENTAL: Call variants without whatshap phasing in full alignment calling, default: disable.
-  --call_snp_only           [X] EXPERIMENTAL: Call candidates pass SNP minimum AF only, ignore Indel candidates, default: disable.
-  --enable_long_indel       [X] EXPERIMENTAL: Call long Indel variants(>50 bp), default: disable.
+  --enable_output_phasing        Output phased variants using whatshap, default: disable.
+  --enable_output_haplotagging   Output enable_output_haplotagging BAM variants using whatshap, default: disable.
+  --enable_phasing               It means `--enable_output_phasing`. The option is retained for backward compatibility.
 ```
 
 

@@ -22,7 +22,7 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
     conda config --add channels defaults && \
     conda config --add channels bioconda && \
     conda config --add channels conda-forge && \
-    conda create -n clair3 python=3.6.10 -y
+    conda create -n clair3 python=3.9.0 -y
 
 ENV PATH /opt/conda/envs/clair3/bin:$PATH
 ENV CONDA_DEFAULT_ENV clair3
@@ -31,15 +31,14 @@ RUN /bin/bash -c "source activate clair3" && \
     conda install -c conda-forge pypy3.6 -y && \
     pypy3 -m ensurepip && \
     pypy3 -m pip install mpmath==1.2.1 && \
-    pip install tensorflow-cpu==2.2.0 && \
-    pip install tensorflow-addons==0.11.2 tables==3.6.1 && \
-    conda install -c anaconda pigz==2.4 -y && \
-    conda install -c anaconda cffi==1.14.4 -y && \
-    conda install -c conda-forge parallel=20191122 zstd=1.4.4 -y && \
-    conda install -c conda-forge -c bioconda samtools=1.10 -y && \
-    conda install -c conda-forge -c bioconda whatshap=1.0 -y && \
-    conda install -c conda-forge xz zlib bzip2 -y && \
-    conda install -c conda-forge automake curl -y && \
+    conda install -c conda-forge tensorflow==2.8.0 -y && \
+    conda install -c conda-forge pytables -y && \
+    conda install -c anaconda pigz cffi==1.14.4 -y && \
+    conda install -c conda-forge parallel=20191122 zstd -y && \
+    conda install -c conda-forge -c bioconda samtools=1.15.1 -y && \
+    conda install -c conda-forge -c bioconda whatshap=1.7 -y && \
+    conda install -c conda-forge xz zlib bzip2 automake curl -y && \
+    pip install tensorflow-addons && \
     rm -rf /opt/conda/pkgs/* && \
     rm -rf /root/.cache/pip && \
     echo "source activate clair3" > ~/.bashrc

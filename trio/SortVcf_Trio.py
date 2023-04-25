@@ -1,11 +1,12 @@
 import os
 import subprocess
-
+import shlex
 from sys import stdin, exit
 from argparse import ArgumentParser
 from collections import defaultdict
 
-from shared.utils import log_error, log_warning, file_path_from
+
+from shared.utils import log_error, log_warning, file_path_from, subprocess_popen
 major_contigs_order = ["chr" + str(a) for a in list(range(1, 23)) + ["X", "Y"]] + [str(a) for a in
                                                                                    list(range(1, 23)) + ["X", "Y"]]
 
@@ -20,19 +21,19 @@ def output_header(output_fn, reference_file_path, sample_name='SAMPLE'):
     output_file = open(output_fn, "w")
     from textwrap import dedent
     output_file.write(dedent("""\
-            ##fileformat=VCFv4.2
-            ##FILTER=<ID=PASS,Description="All filters passed">
-            ##FILTER=<ID=LowQual,Description="Low quality variant">
-            ##FILTER=<ID=RefCall,Description="Reference call">
-            ##INFO=<ID=P,Number=0,Type=Flag,Description="Result from pileup calling">
-            ##INFO=<ID=F,Number=0,Type=Flag,Description="Result from full-alignment calling">
-            ##INFO=<ID=T,Number=0,Type=Flag,Description="Result from trio calling">
-            ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-            ##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
-            ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
-            ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Read depth for each allele">
-            ##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Phred-scaled genotype likelihoods rounded to the closest integer">
-            ##FORMAT=<ID=AF,Number=1,Type=Float,Description="Estimated allele frequency in the range of [0,1]">"""
+        ##fileformat=VCFv4.2
+        ##FILTER=<ID=PASS,Description="All filters passed">
+        ##FILTER=<ID=LowQual,Description="Low quality variant">
+        ##FILTER=<ID=RefCall,Description="Reference call">
+        ##INFO=<ID=P,Number=0,Type=Flag,Description="Result from pileup calling">
+        ##INFO=<ID=F,Number=0,Type=Flag,Description="Result from full-alignment calling">
+        ##INFO=<ID=T,Number=0,Type=Flag,Description="Result from trio model calling">
+        ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+        ##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
+        ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
+        ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Read depth for each allele">
+        ##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Phred-scaled genotype likelihoods rounded to the closest integer">
+        ##FORMAT=<ID=AF,Number=1,Type=Float,Description="Estimated allele frequency in the range of [0,1]">"""
                   ) + '\n')
 
     if reference_file_path is not None:
@@ -55,11 +56,25 @@ def print_calling_step(output_fn=""):
     subprocess.run('cp {} {}'.format(pileup_output, merge_output), shell=True, stdout=subprocess.PIPE,
                    stderr=subprocess.PIPE)
 
+def check_header_in_gvcf(header, contigs_list):
+    # Only output the contigs processed to be consistent with GATK
+    # Contig format: ##contig=<ID=%s,length=%s>
+
+    update_header = []
+    for row_id, row in enumerate(header):
+        if row.startswith("##contig="):
+            contig = row.split(',')[0].split('=')[2]
+            if contig not in contigs_list:
+                continue
+        update_header.append(row)
+
+    return update_header
+
 def sort_vcf_from_stdin(args):
     """
     Sort vcf file according to variants start position and contig name.
     """
-    
+
     row_count = 0
     header = []
     contig_dict = defaultdict(defaultdict)
@@ -140,16 +155,38 @@ def sort_vcf_from(args):
     header = []
     no_vcf_output = True
     need_write_header = True
-    output = open(output_fn, 'w')
+
+    # only compress intermediate gvcf using lz4 output and keep final gvcf in bgzip format
+    output_bgzip_gvcf = vcf_fn_suffix == '.gvcf'
+    compress_gvcf = 'gvcf' in vcf_fn_suffix
+    if compress_gvcf:
+        lz4_path = subprocess.run("which lz4", stdout=subprocess.PIPE, shell=True).stdout.decode().rstrip()
+        compress_gvcf = True if lz4_path != "" else False
+    is_lz4_format = compress_gvcf
+    compress_gvcf_output = compress_gvcf and not output_bgzip_gvcf
+    if compress_gvcf_output:
+        write_fpo = open(output_fn, 'w')
+        write_proc = subprocess_popen(shlex.split("lz4 -c"), stdin=subprocess.PIPE, stdout=write_fpo, stderr=subprocess.DEVNULL)
+        output = write_proc.stdin
+    else:
+        output = open(output_fn, 'w')
 
     for contig in contigs_order_list:
         contig_dict = defaultdict(str)
         contig_vcf_fns = [fn for fn in all_files if contig in fn]
         for vcf_fn in contig_vcf_fns:
-            fn = open(os.path.join(input_dir, vcf_fn), 'r')
+            file = os.path.join(input_dir, vcf_fn)
+            if is_lz4_format:
+                read_proc = subprocess_popen(shlex.split("{} {}".format("lz4 -fdc", file)), stderr=subprocess.DEVNULL)
+                fn = read_proc.stdout
+            else:
+                fn = open(file, 'r')
             for row in fn:
                 row_count += 1
                 if row[0] == '#':
+                    # skip phasing command line only occur with --enable_phasing, otherwise would lead to hap.py evaluation failure
+                    if row.startswith('##commandline='):
+                        continue
                     if row not in header:
                         header.append(row)
                     continue
@@ -162,14 +199,24 @@ def sort_vcf_from(args):
                 contig_dict[int(pos)] = row
                 no_vcf_output = False
             fn.close()
+            if is_lz4_format:
+                read_proc.wait()
         if need_write_header and len(header):
+            if output_bgzip_gvcf:
+                header = check_header_in_gvcf(header=header, contigs_list=all_contigs_list)
             output.write(''.join(header))
             need_write_header = False
         all_pos = sorted(contig_dict.keys())
         for pos in all_pos:
             output.write(contig_dict[pos])
 
-    output.close()
+    if compress_gvcf_output:
+        write_proc.stdin.close()
+        write_proc.wait()
+        write_fpo.close()
+        return
+    else:
+        output.close()
 
     if row_count == 0:
         print (log_warning("[WARNING] No vcf file found, output empty vcf file"))
@@ -184,6 +231,10 @@ def sort_vcf_from(args):
         print_calling_step(output_fn=output_fn)
         return
 
+    if vcf_fn_suffix == ".tmp.gvcf":
+        return
+    if vcf_fn_suffix == ".gvcf":
+        print("[INFO] Need some time to compress and index GVCF file...")
     compress_index_vcf(output_fn)
 
 
