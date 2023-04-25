@@ -37,6 +37,7 @@ Detailed descriptions of the methodology and results for Clair3-Trio are availab
 * [Clair3-Trio Model Training](docs/trio/trio_training.md)
 * [Training Data](docs/trio/training_data.md)
 * [Analysis Results](http://www.bio8.cs.hku.hk/clair3_trio/analysis_result/)
+* [VCF/GVCF Output Formats](#vcfgvcf-output-formats)
 * [Publication](#publication)
 ----
 
@@ -396,6 +397,14 @@ Clair3-Trio trained its trio models using four GIAB samples (HG002, HG003 and HG
 
 
 ----
+
+## VCF/GVCF Output Formats
+
+Clair3-Trio supports both VCF and GVCF output formats. Clair3-Trio uses VCF version 4.2 specifications. Specifically, Clair3-Trio adds a `P` INFO tag to the results called using a pileup model, and a `T` INFO tag to the results called using a trio model.
+
+Clair3-Trio outputs a GATK-compatible GVCF format that passes GATK's `ValidateVariants` module. Different from DeepVariant that uses `<*>` to represent any possible alternative allele, Clair3-Trio uses `<NON_REF>`, the same as GATK.
+
+---
 
 ## Publication
 
