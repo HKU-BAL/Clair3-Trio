@@ -43,11 +43,11 @@ Detailed descriptions of the methodology and results for Clair3-Trio are availab
 
 ## Latest Updates
 
-*v0.6 (April 25, 2023)*: Upgraded Python 3.6 to 3.9. Upgraded Whatshap to [v1.7](https://github.com/HKU-BAL/Clair3/issues/193). Fix gVCF format [error](https://github.com/HKU-BAL/Clair3-Trio/issues/3). Added and [fixed](https://github.com/HKU-BAL/Clair3-Trio/issues/4) "--enable_phasing" support. and "--enable_output_phasing" and "enable_output_haplotagging" supports.
+*v0.6 (April 25, 2023)*: Bumped up Python from 3.6 to 3.9, Whatshap from v1.0 to v1.7 [Clair3 #193](https://github.com/HKU-BAL/Clair3/issues/193). Fixed gVCF format mistake [#3](https://github.com/HKU-BAL/Clair3-Trio/issues/3). Added options "--enable_phasing", "--enable_output_phasing", and "enable_output_haplotagging" [#4](https://github.com/HKU-BAL/Clair3-Trio/issues/4).
 
-*v0.5 (April 10, 2023)*: Added **gVCF support**. Using the "--gvcf" flag to enable gVCF output.
+*v0.5 (April 10, 2023)*: Added support for gVCF output. Use `--gvcf` to enable gVCF output.
 
-*v0.4 (March 22, 2023)*: A model for R10.4 pore with the Kit 14 chemistry (**Q20+**) is available now. Check [this page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/q20.md) for more information about the model.
+*v0.4 (March 22, 2023)*: Added a model for R10.4 pore with the Kit 14 chemistry (**Q20+**). Check [this page](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/q20.md) for more information about the model.
 
 *v0.3 (June 20, 2022)*: Optimized Clair3-Trio speed, the runtime of Clair3-Trio to call variants from the whole genome is about 2.4 times of calling a single sample form Clair3 (v0.1-r10).
 
