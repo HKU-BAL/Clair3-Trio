@@ -404,6 +404,8 @@ Clair3-Trio supports both VCF and GVCF output formats. Clair3-Trio uses VCF vers
 
 Clair3-Trio outputs a GATK-compatible GVCF format that passes GATK's `ValidateVariants` module. Different from DeepVariant that uses `<*>` to represent any possible alternative allele, Clair3-Trio uses `<NON_REF>`, the same as GATK.
 
+Clair3-Trio GVCF files can be merged with GLNexus. A GLNexus caller based configuration file is available [Download](http://www.bio8.cs.hku.hk/clair3_trio/config/clair3.yml).
+
 ---
 
 ## Publication
