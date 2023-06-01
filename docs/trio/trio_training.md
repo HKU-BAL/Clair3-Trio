@@ -344,9 +344,10 @@ time ${PARALLEL} --joblog ${LOG_PATH}/S_tensor2Bin${_LOG_SUF}.log -j${THREADS} \
 ## 3-2 Create and merge trio tensors uneven coverage
 
 generate the uneven coverage for Clair-Trio input, for example (child 30x, parent 1 10x, parent2 10x) + (child 50x, parent 1 10x, parent2 10)
-rerun 1, 2, and 3 to generate uneven coverage.
+rerun 1, 2, and 3-1 to generate uneven coverage.
 check [4.2_create_uneven coverage tensors.sh](4_create_tensors_sub.sh) for example
-for a trio data from [r10](https://labs.epi2me.io/askenazi-kit14-2022-12/) for example, with the following data coverage,
+
+for a trio data from [r10](https://labs.epi2me.io/askenazi-kit14-2022-12/) with the following data coverage,
 
 | sample | coverage |
 | ------ | -------- |
