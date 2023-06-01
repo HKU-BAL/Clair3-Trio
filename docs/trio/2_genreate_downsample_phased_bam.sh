@@ -3,7 +3,7 @@
 # input unifold
 tar_dir="XXX" # Representation Unification folder from https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/representation_unification_trio.md
 _SAMPLE_N='HG002' # your sample name
-BAM_FILE_PATH=${tar_dir}/${_SAMPLE_N}_phased.bam
+BAM_FILE_PATH=${tar_dir}/merged.bam
 
 SUBSAMPLED_BAMS_FOLDER_PATH="XXX" #output downsampling folder
 mkdir -p ${SUBSAMPLED_BAMS_FOLDER_PATH}
@@ -11,9 +11,10 @@ mkdir -p ${SUBSAMPLED_BAMS_FOLDER_PATH}
 # setting the downsamping fraction code for samtools -s
 # for example, when the original data is in 120x coverage, you can using the code following the generate 10x to 80x data
 # (you can check your data coverage via $mosdepth -t 5 -n -x --quantize 0:15:150: ${_SAMPLE_N}_phased ${_SAMPLE_N}_phased.bam)
-# 120.33 
-DEPTHS=(083 166 249 332 416 499 582 665)
+# 120.33, downsample to 10x, 20x, etc.
 DEPTHS_N=(10 20 30 40 50 60 70 80)
+# FRAC code for samtools -s option, check samtools manpage
+DEPTHS=(083 166 249 332 416 499 582 665)
 
 
 # Other parameters
