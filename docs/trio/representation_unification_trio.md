@@ -68,7 +68,7 @@ OUTPUT_DIR="[YOUR_OUTPUT_FOLDER_PATH]"					       # e.g. output
 CHR_PREFIX="chr"
 
 # array of chromosomes (do not include "chr"-prefix)
-CHR=(22)
+CHR=(21 22)
 
 # Number of threads to be used
 THREADS=24
@@ -184,7 +184,9 @@ tabix -f -p vcf ${OUTPUT_DIR}/unified.vcf.gz
 
 ```
 
-#### 7.  Benchmark using unified VCF and true variant set (optional)
+#### 7.  Benchmark using unified VCF and true variant set with happy (optional)
+
+all modules run correctly, the results of this benchmark will have a F1-score ~ 0.99
 
 ```bash
 # Install hap.py if not installed 
@@ -203,11 +205,8 @@ hap.py \
     -r ${REFERENCE_FILE_PATH} \
     -f ${BED_FILE_PATH} \
     --threads ${THREADS} \
-    --engine=vcfeval \
-    -l "[YOUR_BENCHMARK_REGION]" # e.g. chr22
-
+    --engine=vcfeval
 ```
-
 
 #### 8.  Get True variants set for trio input
 
