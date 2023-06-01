@@ -1,19 +1,22 @@
-# Train a model for Clair3-trio trio calling (v2)
+# Train a model for Clair3-trio trio calling (v3)
+
+2023/06/01
 
 This document shows how to train and fine-tune a deep learning model for Clair3-trio trio calling. For training a model for pileup calling, please check [here](../pileup_training.md). The training materials are grouped according to sample, coverage, and chromosome. The groups are converted into tensor binaries. The binaries are much space-efficient and easier to process. As required, multiples tensor binaries can be used together for model training and fine-tuning. 
 
 We provided a list of step-by-step scripts to train a Clair3-Trio with the example of data from the HG002 trio, please check it if needed.
 
 - [0_generate_trio_bed.sh](0_generate_trio_bed.sh)
-- [1_run_RU.sh](1_run_RU.sh)
+- [1 representation_unification_trio.md](representation_unification_trio.md)
 - [2_genreate_downsample_phased_bam.sh](2_genreate_downsample_phased_bam.sh)
 - [3_generate_downsample_pileup.sh](3_generate_downsample_pileup.sh)
-- [4_create_tensors.sh](4_create_tensors.sh)
+- [4.1_create even coverage_tensors.sh](4_create_tensors.sh)
+- [4.2_create_uneven coverage tensors.sh](4_create_tensors_sub.sh)
+- [4.3_gather even and unenven coverage data](4_1_downsample_bin_1.sh)
 - [5_train.sh](5_train.sh)
 
 
 ---
-
 ## Prerequisites
 
 - Clair3 installed
@@ -29,12 +32,24 @@ We provided a list of step-by-step scripts to train a Clair3-Trio with the examp
 
   - [1. Setup variables](#1-setup-variables)
   - [2. Run Clair3 pileup model](#2-run-clair3-pileup-model)
-  - [3. Create and merge trio tensors](#3-create-and-merge-trio-tensors)
+  - [3-1 Create and merge trio tensors even coverage](#3-1-create-and-merge-trio-tensors-even-coverage)
+  - [3-2 Create and merge trio tensors uneven coverage](#3-2-create-and-merge-trio-tensors-uneven-coverage)
+  - [3-3 Gather all bins](#3-3-gather-all-bins)
   - [4. Train a Clair3-Trio model](#4-train-a-clair3-trio-model)
   - [5. Finetune a Clair3-Trio model](#5-finetune-a-clair3-trio-model)
-
 ---
 
+## 0. Preparation of needed files
+
+The original input files for Clair3-Trio includes:
+
+- reference file: [R]
+- child/parents bam files: [C BAM], [P1 BAM], [P2 BAM]
+- child/parents truth vcf files: [C TRUTH VCF], [P1 TRUTH VCF], [P2 TRUTH VCF]
+- child/parents bed files for truth variants: [C TRUTH BED], [P1 TRUTH BED], [P2 TRUTH BED]
+
+After gathering all above files, a few files need to be generated for Clair3-Trio training in the first place.
+- phased alignment for **each individual** by running the [representation_unifivation_trio](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/representation_unification_trio.md) 
 
 
 ## 1. Setup variables
@@ -105,14 +120,20 @@ ALL_SAMPLE=(
 ${CHILD_SAMPLE_N}                   # your child sample name
 ${P1_SAMPLE_N}                      # your parenet-1 sample name
 ${P2_SAMPLE_N}                      # your parenet-2 sample name
+${CHILD_SAMPLE_N}                   # your child sample name
+${P1_SAMPLE_N}                      # your parenet-1 sample name
+${P2_SAMPLE_N}                      # your parenet-2 sample name
 )
 
 TRIO_N="${CHILD_SAMPLE_N}_TRIO"     # your trio name, e.g. HG002_TRIO
 
-DEPTHS=(                            # data coverage
+# Note: here we set it to 10x and 30x for example, for using a maximum of 120x data, here, all following paths of (ALL_RU_FILE_PATH, ALL_PHASED_BAM_FILE_PATH, ALL_REFERENCE_FILE_PATH, etc.),  need to be set to 10x, 30x, 50x, 70x, 90x, 120x accordingly.DEPTHS=(                            # data coverage
 10
 10
 10
+30
+30
+30
 )
 
 # true variants set from Clair3-Trio Representation Unification
@@ -125,21 +146,34 @@ ALL_RU_FILE_PATH=(
 "[child representation unificated folder]"
 "[parent-1 representation unificated folder]"
 "[parent-2 representation unificated folder]"
+"[child representation unificated folder]"
+"[parent-1 representation unificated folder]"
+"[parent-2 representation unificated folder]"
 )
 
+# downsampled RU bam
 ALL_PHASED_BAM_FILE_PATH=(
-"[child representation unificated folder]/merged.bam"          
-"[parent-1 representation unificated folder]/merged.bam"
-"[parent-2 representation unificated folder]/merged.bam"
+"[child representation unificated folder]/${CHILD_SAMPLE_N}_10.bam"          
+"[parent-1 representation unificated folder]/${P1_SAMPLE_N}_10.bam"
+"[parent-2 representation unificated folder]/${P2_SAMPLE_N}_10.bam"
+"[child representation unificated folder]/${CHILD_SAMPLE_N}_30.bam"          
+"[parent-1 representation unificated folder]/${P1_SAMPLE_N}_30.bam"
+"[parent-2 representation unificated folder]/${P2_SAMPLE_N}_30.bam"
 )
 
 ALL_REFERENCE_FILE_PATH=(
 "[YOUR_REF_FILE]"
 "[YOUR_REF_FILE]"
 "[YOUR_REF_FILE]"
+"[YOUR_REF_FILE]"
+"[YOUR_REF_FILE]"
+"[YOUR_REF_FILE]"
 )
 
 ALL_ORI_BED_FILE_PATH=(
+"[YOUR_BED_FILE_CHILD]"
+"[YOUR_BED_FILE_PARENET1]"
+"[YOUR_BED_FILE_PARENET2]"
 "[YOUR_BED_FILE_CHILD]"
 "[YOUR_BED_FILE_PARENET1]"
 "[YOUR_BED_FILE_PARENET2]"
@@ -164,6 +198,9 @@ ALL_BED_FILE_PATH=(
 ${_TRIO_BED_PATH}
 ${_TRIO_BED_PATH}
 ${_TRIO_BED_PATH}
+${_TRIO_BED_PATH}
+${_TRIO_BED_PATH}
+${_TRIO_BED_PATH}
 )
 
 ```
@@ -185,15 +222,20 @@ time ${PARALLEL} -j ${C3_THREADS} --joblog  ${LOG_PATH}/input_pileup${_LOG_SUF}.
 
 ```
 
-## 3. Create and merge trio tensors
+## 3-1 Create and merge trio tensors even coverage
+
+generate the even coverage for Clair-Trio input, for example (child 10x, parent 1 10x, parent2 10x) + (child 30x, parent 1 30x, parent2 30)
 
 ```
 
 # Get output pileup vcf path
 ALL_PILEUP_VCF_FILE_PATH=(
-"${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($0))]}_${DEPTHS[$(($0))]}"
-"${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($1))]}_${DEPTHS[$(($1))]}"
-"${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($2))]}_${DEPTHS[$(($2))]}"
+"${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($0))]}_${DEPTHS[$(($0))]}/pileup.vcf.gz"
+"${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($1))]}_${DEPTHS[$(($1))]}/pileup.vcf.gz"
+"${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($2))]}_${DEPTHS[$(($2))]}/pileup.vcf.gz"
+"${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($3))]}_${DEPTHS[$(($3))]}/pileup.vcf.gz"
+"${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($4))]}_${DEPTHS[$(($4))]}/pileup.vcf.gz"
+"${PILEUP_OUTPUT_PATH}/${ALL_SAMPLE[$(($5))]}_${DEPTHS[$(($5))]}/pileup.vcf.gz"
 )
 
 # set up input for trio
@@ -298,18 +340,50 @@ time ${PARALLEL} --joblog ${LOG_PATH}/S_tensor2Bin${_LOG_SUF}.log -j${THREADS} \
 --check_mcv ${IF_CHECK_MCV} \
 --shuffle" ::: ${CHR[@]} ::: ${BIN_CHUNK_LIST[@]} ::: ${DEPTH_S[@]} :::+ ${TRUE_RU_FILE_C[@]} :::+ ${TRUE_RU_FILE_P1[@]} :::+ ${TRUE_RU_FILE_P2[@]} |& tee ${LOG_PATH}/T2B${_LOG_SUF}.log
 
-
-# Merge compressed binaries
-ALL_BINS_FOLDER_PATH="${BINS_FOLDER_PATH}/../all_bins"
-mkdir -p ${ALL_BINS_FOLDER_PATH}
-${PARALLEL} --joblog ${LOG_PATH}/S_mergeBin${_LOG_SUF}.log -j${THREADS} \
-"${PYTHON3} ${CLAIR3_TRIO} MergeBin_Trio \
-    ${BINS_FOLDER_PATH}/${TRIO_N}_{2}_{1}_* \
-    --out_fn ${ALL_BINS_FOLDER_PATH}/bin_{2}_{1}" ::: ${CHR[@]} ::: ${DEPTH_S[@]}
 ```
+## 3-2 Create and merge trio tensors uneven coverage
+
+generate the uneven coverage for Clair-Trio input, for example (child 30x, parent 1 10x, parent2 10x) + (child 50x, parent 1 10x, parent2 10)
+rerun 1, 2, and 3 to generate uneven coverage.
+check [4.2_create_uneven coverage tensors.sh](4_create_tensors_sub.sh) for example
+for a trio data from [r10](https://labs.epi2me.io/askenazi-kit14-2022-12/) for example, with the following data coverage,
+
+| sample | coverage |
+| ------ | -------- |
+| HG002  | 70.13    |
+| HG003  | 79.66    |
+| HG004  | 64.72    |
+
+
+we recommend generating the below trio data coverage config:
+
+| even coverage   | HG002 | HG003 | HG004 |
+| --------------- | ----- | ----- | ----- |
+|                 | 10    | 10    | 10    |
+|                 | 30    | 30    | 30    |
+|                 | 50    | 50    | 50    |
+|                 | 65    | 65    | 65    |
+|                 |       |       |       |
+| uneven coverage | HG002 | HG003 | HG004 |
+|                 | 30    | 10    | 10    |
+|                 | 50    | 10    | 10    |
+|                 | 50    | 30    | 30    |
+|                 | 65    | 10    | 10    |
+|                 | 65    | 30    | 30    |
+|                 | 65    | 50    | 50    |
+
+
+## 3-3 Gather all bins
+
+gather all bin files for model training.
+by copying all bins files from even/uneven coverage `${BINS_FOLDER_PATH}` into `$ALL_BINS_FOLDER_PATH`.
+
+We recommend to downsample bins files, as an example in [4.3_gather even and uneven coverage data](4_1_downsample_bin_1.sh).
 
 
 ## 4. Train a Clair3-Trio model 
+
+please set the `${ALL_BINS_FOLDER_PATH}` which contains all bins files.
 
 ```
 # Training trio model
