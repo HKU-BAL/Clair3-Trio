@@ -186,7 +186,7 @@ tabix -f -p vcf ${OUTPUT_DIR}/unified.vcf.gz
 
 #### 7.  Benchmark using unified VCF and true variant set with happy (optional)
 
-all modules run correctly, the results of this benchmark will have a F1-score ~ 0.99
+If all modules run correctly, the results of this benchmark will have a F1-score ~ 0.99
 
 ```bash
 # Install hap.py if not installed 
