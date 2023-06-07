@@ -4,7 +4,7 @@
 
 June 7, 2023
 
-Clair3-Trio requires a pileup model, the training procedure of which is identical to Clair3, and a full-alignment model, the training procedure of which is shown below. The pileup model can be obtained from [pre-trained](https://github.com/HKU-BAL/Clair3#pre-trained-models) and the training guide is at [here](../pileup_training.md). The example below uses the GIAB Ashkenazim Trio (HG002/3/4) as input. You can also start with modifying the following helper scripts in the same folder as this guide.
+Clair3-Trio requires a pileup model, the training procedure of which is identical to Clair3, and a full-alignment model, the training procedure of which is shown below. The pileup model can be obtained from [pre-trained](https://github.com/HKU-BAL/Clair3#pre-trained-models) and the training guide is at [here](../pileup_training.md). The example below uses the GIAB Ashkenazim Trio (HG002/3/4) as input. You can also start with modifying the following helper scripts in the same folder as this guide (recommended).
 
 - [0_generate_trio_bed.sh](0_generate_trio_bed.sh)
 - [1 representation_unification_trio.md](representation_unification_trio.md)
@@ -15,32 +15,8 @@ Clair3-Trio requires a pileup model, the training procedure of which is identica
 - [5.1_intial_train.sh](5_train.sh)
 - [5.2_finetune_train.sh](5_1_train.sh)
 
-Note the provide script is for data with maximum coverage goes to 80x, for 
+Note the provided script is for data with maximum coverage goes to 80x, and for a trio data from [r10](https://labs.epi2me.io/askenazi-kit14-2022-12/) with a maximum data coverage of 65x, please check the data coverage config [here]()
 
-for a trio data from [r10](https://labs.epi2me.io/askenazi-kit14-2022-12/) for example, with the following data coverage,
-
-| sample | coverage |
-| ------ | -------- |
-| HG002  | 70.13    |
-| HG003  | 79.66    |
-| HG004  | 64.72    |
-
-
-we recommend generating the below trio data coverage config:
-| even coverage   | HG002 | HG003 | HG004 |
-| --------------- | ----- | ----- | ----- |
-|                 | 10    | 10    | 10    |
-|                 | 30    | 30    | 30    |
-|                 | 50    | 50    | 50    |
-|                 | 65    | 65    | 65    |
-|                 |       |       |       |
-| uneven coverage | HG002 | HG003 | HG004 |
-|                 | 30    | 10    | 10    |
-|                 | 50    | 10    | 10    |
-|                 | 50    | 30    | 30    |
-|                 | 65    | 10    | 10    |
-|                 | 65    | 30    | 30    |
-|                 | 65    | 50    | 50    |
 ---
 
 ## Prerequisites
@@ -79,11 +55,11 @@ The input files for training Clair3-Trio model includes:
 ## 1. Set variables
 
 
-trio model utilizes phased alignment, phased alignments is required for training a trio model. 
+The trio model utilizes phased alignment, phased alignments are required for training a trio model.
 
-please using this [page](representation_unification_trio.md) to run phasing alignments in all your family samples.
+please use this [page](representation_unification_trio.md) to run phasing alignments in all your family samples.
 
-Note that all samples in family should be phased before training.
+Note that all samples in the family should be phased before training.
 
 
 
@@ -250,7 +226,7 @@ time ${PARALLEL} -j ${C3_THREADS} --joblog  ${LOG_PATH}/input_pileup${_LOG_SUF}.
 
 ## 3-1 Create and merge trio tensors
 
-generate the even coverage for Clair-Trio input, for example (child 10x, parent 1 10x, parent2 10x) + (child 30x, parent 1 10x, parent2 10)
+generate the even and uneven coverage for Clair-Trio input, for example (child 10x, parent 1 10x, parent2 10x) + (child 30x, parent 1 10x, parent2 10)
 
 ```
 
@@ -370,15 +346,14 @@ time ${PARALLEL} --joblog ${LOG_PATH}/S_tensor2Bin${_LOG_SUF}.log -j${THREADS} \
 
 ## 3-2 Downsample all bins
 
-Downsample all bin files for model training.
-by copying all bins files from even/uneven coverage `${BINS_FOLDER_PATH}` into `$ALL_BINS_FOLDER_PATH`.
+Downsample all bin files for model training, by copying all bin files from even/uneven coverage `${BINS_FOLDER_PATH}` into `$ALL_BINS_FOLDER_PATH`.
 
-We recommend to downsample bins files, as an example in 4_1_downsample_bin.sh.
+We recommend downsampling bin files, as an example in 4_1_downsample_bin.sh.
 
 
 ## 4. Train a Clair3-Trio model 
 
-please set the `${ALL_BINS_FOLDER_PATH}` which contains all bins files.
+please set the `${ALL_BINS_FOLDER_PATH}` which contains the target bin files.
 
 ```
 # Training trio model
@@ -455,3 +430,32 @@ time ${PYTHON3} ${CLAIR3_TRIO} Train_Trio \
 --mcv_alpha ${MCVLOSS_ALPHA} \
  |& tee ${MODEL_FOLDER_PATH}/train_log
 ```
+
+
+
+## r10 data configuration
+
+For a trio data from [r10](https://labs.epi2me.io/askenazi-kit14-2022-12/) with a maximum data coverage of 65x as below
+
+| sample | coverage |
+| ------ | -------- |
+| HG002  | 70.13    |
+| HG003  | 79.66    |
+| HG004  | 64.72    |
+
+
+we recommend generating the below trio data coverage config:
+| even coverage   | HG002 | HG003 | HG004 |
+| --------------- | ----- | ----- | ----- |
+|                 | 10    | 10    | 10    |
+|                 | 30    | 30    | 30    |
+|                 | 50    | 50    | 50    |
+|                 | 65    | 65    | 65    |
+|                 |       |       |       |
+| uneven coverage | HG002 | HG003 | HG004 |
+|                 | 30    | 10    | 10    |
+|                 | 50    | 10    | 10    |
+|                 | 50    | 30    | 30    |
+|                 | 65    | 10    | 10    |
+|                 | 65    | 30    | 30    |
+|                 | 65    | 50    | 50    |
