@@ -1,9 +1,11 @@
 # please using this script to generate the downsampled of Representation Unification bam for each sample for training
+# Note that for training a Clair-Trio model, this process should **separately apply to All child, parent_1, and parent_2 samples**. 
 
 # input unifold
 tar_dir="XXX" # Representation Unification folder from https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/representation_unification_trio.md
-_SAMPLE_N='HG002' # your sample name
 BAM_FILE_PATH=${tar_dir}/merged.bam
+
+_SAMPLE_N='HG002' # your sample name
 
 SUBSAMPLED_BAMS_FOLDER_PATH="XXX" #output downsampling folder
 mkdir -p ${SUBSAMPLED_BAMS_FOLDER_PATH}
@@ -12,9 +14,12 @@ mkdir -p ${SUBSAMPLED_BAMS_FOLDER_PATH}
 # for example, when the original data is in 120x coverage, you can using the code following the generate 10x to 80x data
 # (you can check your data coverage via $mosdepth -t 5 -n -x --quantize 0:15:150: ${_SAMPLE_N}_phased ${_SAMPLE_N}_phased.bam)
 # 120.33, downsample to 10x, 20x, etc.
-DEPTHS_N=(10 20 30 40 50 60 70 80)
+# we recommand to downsample your date to 10x, 30x, 50x or 60x, and high coverage (or full-depth) for each of your sample for Clair3-Trio model training
+# For high coverage dataset, like your data have 120x coverage, you can downsample your data to 10x, 30x, 60x, 80x
+# For median coverage dataset, like your data have 65x coverage, you can downsample your data to 10x, 30x, 50x, 65x (full-depth)
+DEPTHS_N=(10 30 50 80)
 # FRAC code for samtools -s option, check samtools manpage
-DEPTHS=(083 166 249 332 416 499 582 665)
+DEPTHS=(083 249 416 665)
 
 
 # Other parameters

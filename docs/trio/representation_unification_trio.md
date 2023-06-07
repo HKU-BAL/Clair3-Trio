@@ -1,13 +1,18 @@
 # Clair3 Representation Unification
 
 
-## this doc is tailor for Clair3-Trio, most of the code are idential to Clair3's representation unification, except for having addtional get true steps (8, 9).
+
 
 
 
 ## Introduction
 
-This document shows how Clair3 unifies the representation between the training materials and true variant set.
+This document shows how to unify the representation between the training materials and true variant set.
+
+This doc is tailor for Clair3-Trio, most of the code are idential to Clair3's representation unification, except for having addtional get true steps (8, 9).
+
+Note that for training a Clair-Trio model, this process should **separately apply to All child, parent_1, and parent_2 samples**. 
+
 
 ----
 
@@ -58,17 +63,18 @@ SAMTOOLS="[SAMTOOLS_BIN_PATH]"                         # e.g. samtools
 
 # Input parameters
 PLATFORM="[SEQUENCING_PLATFORM]"                       # e.g. {ont, hifi, ilmn}
-VCF_FILE_PATH="[YOUR_VCF_FILE_PATH]"                   # e.g. hg003.vcf.gz
+VCF_FILE_PATH="[YOUR_VCF_FILE_PATH]"                   # e.g. truth hg003.vcf.gz
 BAM_FILE_PATH="[YOUR_BAM_FILE_PATH]"                   # e.g. hg003.bam
-REFERENCE_FILE_PATH="[YOUR_FASTA_FILE_PATH]"           # e.g. hg003.fasta
-BED_FILE_PATH="[YOUR_BED_FILE_PATH]"                   # e.g. hg003.bed
-OUTPUT_DIR="[YOUR_OUTPUT_FOLDER_PATH]"					       # e.g. output
+REFERENCE_FILE_PATH="[YOUR_FASTA_FILE_PATH]"           # e.g. reference.fasta
+BED_FILE_PATH="[YOUR_BED_FILE_PATH]"                   # e.g. truth hg003.bed
+OUTPUT_DIR="[YOUR_OUTPUT_FOLDER_PATH]"				   # e.g. output
 
 # Chromosome prefix ("chr" if chromosome names have the "chr" prefix)
 CHR_PREFIX="chr"
 
 # array of chromosomes (do not include "chr"-prefix)
-CHR=(21 22)
+CHR=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22)
+
 
 # Number of threads to be used
 THREADS=24

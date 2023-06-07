@@ -1,5 +1,5 @@
 # generate trio bed from individual bed file
-# e.g. input HG002, HG003, and HG004 bed, output HG002 trio bed
+# e.g. input HG002, HG003, and HG004 Truth bed, output HG002 trio bed
 
 # please provide your BED file here
 ALL_ORI_BED_FILE_PATH=(
