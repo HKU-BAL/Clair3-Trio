@@ -15,7 +15,7 @@ Clair3-Trio requires a pileup model, the training procedure of which is identica
 - [5.1_intial_train.sh](5_train.sh)
 - [5.2_finetune_train.sh](5_1_train.sh)
 
-Note the provided script is for data with maximum coverage goes to 80x, and for a trio data from [r10](https://labs.epi2me.io/askenazi-kit14-2022-12/) with a maximum data coverage of 65x, please check the data coverage config [here]()
+Note the provided script is for data with maximum coverage goes to 80x, and for a trio data from [r10](https://labs.epi2me.io/askenazi-kit14-2022-12/) with a maximum data coverage of 65x, please check the data coverage config [here](#r10-data-configuration)
 
 ---
 
