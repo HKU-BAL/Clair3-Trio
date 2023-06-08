@@ -45,7 +45,7 @@ If you're using the data with a minimum data coverage of 65x, you can find the b
   - [1. Set variables](#1-set-variables)
   - [2. Run Clair3 pileup model](#2-run-clair3-pileup-model)
   - [3-1 Create and merge trio tensors](#3-1-create-and-merge-trio-tensors)
-  - [3-2 downsample all bins](#3-2-downsample-all-bins)
+  - [3-2 Downsample all bins](#3-2-downsample-all-bins)
   - [4. Train a Clair3-Trio model](#4-train-a-clair3-trio-model)
   - [5. Finetune a Clair3-Trio model](#5-finetune-a-clair3-trio-model)
 
@@ -53,7 +53,7 @@ If you're using the data with a minimum data coverage of 65x, you can find the b
 
 ## 0. Prepare required files
 
-The input files for training Clair3-Trio model includes:
+The input files for training Clair3-Trio model include:
 
 - Reference file: [R]
 - child/parents high-confidence BED files for truth variants: [C TRUTH BED], [P1 TRUTH BED], [P2 TRUTH BED]
@@ -88,7 +88,7 @@ C3_THREADS=8                                         # Clair3 threads number
 # Clair3-Trio's path
 CLAIR3_TRIO="[CLAIR3-TRIO_PATH]/clair3.py"      
 
-# creating working folder
+# Creating working folder
 TRAIN_FOLDER_PREFIX="[YOU_TRAINING_FOLDER]"
 BUILD_N="[DATA_BUILDING_NAME]"                       # data building data, e.g. "HG002_all"
 
@@ -146,11 +146,11 @@ DEPTHS=(                            # data coverage
 10
 )
 
-# true variants set from Clair3-Trio Representation Unification
+# True variants set from Clair3-Trio Representation Unification
 # Each line represents one representation-unified path for each input sample
-# note the all path have a folder called **var_ru**
-# check the representation_unification_trio.md page for more information
-# for practical concerns, the representation_unification_trio.md require only run once on the highest depth for each sample, while the low coverage can be sampled from the highest coverage data, i.e. merged.bam in the representation_unification folder
+# Note the all path have a folder called **var_ru**
+# Check the representation_unification_trio.md page for more information
+# For practical concerns, the representation_unification_trio.md require only run once on the highest depth for each sample, while the low coverage can be sampled from the highest coverage data, i.e. merged.bam in the representation_unification folder
 
 ALL_RU_FILE_PATH=(
 "[child representation unified folder]"
@@ -234,7 +234,7 @@ time ${PARALLEL} -j ${C3_THREADS} --joblog  ${LOG_PATH}/input_pileup${_LOG_SUF}.
 
 ## 3-1 Create and merge trio tensors
 
-Generate even and uneven coverage combinations as the input for Clair3-Trio training, here we set it as (child 10x, parent 1 10x, parent2 10x) + (child 30x, parent 1 10x, parent2 10) for exmaple.
+Generate even and uneven coverage combinations as the input for Clair3-Trio model training, here we set it as (child 10x, parent 1 10x, parent2 10x) + (child 30x, parent 1 10x, parent2 10) for exmaple.
 
 ```
 
@@ -370,7 +370,7 @@ MODEL_FOLDER_PATH="${TRAIN_FOLDER_PREFIX}/train/{TRAIN_N}"
 mkdir -p ${MODEL_FOLDER_PATH}
 cd ${MODEL_FOLDER_PATH}
 
-# training setting
+# Training setting
 BATCH_SIZE="[YOUR_BATCH_SIZE]"  #training batch size, e.g. 800
 add_indel_length=1
 MODEL_ARC=NN
@@ -402,7 +402,7 @@ time ${PYTHON3} ${CLAIR3_TRIO} Train_Trio \
 ## 5. Finetune a Clair3-Trio model 
 
 ```
-# finetune with MCVLoss
+# Finetune with MCVLoss
 BATCH_SIZE="[YOUR_BATCH_SIZE]"  #training batch size, e.g. 800
 add_indel_length=1
 MODEL_ARC=NN
@@ -411,7 +411,7 @@ IF_ADD_MCV_LOSS=1
 MCVLOSS_ALPHA=0.1
 
 
-# set pretrained models
+# Set pretrained models
 PRETRAINED_N="[YOUR_PRETRAINED_CALIR3-TRIO_MODEL_NAME]"
 PRETRAINED_M_EPCH="[BEGIN_EPOCH_FROM_PRETRAINED_MODEL]"    #10
 PRETRAINED_MODEL="${TRAIN_FOLDER_PREFIX}/train/{PRETAINED_N}/.${PRETRAINED_M_EPCH}"					     
