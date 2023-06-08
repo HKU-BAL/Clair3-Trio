@@ -4,7 +4,10 @@
 
 June 7, 2023
 
-Clair3-Trio requires a pileup model, the training procedure of which is identical to Clair3, and a full-alignment model, the training procedure of which is shown below. The pileup model can be obtained from [pre-trained](https://github.com/HKU-BAL/Clair3#pre-trained-models) and the training guide is at [here](../pileup_training.md). The example below uses the GIAB Ashkenazim Trio (HG002/3/4) as input. You can also start with modifying the following helper scripts in the same folder as this guide (recommended).
+Clair3-Trio requires a pileup model, the training procedure of which is identical to Clair3, and a trio model, the training procedure of which is shown below. The pileup model can be obtained from [pre-trained](https://github.com/HKU-BAL/Clair3#pre-trained-models) and the training guide is at [here](../pileup_training.md). The trio model's training procedure is shown below, and the example provided uses the GIAB Ashkenazim Trio (HG002/3/4) as input. To get started, it's recommended that you modify the following helper scripts below to train a trio model.
+
+
+
 
 - [0_generate_trio_bed.sh](0_generate_trio_bed.sh)
 - [1 representation_unification_trio.md](representation_unification_trio.md)
@@ -15,7 +18,14 @@ Clair3-Trio requires a pileup model, the training procedure of which is identica
 - [5.1_intial_train.sh](5_train.sh)
 - [5.2_finetune_train.sh](5_1_train.sh)
 
-Note the provided script is for data with maximum coverage goes to 80x, and for a trio data from [r10](https://labs.epi2me.io/askenazi-kit14-2022-12/) with a maximum data coverage of 65x, please check the data coverage config [here](#r10-data-configuration).
+
+
+The provided scripts use data from the HG002 trio from the Human Pangenome Reference Consortium (HPRC). The data was basecalled with Guppy5 and the dna_r9.4.1_450bps_sup mode, and all samples have a data coverage above 80x.
+
+To train a trio model, it's recommended to use data with a minimum coverage above 80x, as the downsampling coverage setting in this training procedure is tailored for data above 80x.
+
+If you're using the newest data from ONT Q20+ with a minimum data coverage of 65x, you can find the best downsampling coverage setting for the data in this section: [[ONT Q20+](https://github.com/HKU-BAL/Clair3-Trio/edit/trio/docs/trio/trio_training.md#Q20-data-configuration)].
+
 
 ---
 
@@ -55,13 +65,11 @@ The input files for training Clair3-Trio model includes:
 ## 1. Set variables
 
 
-The trio model utilizes phased alignment, phased alignments are required for training a trio model.
+The trio model requires phased alignments, which are necessary for training it.
 
-please use this [page](representation_unification_trio.md) to run phasing alignments in all your family samples.
+Please use this [page](representation_unification_trio.md) to run phasing alignments in all of your family samples.
 
-Note that all samples in the family should be phased before training.
-
-
+Note that all samples in the family should be phased before training to ensure the accuracy of the trio model.
 
 ```bash
 PARALLEL="[WHATSHAP_PATH]"                           # e.g. "parallel"
@@ -127,7 +135,7 @@ ${P2_SAMPLE_N}                      # your parenet-2 sample name
 
 TRIO_N="${CHILD_SAMPLE_N}_TRIO"     # your trio name, e.g. HG002_TRIO
 
-# Note: here we set it to 10x and 30x for example, for using a maximum of 120x data, here, all following paths of (ALL_RU_FILE_PATH, ALL_PHASED_BAM_FILE_PATH, ALL_REFERENCE_FILE_PATH, etc.),  need to be set to 10x, 30x, 50x, 70x, 90x, 120x accordingly. check the 4_create_tensors.sh for more example
+# Note: Here we setting the data coverage as 10x and 30x for example, all following paths of (${ALL_RU_FILE_PATH}, ${ALL_PHASED_BAM_FILE_PATH}, ${ALL_REFERENCE_FILE_PATH}, etc.),  need to be set to ${DEPTHS} accordingly. check the 4_create_tensors.sh for more example
 
 DEPTHS=(                            # data coverage
 10
@@ -145,22 +153,22 @@ DEPTHS=(                            # data coverage
 # for practical concerns, the representation_unification_trio.md require only run once on the highest depth for each sample, while the low coverage can be sampled from the highest coverage data, i.e. merged.bam in the representation_unification folder
 
 ALL_RU_FILE_PATH=(
-"[child representation unificated folder]"
-"[parent-1 representation unificated folder]"
-"[parent-2 representation unificated folder]"
-"[child representation unificated folder]"
-"[parent-1 representation unificated folder]"
-"[parent-2 representation unificated folder]"
+"[child representation unified folder]"
+"[parent-1 representation unified folder]"
+"[parent-2 representation unified folder]"
+"[child representation unified folder]"
+"[parent-1 representation unified folder]"
+"[parent-2 representation unified folder]"
 )
 
 # downsampled RU bam
 ALL_PHASED_BAM_FILE_PATH=(
-"[child representation unificated folder]/${CHILD_SAMPLE_N}_10.bam"          
-"[parent-1 representation unificated folder]/${P1_SAMPLE_N}_10.bam"
-"[parent-2 representation unificated folder]/${P2_SAMPLE_N}_10.bam"
-"[child representation unificated folder]/${CHILD_SAMPLE_N}_30.bam"          
-"[parent-1 representation unificated folder]/${P1_SAMPLE_N}_10.bam"
-"[parent-2 representation unificated folder]/${P2_SAMPLE_N}_10.bam"
+"[child representation unified folder]/${CHILD_SAMPLE_N}_10.bam"          
+"[parent-1 representation unified folder]/${P1_SAMPLE_N}_10.bam"
+"[parent-2 representation unified folder]/${P2_SAMPLE_N}_10.bam"
+"[child representation unified folder]/${CHILD_SAMPLE_N}_30.bam"          
+"[parent-1 representation unified folder]/${P1_SAMPLE_N}_10.bam"
+"[parent-2 representation unified folder]/${P2_SAMPLE_N}_10.bam"
 )
 
 ALL_REFERENCE_FILE_PATH=(
@@ -226,7 +234,7 @@ time ${PARALLEL} -j ${C3_THREADS} --joblog  ${LOG_PATH}/input_pileup${_LOG_SUF}.
 
 ## 3-1 Create and merge trio tensors
 
-generate the even and uneven coverage for Clair-Trio input, for example (child 10x, parent 1 10x, parent2 10x) + (child 30x, parent 1 10x, parent2 10)
+Generate even and uneven coverage combinations as the input for Clair3-Trio training, here we set it as (child 10x, parent 1 10x, parent2 10x) + (child 30x, parent 1 10x, parent2 10) for exmaple.
 
 ```
 
@@ -353,7 +361,7 @@ We recommend downsampling bin files, as an example in 4_1_downsample_bin.sh.
 
 ## 4. Train a Clair3-Trio model 
 
-please set the `${ALL_BINS_FOLDER_PATH}` which contains the target bin files.
+Please set the `${ALL_BINS_FOLDER_PATH}` which contains the target bin files.
 
 ```
 # Training trio model
@@ -433,9 +441,9 @@ time ${PYTHON3} ${CLAIR3_TRIO} Train_Trio \
 
 
 
-## r10 data configuration
+## Q20 data configuration
 
-For a trio data from [r10](https://labs.epi2me.io/askenazi-kit14-2022-12/) with a maximum data coverage of 65x as below
+For a trio data from [Q20+](https://labs.epi2me.io/askenazi-kit14-2022-12/) with a maximum trio coverage (or minimum data coverage) of 65x:
 
 | sample | coverage |
 | ------ | -------- |
@@ -444,7 +452,9 @@ For a trio data from [r10](https://labs.epi2me.io/askenazi-kit14-2022-12/) with 
 | HG004  | 64.72    |
 
 
-we recommend generating the below trio data coverage config:
+We recommend generating trio data coverage config as below:
+
+
 | even coverage   | HG002 | HG003 | HG004 |
 | --------------- | ----- | ----- | ----- |
 |                 | 10    | 10    | 10    |
