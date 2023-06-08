@@ -356,7 +356,7 @@ time ${PARALLEL} --joblog ${LOG_PATH}/S_tensor2Bin${_LOG_SUF}.log -j${THREADS} \
 
 Downsample all bin files for model training, by copying all bin files from even/uneven coverage `${BINS_FOLDER_PATH}` into `$ALL_BINS_FOLDER_PATH`.
 
-We recommend downsampling bin files, as an example in 4_1_downsample_bin.sh.
+We recommend downsampling bin files, as an example in [4_1_downsample_bin.sh](4_1_downsample_bin.sh).
 
 
 ## 4. Train a Clair3-Trio model 
