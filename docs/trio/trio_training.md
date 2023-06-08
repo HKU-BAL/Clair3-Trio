@@ -24,7 +24,7 @@ The provided scripts use data from the HG002 trio from the Human Pangenome Refer
 
 To train a trio model, it's recommended to use data with a minimum coverage above 80x, as the downsampling coverage setting in this training procedure is tailored for data above 80x.
 
-If you're using the newest data from ONT Q20+ with a minimum data coverage of 65x, you can find the best downsampling coverage setting for the data in this section: [[ONT Q20+](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/trio_training.md#q20-data-configuration)].
+If you're using the data with a minimum data coverage of 65x, you can find the best downsampling coverage setting for the data in this section: [[ONT Q20+](https://github.com/HKU-BAL/Clair3-Trio/blob/trio/docs/trio/trio_training.md#q20-data-configuration)].
 
 
 ---
