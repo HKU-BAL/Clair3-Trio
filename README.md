@@ -29,9 +29,10 @@ Detailed descriptions of the methodology and results for Clair3-Trio are availab
 * [Quick Demo](docs/trio/trio_quick_demo.md)
 * [Installation](#installation)
   + [Option 1. Docker pre-built image](#option-1-docker-pre-built-image)
-  + [Option 2. Build an anaconda virtual environment](#option-2-build-an-anaconda-virtual-environment)
-  + [Option 3. Bioconda](#option-3-bioconda)
-  + [Option 4. Docker Dockerfile](#option-4-docker-dockerfile)
+  + [Option 2. Singularity](#option-2-singularity)
+  + [Option 3. Build an anaconda virtual environment](#option-3-build-an-anaconda-virtual-environment)
+  + [Option 4. Bioconda](#option-4-bioconda)
+  + [Option 5. Docker Dockerfile](#option-5-docker-dockerfile)
 * [Usage](#usage)
 * [Folder Structure and Submodule Descriptions](#folder-structure-and-submodule-descriptions)
 * [Clair3-Trio Model Training](docs/trio/trio_training.md)
@@ -43,7 +44,7 @@ Detailed descriptions of the methodology and results for Clair3-Trio are availab
 
 ## Latest Updates
 
-*v0.6 (April 25, 2023)*: Bumped up Python from 3.6 to 3.9, Whatshap from v1.0 to v1.7 [Clair3 #193](https://github.com/HKU-BAL/Clair3/issues/193). Fixed gVCF format mistake [#3](https://github.com/HKU-BAL/Clair3-Trio/issues/3). Added options "--enable_phasing", "--enable_output_phasing", and "enable_output_haplotagging" [#4](https://github.com/HKU-BAL/Clair3-Trio/issues/4).
+*v0.6 (April 25, 2023)*: Bumped up Python from 3.6 to 3.9, Whatshap from v1.0 to v1.7 [Clair3 #193](https://github.com/HKU-BAL/Clair3/issues/193). Fixed gVCF format mistake [#3](https://github.com/HKU-BAL/Clair3-Trio/issues/3). Added options "--enable_phasing", "--enable_output_phasing", and "enable_output_haplotagging" [#4](https://github.com/HKU-BAL/Clair3-Trio/issues/4). Added singularity support.
 
 *v0.5 (April 10, 2023)*: Added support for gVCF output. Use `--gvcf` to enable gVCF output.
 
@@ -134,7 +135,44 @@ docker run -it \
 
 ```
 
-### Option 2. Build an anaconda virtual environment
+### Option 2. Singularity
+
+Caution: Absolute path is needed for both `INPUT_DIR` and `OUTPUT_DIR`.
+
+```
+INPUT_DIR="[YOUR_INPUT_FOLDER]"            # e.g. /input
+REF=${_INPUT_DIR}/ref.fa                   # change your reference file name here
+OUTPUT_DIR="[YOUR_OUTPUT_FOLDER]"          # e.g. /output
+THREADS="[MAXIMUM_THREADS]"                # e.g. 8
+MODEL_C3="[Clair3 MODEL NAME]"         	   # e.g. Clair3 model, r941_prom_hac_g360+g422 for Guppy4 data, r941_prom_sup_g5014 for Guppy5 data
+MODEL_C3T="[Clair3-Trio MODEL NAME]"       # e.g. Clair3-Trio model, c3t_hg002_g422 for Guppy4 data, c3t_hg002_r941_prom_sup_g5014 for Guppy5 data
+
+conda config --add channels defaults
+conda create -n singularity-env -c conda-forge singularity -y
+conda activate singularity-env
+
+# singularity pull docker pre-built image
+singularity pull docker://hkubal/clair3-trio:latest
+
+singularity exec \
+-B ${INPUT_DIR},${OUTPUT_DIR} \
+clair3-trio_latest.sif \
+/opt/bin/run_clair3_trio.sh \
+--ref_fn=${INPUT_DIR}/ref.fa \                  ## change your reference file name here
+--bam_fn_c=${INPUT_DIR}/child_input.bam \       ## change your child's bam file name here 
+--bam_fn_p1=${INPUT_DIR}/parent1_input.bam \    ## change your parent-1's bam file name here     
+--bam_fn_p2=${INPUT_DIR}/parenet2_input.bam \   ## change your parent-2's bam file name here   
+--sample_name_c=${SAMPLE_C} \                   ## change your child's name here
+--sample_name_p1=${SAMPLE_P1} \                 ## change your parent-1's name here
+--sample_name_p2=${SAMPLE_P2} \                 ## change your parent-2's name here
+--threads=${THREADS} \                          ## maximum threads to be used
+--model_path_clair3="/opt/models/clair3_models/${MODEL_C3}" \
+--model_path_clair3_trio="/opt/models/clair3_trio_models/${MODEL_C3T}" \
+--output=${OUTPUT_DIR}                          ## absolute output path prefix 
+```
+
+
+### Option 3. Build an anaconda virtual environment
 
 **Anaconda install**:
 
@@ -214,7 +252,7 @@ _MODEL_DIR_C3T="[Clair3-Trio MODEL NAME]"   # e.g. ./models/clair3_trio_models/c
   --sample_name_p2=${_SAMPLE_P2}
 
 ```
-### Option 3. Bioconda
+### Option 4. Bioconda
 
 
 ```bash
@@ -259,7 +297,7 @@ Check [Usage](#Usage) for more options. [Pre-trained models](#pre-trained-models
 
 
 
-### Option 4. Docker Dockerfile
+### Option 5. Docker Dockerfile
 
 Building a docker image.
 ```
