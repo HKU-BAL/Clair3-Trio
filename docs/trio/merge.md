@@ -1,7 +1,8 @@
+# Merge trio VCF files
 
-In a trio study, it is necessary to accurately detect variants in each individual in the trio. The results help to identify Mendelian variants and de novo variants for clinical applications.
+In a trio study, it is necessary to detect variants in each individual in the trio accurately. The results help identify Mendelian and de novo variants for clinical applications.
 
-Clair3-Trio provides a solution to call variants consistently in trio. The benchmark results indicate that Clair-Trio can improve the accuracy of variants in all individuals.
+Clair3-Trio provides a solution to call variants consistently in the trio. The benchmark results indicate that Clair-Trio can improve the accuracy of variants in all individuals.
 
 Clair3-Trio currently outputs variants in separate VCF files. However, to better interpret the variants in trios, it is necessary to merge multiple individual VCF files into a single file for comprehensive analysis.
 
@@ -11,13 +12,13 @@ Merging multiple VCF files is not a trivial task. The difficulty arises from two
 2) merging multiple alleles and overlapping variants between individuals and positions.
 
 
-In this page, we will describe the method we used to merge VCF files for Clair3-Trio.
+This page will describe the method we used to merge VCF files for Clair3-Trio.
 
 
-## Option 1. Merge VCF, with unknown to 0/0
+## Option 1. Merge VCF with unknown to "0/0"
 
 Merge the VCF files, and set all non-called / unknown sites to 0/0.
-This is the method that we benchmarked in our paper and it has the highest recall to detect the de novo variants.
+This is the method that we benchmarked in our paper, and it has the highest recall to detect the de novo variants.
 
 
 ```
@@ -54,7 +55,7 @@ ${RTG} mendelian -i ${M_VCF} -o ${M_VCF_annotated} --pedigree ${_TRIO_PED} -t ${
 ```
 
 
-# Option 2. Merge VCF, with unknow to ./.
+## Option 2. Merge VCF with unknown to "./."
 
 Merge the VCF files, and set all non-called / unknown sites to "./.".
 Keeping unknown sites as "./." will have the highest precision rate to detect de novo variants. But will leave a large number of sites uncomparable for incomplete records.
