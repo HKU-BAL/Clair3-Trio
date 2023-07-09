@@ -1,1 +1,4 @@
 *.swp
+models/
+*__pycache__
+docs/trio/quick_test.sh

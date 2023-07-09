@@ -1,7 +1,6 @@
 #!/bin/bash
 SCRIPT_NAME=$(basename "$0")
 Usage="Usage: ./${SCRIPT_NAME} --bam_fn_c=BAM --bam_fn_p1=BAM --bam_fn_p2=BAM --ref_fn=REF --output=OUTPUT_DIR --threads=THREADS --model_path_clair3=MODEL_PREFIX --model_path_clair3_trio=MODEL_PREFIX [--bed_fn=BED] [options]"
-# INFO: whole calling workflow of clair3
 
 set -e
 ARGS=`getopt -o f:t:p:o:r::c::s::h::g \
@@ -113,7 +112,6 @@ fi
 SHELL_FOLDER=$(cd "$(dirname "$0")";pwd)
 CLAIR3_TRIO="${SHELL_FOLDER}/../clair3.py"
 
-
 # if [ ${BED_FILE_PATH} = "EMPTY" ] ; then BED_FILE_PATH= ; fi
 RETRIES=4
 
@@ -173,8 +171,7 @@ if [[ ${THREADS_LOW} < 1 ]]; then THREADS_LOW=1; fi
 cd ${OUTPUT_FOLDER}
 
 export CUDA_VISIBLE_DEVICES=""
-echo "[TRIO INFO] * 1 call variants using pileup model"
-
+echo "[TRIO INFO] * 1 call variants using the pileup model"
 
 ALL_SAMPLE=(
 ${SAMPLE_C}
@@ -191,11 +188,11 @@ ${BAM_FILE_PATH_P2}
 CLAIR3_THREADS=$((${THREADS}/3))
 if [[ ${CLAIR3_THREADS} < 1 ]]; then CLAIR3_THREADS=1; fi
 
-echo "trio sample" ${ALL_SAMPLE[@]}
-echo "trio bam" ${ALL_UNPHASED_BAM_FILE_PATH[@]}
-echo "pileup threads" ${CLAIR3_THREADS}
+echo "trio sample: " ${ALL_SAMPLE[@]}
+echo "trio bam: " ${ALL_UNPHASED_BAM_FILE_PATH[@]}
+echo "pileup threads: " ${CLAIR3_THREADS}
 
-echo "running pileup model"
+echo "running the pileup model"
 
 
 ${PARALLEL} --retries ${RETRIES} -j3 --joblog  ${LOG_PATH}/parallel_1_clair3_pileup.log \
@@ -240,7 +237,7 @@ ${PARALLEL} --retries ${RETRIES} -j3 --joblog  ${LOG_PATH}/parallel_1_clair3_pil
    --fa_model_prefix=full_alignment" ::: ${ALL_SAMPLE[@]} :::+ ${ALL_UNPHASED_BAM_FILE_PATH[@]} |& tee ${LOG_PATH}/1_call_var_bam_pileup.log
 
 
-echo "[TRIO INFO] Finish Pileup model"
+echo "[TRIO INFO] pileup model calling finish"
 
 
 # phased bam organized in different chr
@@ -305,6 +302,7 @@ time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_3_callvarbam
 --full_aln_regions {1} \
 --gvcf=${GVCF} \
 --showRef ${SHOW_REF} \
+--tmp_path ${OUTPUT_FOLDER}/tmp \
 --phasing_info_in_bam" :::: ${CANDIDATE_BED_PATH}/FULL_ALN_FILES |& tee ${LOG_PATH}/3_CV.log
 
 ${PARALLEL}  -j${THREADS} \
@@ -314,6 +312,7 @@ ${PARALLEL}  -j${THREADS} \
    --output_fn ${OUTPUT_FOLDER}/{1}_c3t.vcf \
    --sampleName {1} \
    --ref_fn ${REFERENCE_FILE_PATH} \
+   --tmp_path ${OUTPUT_FOLDER}/tmp \
    --contigs_fn ${TMP_FILE_PATH}/CONTIGS" ::: ${ALL_SAMPLE[@]}
 
 if [ "$( gzip -fdc ${OUTPUT_FOLDER}/${SAMPLE_C}_c3t.vcf.gz | grep -v '#' | wc -l )" -eq 0 ]; then echo "[INFO] Exit in trio variant calling"; exit 0; fi
@@ -361,6 +360,7 @@ ${PARALLEL}  -j${THREADS} \
    --output_fn ${OUTPUT_FOLDER}/{1}.vcf \
    --sampleName {1} \
    --ref_fn ${REFERENCE_FILE_PATH} \
+   --tmp_path ${OUTPUT_FOLDER}/tmp \
    --contigs_fn ${TMP_FILE_PATH}/CONTIGS" ::: ${ALL_SAMPLE[@]}
 
 if [ "$( gzip -fdc ${OUTPUT_FOLDER}/${SAMPLE_C}.vcf.gz | grep -v '#' | wc -l )" -eq 0 ]; then echo "[INFO] Exit in trio variant calling"; exit 0; fi
@@ -369,13 +369,14 @@ if [ ${GVCF} == True ]
 then
 ${PARALLEL}  -j${THREADS} \
 ${PYPY} ${CLAIR3_TRIO} SortVcf_Trio \
-       --input_dir ${GVCF_TMP_PATH}/{1} \
-       --vcf_fn_prefix "merge" \
-       --vcf_fn_suffix ".gvcf" \
-       --output_fn ${OUTPUT_FOLDER}/{1}.gvcf \
-       --sampleName {1} \
-       --ref_fn ${REFERENCE_FILE_PATH} \
-       --contigs_fn ${TMP_FILE_PATH}/CONTIGS ::: ${ALL_SAMPLE[@]}
+   --input_dir ${GVCF_TMP_PATH}/{1} \
+   --vcf_fn_prefix "merge" \
+   --vcf_fn_suffix ".gvcf" \
+   --output_fn ${OUTPUT_FOLDER}/{1}.gvcf \
+   --sampleName {1} \
+   --ref_fn ${REFERENCE_FILE_PATH} \
+   --tmp_path ${OUTPUT_FOLDER}/tmp \
+   --contigs_fn ${TMP_FILE_PATH}/CONTIGS ::: ${ALL_SAMPLE[@]}
 fi
 
 
@@ -399,39 +400,11 @@ then
         --output_fn ${OUTPUT_FOLDER}/phased_{1}.vcf \
         --sampleName {1} \
         --ref_fn ${REFERENCE_FILE_PATH} \
+        --tmp_path ${OUTPUT_FOLDER}/tmp \
         --contigs_fn ${TMP_FILE_PATH}/CONTIGS" ::: ${ALL_SAMPLE[@]}
-    echo "[INFO] Finish Phasing calling, output phased VCF file: ${OUTPUT_FOLDER}/phased_*.vcf.gz"
-
-
-    # if [ ${GVCF} == True ]
-    # then
-    # echo "[INFO] merge phased gvcf"
-    # time ${PARALLEL} --retries ${RETRIES} --joblog ${LOG_PATH}/parallel_4_merge_vcf.log -j${THREADS} \
-    # "${PYPY} ${CLAIR3_TRIO} MergeVcf_Trio \
-    #     --output_fn ${GVCF_TMP_PATH}/{2}/phased_merge_{1}.vcf \
-    #     --gvcf_fn ${GVCF_TMP_PATH}/{2}/phased_merge_{1}.gvcf \
-    #     --platform ${PLATFORM} \
-    #     --print_ref_calls ${SHOW_REF} \
-    #     --gvcf ${GVCF} \
-    #     --haploid_precise ${HAP_PRE} \
-    #     --haploid_sensitive ${HAP_SEN} \
-    #     --non_var_gvcf_fn {5}/non_var.gvcf \
-    #     --ref_fn ${REFERENCE_FILE_PATH} \
-    #     --merge_gvcf_only True \
-    #     --ctgName {1}" ::: ${CHR[@]} ::: ${ALL_SAMPLE[@]} :::+ ${INPUT_PILEUP_VCF[@]} :::+ ${TRIO_M_OUTPUT_VCF[@]} :::+ ${INPUT_PILEUP_GVCF_PATH[@]} |& tee ${LOG_PATH}/4_MV.log
-
-    # ${PARALLEL}  -j${THREADS} \
-    # ${PYPY} ${CLAIR3_TRIO} SortVcf_Trio \
-    #         --input_dir ${GVCF_TMP_PATH}/{1} \
-    #         --vcf_fn_prefix "phased_merge" \
-    #         --vcf_fn_suffix ".gvcf" \
-    #         --output_fn ${OUTPUT_FOLDER}/phased_{1}.gvcf \
-    #         --sampleName {1} \
-    #         --ref_fn ${REFERENCE_FILE_PATH} \
-    #         --contigs_fn ${TMP_FILE_PATH}/CONTIGS ::: ${ALL_SAMPLE[@]}
-
-    # fi
-
+    echo "[INFO] Finish Phasing calling, output phased VCF file [Child]: ${OUTPUT_FOLDER}/phased_${SAMPLE_C}.vcf.gz"
+    echo "[INFO] Finish Phasing calling, output phased VCF file [Parent 1]: ${OUTPUT_FOLDER}/phased_${SAMPLE_P1}.vcf.gz"
+    echo "[INFO] Finish Phasing calling, output phased VCF file [Parent 2]: ${OUTPUT_FOLDER}/phased_${SAMPLE_P2}.vcf.gz"
 fi
 
 

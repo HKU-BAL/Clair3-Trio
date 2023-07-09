@@ -109,6 +109,7 @@ def Run(args):
     chkpnt_fn = args.chkpnt_fn
     qual = command_option_from(args.qual, 'qual', option_value=args.qual)
     temp_file_dir = command_option_from(args.temp_file_dir, 'temp_file_dir')
+    tmp_path = command_option_from(args.tmp_path, 'tmp_path')
     haploid_precise_mode = CommandOption('haploid_precise', args.haploid_precise)
     haploid_sensitive_mode = CommandOption('haploid_sensitive', args.haploid_sensitive)
     # showRef_mode = command_option_from(None, None)
@@ -190,7 +191,7 @@ def Run(args):
         CommandOption('ref_fn', ref_fn),
         CommandOption('platform', platform),
         CommandOption('ctgName', ctgName),
-        CommandOption('temp_file_dir', args.temp_file_dir),
+        CommandOption('tmp_path', args.tmp_path),
         qual,
         add_indel_length_mode,
         showRef_mode,
@@ -421,6 +422,9 @@ def main():
 
     parser.add_argument('--temp_file_dir', type=str, default='./',
                         help="EXPERIMENTAL: The cache directory for storing temporary non-variant information if --gvcf is enabled, default: %(default)s")
+
+    parser.add_argument('--tmp_path', type=str, default=None,
+                        help="EXPERIMENTAL: The cache directory for storing temporary files, default: %(default)s")
 
     parser.add_argument('--haploid_precise', action='store_true',
                         help="EXPERIMENTAL: Enable haploid calling mode. Only 1/1 is considered as a variant")

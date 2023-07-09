@@ -12,6 +12,7 @@ import shared.param_p as param
 from shared.interval_tree import bed_tree_from
 from shared.utils import file_path_from, folder_path_from, subprocess_popen, str2bool, \
     legal_range_from, log_error, log_warning
+import trio.param_t as param
 
 MIN_CHUNK_LENGTH = 200000
 MAX_CHUNK_LENGTH = 20000000
@@ -161,33 +162,43 @@ def split_extend_bed(bed_fn, output_fn, contig_set=None):
     unzip_process.wait()
 
 
-def output_header(output_fn, reference_file_path, sample_name='SAMPLE'):
+def output_header(output_fn, reference_file_path, sample_name=None, cmdline=None, contig_list=None):
     output_file = open(output_fn, "w")
+    if cmdline is None:
+        cmdline = "None"
     from textwrap import dedent
     output_file.write(dedent("""\
         ##fileformat=VCFv4.2
+        ##source=Clair3-Trio
+        ##{0}_version={1}
+        ##{0}_cmdline={2}
         ##FILTER=<ID=PASS,Description="All filters passed">
         ##FILTER=<ID=LowQual,Description="Low quality variant">
         ##FILTER=<ID=RefCall,Description="Reference call">
         ##INFO=<ID=P,Number=0,Type=Flag,Description="Result from pileup calling">
         ##INFO=<ID=F,Number=0,Type=Flag,Description="Result from full-alignment calling">
+        ##INFO=<ID=T,Number=0,Type=Flag,Description="Result from trio calling">
         ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
         ##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
         ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
         ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Read depth for each allele">
         ##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Phred-scaled genotype likelihoods rounded to the closest integer">
         ##FORMAT=<ID=AF,Number=1,Type=Float,Description="Estimated allele frequency in the range of [0,1]">"""
-                             ) + '\n')
+                             ).format(param.TOOL_NAME, param.VERSION, cmdline) + '\n')
 
     if reference_file_path is not None:
+        output_file.write(("##reference=%s" % (reference_file_path) + '\n'))
         reference_index_file_path = file_path_from(reference_file_path, suffix=".fai", exit_on_not_found=True, sep='.')
         with open(reference_index_file_path, "r") as fai_fp:
             for row in fai_fp:
                 columns = row.strip().split("\t")
                 contig_name, contig_size = columns[0], columns[1]
-                output_file.write(("##contig=<ID=%s,length=%s>" % (contig_name, contig_size) + '\n'))
+                # Only print the contigs found at BAM or assigned via --ctg_name
+                if (contig_list is not None) and (contig_name in contig_list):
+                    output_file.write(("##contig=<ID=%s,length=%s>" % (contig_name, contig_size) + '\n'))
 
-    output_file.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t%s' % (sample_name))
+    if sample_name:
+        output_file.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t%s' % (sample_name))
     output_file.close()
 
 def compress_index_vcf(input_vcf):
@@ -207,10 +218,6 @@ def CheckEnvs(args):
     ref_fn = file_path_from(args.ref_fn, exit_on_not_found=True)
     fai_fn = file_path_from(args.ref_fn, suffix=".fai", exit_on_not_found=True, sep='.')
 
-    #bai_fn_c = file_path_from(args.bam_fn_c, suffix=".bai", exit_on_not_found=True, sep='.')
-    #bai_fn_p1 = file_path_from(args.bam_fn_p1, suffix=".bai", exit_on_not_found=True, sep='.')
-    #bai_fn_p2 = file_path_from(args.bam_fn_p2, suffix=".bai", exit_on_not_found=True, sep='.')
-
     bed_fn = file_path_from(args.bed_fn)
     vcf_fn = file_path_from(args.vcf_fn)
     tree = bed_tree_from(bed_file_path=bed_fn)
@@ -226,15 +233,14 @@ def CheckEnvs(args):
     # merge_vcf_path = folder_path_from(os.path.join(tmp_file_path, 'merge_output'), create_not_found=True)
     # phase_output_path = folder_path_from(os.path.join(tmp_file_path, 'phase_output'), create_not_found=True)
     gvcf_temp_output_path = folder_path_from(os.path.join(tmp_file_path, 'gvcf_tmp_output'), create_not_found=True)
-    
+
     # phase_vcf_path = folder_path_from(os.path.join(phase_output_path, 'phase_vcf'), create_not_found=True)
     # phase_bam_path = folder_path_from(os.path.join(phase_output_path, 'phase_bam'), create_not_found=True)
-    
+
     #full_alignment_output_path = folder_path_from( \
                         # os.path.join(tmp_file_path, 'full_alignment_output'), create_not_found=True)
     #candidate_bed_path = folder_path_from(os.path.join(full_alignment_output_path, 'candidate_bed'),
     #                                create_not_found=True)
-
 
     pileup_output_path = folder_path_from(os.path.join(tmp_file_path, 'pileup_output'), create_not_found=True)
     trio_output_path = folder_path_from(os.path.join(tmp_file_path, 'trio_output'), create_not_found=True)
@@ -242,7 +248,6 @@ def CheckEnvs(args):
     folder_path_from(os.path.join(trio_output_path, args.sampleName_p1), create_not_found=True)
     folder_path_from(os.path.join(trio_output_path, args.sampleName_p2), create_not_found=True)
     folder_path_from(os.path.join(trio_output_path, 'candidate_bed'), create_not_found=True)
-
 
     # environment parameters
     pypy = args.pypy
@@ -262,7 +267,6 @@ def CheckEnvs(args):
     folder_path_from(os.path.join(pileup_output_path, sample_name_c), create_not_found=True)
     folder_path_from(os.path.join(pileup_output_path, sample_name_p1), create_not_found=True)
     folder_path_from(os.path.join(pileup_output_path, sample_name_p2), create_not_found=True)
-
 
     contig_name_list = os.path.join(tmp_file_path, 'CONTIGS')
     chunk_list = os.path.join(tmp_file_path, 'CHUNK_LIST')
@@ -388,10 +392,19 @@ def CheckEnvs(args):
         sorted_contig_list, found_contig = check_contig_in_bam(bam_fn=bam_fn_c, sorted_contig_list=sorted_contig_list,
                                                                samtools=samtools)
 
+    cmdline = None
+    cmd_file_path = os.path.join(tmp_file_path, 'CMD')
+    with open(cmd_file_path, 'r') as cmd_file:
+        cmdline = cmd_file.readline().strip()
+    #print(cmdline)
+
+    header_file_path = os.path.join(tmp_file_path, 'HEADER')
+    output_header(output_fn=header_file_path, reference_file_path=ref_fn, sample_name=None, cmdline=cmdline, contig_list=sorted_contig_list)
+
     if not found_contig:
         # output header only to merge_output.vcf.gz
         output_fn = os.path.join(output_fn_prefix, "merge_output.vcf")
-        output_header(output_fn=output_fn, reference_file_path=ref_fn, sample_name=sample_name_c)
+        output_header(output_fn=output_fn, reference_file_path=ref_fn, sample_name=sample_name_c, cmdline=cmdline, contig_list=None)
         compress_index_vcf(output_fn)
         print(log_warning(
             ("[WARNING] No contig intersection found, output header only in {}").format(output_fn + ".gz")))

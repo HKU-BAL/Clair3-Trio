@@ -1,5 +1,7 @@
 # Clair3 full alignment parameters
-REPO_NAME = "Clair3"
+TOOL_NAME = "clair3_trio"
+VERSION='v0.7'
+
 from itertools import accumulate
 
 zstd='zstd'
@@ -74,3 +76,4 @@ p_ont_input_shape_trio = [matrix_depth_dict['ont'] * 3, no_of_positions, padding
 padding_value_c = "30"
 padding_value_p1 = "60"
 padding_value_p2 = "90"
+

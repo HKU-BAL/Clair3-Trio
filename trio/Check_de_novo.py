@@ -47,7 +47,10 @@ def Check(args):
 
             def get_gt(x):
                 tmp_s = x.split(':')[0]
-                gt_1, gt_2 = int(tmp_s[0]), int(tmp_s[2])
+                try:
+                    gt_1, gt_2 = int(tmp_s[0]), int(tmp_s[2])
+                except:
+                    gt_1, gt_2 = -99, -99
                 return gt_1 + gt_2
             try:
                 gt_c, gt_p1, gt_p2 = get_gt(columns[c_col]), get_gt(columns[p1_col]), get_gt(columns[p2_col])
@@ -86,7 +89,10 @@ def Check(args):
 
             def get_gt(x):
                 tmp_s = x.split(':')[0]
-                gt_1, gt_2 = int(tmp_s[0]), int(tmp_s[2])
+                try:
+                    gt_1, gt_2 = int(tmp_s[0]), int(tmp_s[2])
+                except:
+                    gt_1, gt_2 = -99, -99
                 return gt_1 + gt_2
             try:
                 gt_c, gt_p1, gt_p2 = get_gt(columns[c_col]), get_gt(columns[p1_col]), get_gt(columns[p2_col])

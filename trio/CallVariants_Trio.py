@@ -24,6 +24,9 @@ from shared.utils import IUPAC_base_to_ACGT_base_dict as BASE2ACGT, BASIC_BASES,
 from clair3.task.variant_length import VariantLength
 import trio.model as model_path
 
+from trio.print_header import get_header
+TMP_DIR=None
+
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 logging.basicConfig(format='%(message)s', level=logging.INFO)
@@ -351,33 +354,7 @@ class output_utilties_class:
         if self.is_output_for_ensemble:
             return
 
-        from textwrap import dedent
-        self.output(dedent("""\
-            ##fileformat=VCFv4.2
-            ##FILTER=<ID=PASS,Description="All filters passed">
-            ##FILTER=<ID=LowQual,Description="Low quality variant">
-            ##FILTER=<ID=RefCall,Description="Reference call">
-            ##INFO=<ID=P,Number=0,Type=Flag,Description="Result from pileup calling">
-            ##INFO=<ID=F,Number=0,Type=Flag,Description="Result from full-alignment calling">
-            ##INFO=<ID=T,Number=0,Type=Flag,Description="Result from trio calling">
-            ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-            ##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
-            ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
-            ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Read depth for each allele">
-            ##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Phred-scaled genotype likelihoods rounded to the closest integer">
-            ##FORMAT=<ID=AF,Number=1,Type=Float,Description="Estimated allele frequency in the range of [0,1]">"""
-                      ))
-
-        if self.reference_file_path is not None:
-            reference_index_file_path = file_path_from(self.reference_file_path, suffix=".fai", exit_on_not_found=True, sep='.')
-            with open(reference_index_file_path, "r") as fai_fp:
-                for row in fai_fp:
-                    columns = row.strip().split("\t")
-                    contig_name, contig_size = columns[0], columns[1]
-                    self.output("##contig=<ID=%s,length=%s>" % (contig_name, contig_size))
-
-        self.output('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t%s' % (self.sample_name))
-
+        self.output(get_header(TMP_DIR, self.sample_name))
 
 def output_utilties_from(
         sample_name,
@@ -422,32 +399,7 @@ def output_utilties_from(
         if is_output_for_ensemble:
             return
 
-        from textwrap import dedent
-        output(dedent("""\
-            ##fileformat=VCFv4.2
-            ##FILTER=<ID=PASS,Description="All filters passed">
-            ##FILTER=<ID=LowQual,Description="Low quality variant">
-            ##FILTER=<ID=RefCall,Description="Reference call">
-            ##INFO=<ID=P,Number=0,Type=Flag,Description="Result from pileup calling">
-            ##INFO=<ID=F,Number=0,Type=Flag,Description="Result from full-alignment calling">
-            ##INFO=<ID=T,Number=0,Type=Flag,Description="Result from trio calling">
-            ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-            ##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
-            ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
-            ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Read depth for each allele">
-            ##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Phred-scaled genotype likelihoods rounded to the closest integer">
-            ##FORMAT=<ID=AF,Number=1,Type=Float,Description="Estimated allele frequency in the range of [0,1]">"""
-                      ))
-
-        if reference_file_path is not None:
-            reference_index_file_path = file_path_from(reference_file_path, suffix=".fai", exit_on_not_found=True, sep='.')
-            with open(reference_index_file_path, "r") as fai_fp:
-                for row in fai_fp:
-                    columns = row.strip().split("\t")
-                    contig_name, contig_size = columns[0], columns[1]
-                    output("##contig=<ID=%s,length=%s>" % (contig_name, contig_size))
-
-        output('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t%s' % (sample_name))
+        output(get_header(TMP_DIR, sample_name))
 
     return OutputUtilities(
         print_debug_message,
@@ -1457,18 +1409,16 @@ def output_with(
             "Normal output" if not is_reference else "Reference"
         )
     else:
-        if output_config.gvcf:
-
-            # allele depth
-            ad_alt = ',' + ','.join([str(item) for item in alt_list_count])
-            allele_depth = str(ref_count) + (ad_alt if len(alt_list_count) else "")
-
-            PLs = compute_PL(genotype_string, genotype_probabilities, gt21_probabilities, reference_base,
+        # allele depth
+        ad_alt = ',' + ','.join([str(item) for item in alt_list_count])
+        allele_depth = str(ref_count) + (ad_alt if len(alt_list_count) else "")
+        allele_frequency_s = "%.4f" % allele_frequency if len(alt_list_count) <= 1 else \
+                ','.join(["%.4f" % (min(1.0, 1.0 * item / read_depth))  for item in alt_list_count])
+        PLs = compute_PL(genotype_string, genotype_probabilities, gt21_probabilities, reference_base,
                              alternate_base)
+        PLs = ','.join([str(x) for x in PLs])
 
-            PLs = ','.join([str(x) for x in PLs])
-
-            output_utilities.output("%s\t%d\t.\t%s\t%s\t%.2f\t%s\t%s\tGT:GQ:DP:AD:AF:PL\t%s:%d:%d:%s:%.4f:%s" % (
+        output_utilities.output("%s\t%d\t.\t%s\t%s\t%.2f\t%s\t%s\tGT:GQ:DP:AD:AF:PL\t%s:%d:%d:%s:%s:%s" % (
                 chromosome,
                 position,
                 reference_base,
@@ -1480,22 +1430,8 @@ def output_with(
                 quality_score,
                 read_depth,
                 allele_depth,
-                allele_frequency,
+                allele_frequency_s,
                 PLs
-            ))
-        else:
-            output_utilities.output("%s\t%d\t.\t%s\t%s\t%.2f\t%s\t%s\tGT:GQ:DP:AF\t%s:%d:%d:%.4f" % (
-                chromosome,
-                position,
-                reference_base,
-                alternate_base,
-                quality_score,
-                filtration_value,
-                information_string,
-                genotype_string,
-                quality_score,
-                read_depth,
-                allele_frequency
             ))
 
 
@@ -1914,7 +1850,7 @@ def main():
                         help="Path to the 'samtools', samtools version >= 1.10 is required, default: %(default)s")
 
     # options for advanced users
-    parser.add_argument('--temp_file_dir', type=str, default='./',
+    parser.add_argument('--tmp_path', type=str, default=None,
                         help="EXPERIMENTAL: The cache directory for storing temporary non-variant information if --gvcf is enabled, default: %(default)s")
 
     parser.add_argument('--haploid_precise', action='store_true',
@@ -1973,8 +1909,7 @@ def main():
     ## Output reference calls
     # parser.add_argument('--showRef', type=str2bool, default=False, help=SUPPRESS)
     # parser.add_argument('--showRef', action='store_true', help=SUPPRESS)
-    parser.add_argument('--showRef', dest='showRef', 
-                    type=lambda x: bool(strtobool(x)))
+    parser.add_argument('--showRef', dest='showRef', type=lambda x: bool(strtobool(x)))
 
     parser.add_argument('--add_padding', action='store_true',
                         help=SUPPRESS)
@@ -1999,6 +1934,11 @@ def main():
                         help="VCF output filename, or stdout if not set")
 
     args = parser.parse_args()
+
+    if args.tmp_path is not None:
+        global TMP_DIR
+        TMP_DIR = args.tmp_path
+        #print(args.tmp_path, TMP_DIR)
 
     if len(sys.argv[1:]) == 0:
         parser.print_help()

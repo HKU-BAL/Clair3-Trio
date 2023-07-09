@@ -1317,18 +1317,16 @@ def output_with(
             "Normal output" if not is_reference else "Reference"
         )
     else:
-        if output_config.gvcf:
-
-            # allele depth
-            ad_alt = ',' + ','.join([str(item) for item in alt_list_count])
-            allele_depth = str(ref_count) + (ad_alt if len(alt_list_count) else "")
-
-            PLs = compute_PL(genotype_string, genotype_probabilities, gt21_probabilities, reference_base,
+        # allele depth
+        ad_alt = ',' + ','.join([str(item) for item in alt_list_count])
+        allele_depth = str(ref_count) + (ad_alt if len(alt_list_count) else "")
+        allele_frequency_s = "%.4f" % allele_frequency if len(alt_list_count) <= 1 else \
+                ','.join(["%.4f" % (min(1.0, 1.0 * item / read_depth))  for item in alt_list_count])
+        PLs = compute_PL(genotype_string, genotype_probabilities, gt21_probabilities, reference_base,
                              alternate_base)
+        PLs = ','.join([str(x) for x in PLs])
 
-            PLs = ','.join([str(x) for x in PLs])
-
-            output_utilities.output("%s\t%d\t.\t%s\t%s\t%.2f\t%s\t%s\tGT:GQ:DP:AD:AF:PL\t%s:%d:%d:%s:%.4f:%s" % (
+        output_utilities.output("%s\t%d\t.\t%s\t%s\t%.2f\t%s\t%s\tGT:GQ:DP:AD:AF:PL\t%s:%d:%d:%s:%s:%s" % (
                 chromosome,
                 position,
                 reference_base,
@@ -1340,22 +1338,8 @@ def output_with(
                 quality_score,
                 read_depth,
                 allele_depth,
-                allele_frequency,
+                allele_frequency_s,
                 PLs
-            ))
-        else:
-            output_utilities.output("%s\t%d\t.\t%s\t%s\t%.2f\t%s\t%s\tGT:GQ:DP:AF\t%s:%d:%d:%.4f" % (
-                chromosome,
-                position,
-                reference_base,
-                alternate_base,
-                quality_score,
-                filtration_value,
-                information_string,
-                genotype_string,
-                quality_score,
-                read_depth,
-                allele_frequency
             ))
 
 

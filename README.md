@@ -33,6 +33,7 @@ Detailed descriptions of the methodology and results for Clair3-Trio are availab
   + [Option 3. Build an anaconda virtual environment](#option-3-build-an-anaconda-virtual-environment)
   + [Option 4. Bioconda](#option-4-bioconda)
   + [Option 5. Docker Dockerfile](#option-5-docker-dockerfile)
+* [Output Files](#output-files)
 * [Usage](#usage)
 * [Folder Structure and Submodule Descriptions](#folder-structure-and-submodule-descriptions)
 * [Clair3-Trio Model Training](docs/trio/trio_training.md)
@@ -43,6 +44,7 @@ Detailed descriptions of the methodology and results for Clair3-Trio are availab
 ----
 
 ## Latest Updates
+*v0.7 (July 9, 2023)*: Added source/version/command tag into VCF header. Fixed bug of AF for 1/2 genotypes. Added AD and PL into VCF files. Added document about output files. Added a [document](docs/trio/merge.md) for method of merging VCF.
 
 *v0.6 (April 25, 2023)*: Bumped up Python from 3.6 to 3.9, Whatshap from v1.0 to v1.7 [Clair3 #193](https://github.com/HKU-BAL/Clair3/issues/193). Fixed gVCF format mistake [#3](https://github.com/HKU-BAL/Clair3-Trio/issues/3). Added options "--enable_phasing", "--enable_output_phasing", and "enable_output_haplotagging" [#4](https://github.com/HKU-BAL/Clair3-Trio/issues/4). Added singularity support.
 
@@ -314,7 +316,29 @@ docker run -it hkubal/clair3-trio:latest /opt/bin/run_clair3_trio.sh --help
 ```
 
 
+## Output Files
 
+Clair3-Trio outputs files in VCF/GVCF format for the trio genotype. The output files (for a trio [C ], [P1], [P2]) including:
+
+    .
+    ├── run_clair3_trio.log		# Clair3-Trio running log
+    ├── [C ].vcf.gz				# Called variants in vcf format for [C ]
+    ├── [P1].vcf.gz				# Called variants in vcf format for [P1]
+    ├── [P2].vcf.gz				# Called variants in vcf format for [P2]
+    ├── [C ].gvcf.gz			# Called variants in gvcf format for [C ] (when enabled `--gvcf`)
+    ├── [P1].gvcf.gz			# Called variants in gvcf format for [P2] (when enabled `--gvcf`)
+    ├── [P2].gvcf.gz			# Called variants in gvcf format for [P2] (when enabled `--gvcf`)
+    ├── phased_[C ].vcf.gz		# Called phased variants for [C ] (when enabled `--enable_output_phasing`)		
+    ├── phased_[P1].vcf.gz		# Called phased variants for [P1] (when enabled `--enable_output_phasing`)		
+    ├── phased_[P2].vcf.gz		# Called phased variants for [P2] (when enabled `--enable_output_phasing`)		
+    ├── phased_[C ].bam			# alignment tagged with phased variants info. for [C ] (when enabled `--enable_output_haplotagging`)		
+    ├── phased_[P1].bam			# alignment tagged with phased variants info. for [P1] (when enabled `--enable_output_haplotagging`)		
+    ├── phased_[P2].bam			# alignment tagged with phased variants info. for [P2] (when enabled `--enable_output_haplotagging`)		
+    ├── [C ]_c3t.vcf.gz			# raw variants from Clair-Trio's trio model for [C ]
+    ├── [P1]_c3t.vcf.gz			# raw variants from Clair-Trio's trio model for [P1]
+    ├── [P2]_c3t.vcf.gz			# raw variants from Clair-Trio's trio model for [P2]
+    ├── /log					# folder for detailed running log
+    └── /tmp					# folder for all running temporary files 
 
 
 ## Usage
@@ -443,6 +467,10 @@ Clair3-Trio supports both VCF and GVCF output formats. Clair3-Trio uses VCF vers
 Clair3-Trio outputs a GATK-compatible GVCF format that passes GATK's `ValidateVariants` module. Different from DeepVariant that uses `<*>` to represent any possible alternative allele, Clair3-Trio uses `<NON_REF>`, the same as GATK.
 
 Clair3-Trio GVCF files can be merged with GLNexus. A GLNexus caller based configuration file is available [Download](http://www.bio8.cs.hku.hk/clair3_trio/config/clair3.yml).
+
+Note that the reference call in VCF is called via Model, and Refcall in GVCF may be **inferred** from allele depth.
+
+We left some comments for merging multiple VCF/GVCF [here](docs/trio/merge.md).
 
 ---
 

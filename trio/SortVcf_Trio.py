@@ -10,6 +10,8 @@ from shared.utils import log_error, log_warning, file_path_from, subprocess_pope
 major_contigs_order = ["chr" + str(a) for a in list(range(1, 23)) + ["X", "Y"]] + [str(a) for a in
                                                                                    list(range(1, 23)) + ["X", "Y"]]
 
+from trio.print_header import get_header
+TMP_DIR=None
 
 def compress_index_vcf(input_vcf):
     # use bgzip to compress vcf -> vcf.gz
@@ -19,32 +21,7 @@ def compress_index_vcf(input_vcf):
 
 def output_header(output_fn, reference_file_path, sample_name='SAMPLE'):
     output_file = open(output_fn, "w")
-    from textwrap import dedent
-    output_file.write(dedent("""\
-        ##fileformat=VCFv4.2
-        ##FILTER=<ID=PASS,Description="All filters passed">
-        ##FILTER=<ID=LowQual,Description="Low quality variant">
-        ##FILTER=<ID=RefCall,Description="Reference call">
-        ##INFO=<ID=P,Number=0,Type=Flag,Description="Result from pileup calling">
-        ##INFO=<ID=F,Number=0,Type=Flag,Description="Result from full-alignment calling">
-        ##INFO=<ID=T,Number=0,Type=Flag,Description="Result from trio model calling">
-        ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-        ##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
-        ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
-        ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Read depth for each allele">
-        ##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Phred-scaled genotype likelihoods rounded to the closest integer">
-        ##FORMAT=<ID=AF,Number=1,Type=Float,Description="Estimated allele frequency in the range of [0,1]">"""
-                  ) + '\n')
-
-    if reference_file_path is not None:
-        reference_index_file_path = file_path_from(reference_file_path, suffix=".fai", exit_on_not_found=True, sep='.')
-        with open(reference_index_file_path, "r") as fai_fp:
-            for row in fai_fp:
-                columns = row.strip().split("\t")
-                contig_name, contig_size = columns[0], columns[1]
-                output_file.write(("##contig=<ID=%s,length=%s>" % (contig_name, contig_size) + '\n'))
-
-    output_file.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t%s' % (sample_name))
+    output_file.write(get_header(TMP_DIR, sample_name))
     output_file.close()
 
 def print_calling_step(output_fn=""):
@@ -156,6 +133,31 @@ def sort_vcf_from(args):
     no_vcf_output = True
     need_write_header = True
 
+    header = ["%s\n" % i for i in get_header(TMP_DIR, sample_name).split("\n")]
+    # Add new annotation (from WHATSHAP or other) into header list
+    # Merge VCF header:
+    #   1) if having FORMAT or INFO tag conflict, use the Clair3-Trio ones;
+    #   2) use Clair3-Trio contig info.
+    def add_header_line(header, new_line):
+        # if the newline have contig info. don't insert the newline, just use the original header
+        if "contig=<ID=" in new_line:
+            return header
+        # add chr to last line
+        if "#CHROM" in new_line and "#CHROM" not in header[-1]:
+            return header + [new_line]
+        new_header = []
+        _new_meta = new_line.split(',')[0] if ("##FORMAT" in new_line or "##INFO" in new_line) else None
+        for i in header:
+            if "##FORMAT" in i or "##INFO" in i:
+                _meta = i.split(',')[0]
+                if _new_meta == _meta:
+                    new_line = ""
+            if "##reference" in i:
+                if new_line != "":
+                    new_header.append(new_line)
+            new_header.append(i)
+        return new_header
+
     # only compress intermediate gvcf using lz4 output and keep final gvcf in bgzip format
     output_bgzip_gvcf = vcf_fn_suffix == '.gvcf'
     compress_gvcf = 'gvcf' in vcf_fn_suffix
@@ -188,7 +190,8 @@ def sort_vcf_from(args):
                     if row.startswith('##commandline='):
                         continue
                     if row not in header:
-                        header.append(row)
+                        header = add_header_line(header, row)
+                        #header.append(row)
                     continue
                 # use the first vcf header
                 columns = row.strip().split(maxsplit=3)
@@ -262,7 +265,18 @@ def main():
     parser.add_argument('--contigs_fn', type=str, default=None,
                         help="Contigs file with all processing contigs")
 
+
+    # options for advanced users
+    parser.add_argument('--tmp_path', type=str, default=None,
+                        help="EXPERIMENTAL: The cache directory for storing temporary non-variant information if --gvcf is enabled, default: %(default)s")
+
     args = parser.parse_args()
+
+    if args.tmp_path is not None:
+        global TMP_DIR
+        TMP_DIR = args.tmp_path
+        #print(args.tmp_path, TMP_DIR)
+
     if args.input_dir is None:
         sort_vcf_from_stdin(args)
     else:

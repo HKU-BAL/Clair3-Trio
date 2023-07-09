@@ -2,10 +2,10 @@
 SCRIPT_NAME=$(basename "$0")
 SCRIPT_PATH=`dirname "$0"`
 Usage="Usage: ./${SCRIPT_NAME} --bam_fn_c=BAM --bam_fn_p1=BAM --bam_fn_p2=BAM --ref_fn=REF --output=OUTPUT_DIR --threads=THREADS --model_path_clair3=MODEL_PREFIX --model_path_clair3_trio=MODEL_PREFIX [--bed_fn=BED] [options]"
-
+CMD="$0 $@"
 
 # ENTRANCE SCRIPT FOR CLAIR3-TRIO, SETTING VARIABLE AND CALL TRIO
-VERSION='v0.6'
+VERSION='v0.7'
 
 set -e
 #./run_clair3_trio.sh --bam_fn_c=child_bam --bam_fn_p1=parent1 --bam_fn_p2=parent2 -f ref.fasta -t 32 -o tmp -p --model_path_clair3=model_path --model_path_clair3_trio=model_path
@@ -227,9 +227,11 @@ if [ "${BASE_MODEL}" = "r941_prom_sup_g5014" ] || [ "${BASE_MODEL}" = "r941_prom
 OUTPUT_FOLDER=$(echo ${OUTPUT_FOLDER%*/})
 MODEL_PATH_C3=$(echo ${MODEL_PATH_C3%*/})
 MODEL_PATH_C3T=$(echo ${MODEL_PATH_C3T%*/})
-if [ ${GVCF} ]; then SHOW_REF=True ; fi
-if [ ${ENABLE_PHASING} ]; then ENABLE_OUTPUT_PHASING=True ; fi
-if [ ${ENABLE_OUTPUT_HAPLOTAGGING} ]; then ENABLE_OUTPUT_PHASING=True ; fi
+if [[ "${GVCF}" == "True" ]]; then SHOW_REF=True ; fi
+if [[ "${ENABLE_PHASING}" == "True" ]]; then ENABLE_OUTPUT_PHASING=True ; fi
+if [[ "${ENABLE_OUTPUT_HAPLOTAGGING}" == "True" ]]; then ENABLE_OUTPUT_PHASING=True ; fi
+# echo $ENABLE_OUTPUT_HAPLOTAGGING $ENABLE_PHASING $ENABLE_OUTPUT_PHASING $GVCF $SHOW_REF
+
 
 # optional parameters should use "="
 (time (
@@ -330,6 +332,9 @@ if [ -z ${RESUMN} ]; then echo -e "${ERROR} Use '--resumn=0,1,2,3,4'for optional
 # if [ ! -f ${MODEL_PATH}/${PILEUP_PREFIX}.index ]; then echo -e "${ERROR} No pileup model found in provided model path and model prefix ${MODEL_PATH}/${PILEUP_PREFIX} ${NC}"; exit 1; fi
 if [ ! -f ${MODEL_PATH_C3T}/${TRIO_PREFIX}.index ]; then echo -e "${ERROR} No trio model found in provided model path and model prefix ${MODEL_PATH_C3T}/${TRIO_PREFIX} ${NC}"; exit 1; fi
 
+# keep command line info., for vcf header
+mkdir -p ${OUTPUT_FOLDER}/tmp
+echo "$CMD" > "${OUTPUT_FOLDER}/tmp/CMD"
 
 set -x
 ${SCRIPT_PATH}/trio/Call_Clair3_Trio.sh \
