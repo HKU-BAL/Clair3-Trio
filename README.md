@@ -321,24 +321,24 @@ docker run -it hkubal/clair3-trio:latest /opt/bin/run_clair3_trio.sh --help
 Clair3-Trio outputs files in VCF/GVCF format for the trio genotype. The output files (for a trio [C ], [P1], [P2]) including:
 
     .
-    ├── run_clair3_trio.log		# Clair3-Trio running log
+    ├── run_clair3_trio.log		        # Clair3-Trio running log
     ├── [C ].vcf.gz				# Called variants in vcf format for [C ]
     ├── [P1].vcf.gz				# Called variants in vcf format for [P1]
     ├── [P2].vcf.gz				# Called variants in vcf format for [P2]
     ├── [C ].gvcf.gz			# Called variants in gvcf format for [C ] (when enabled `--gvcf`)
     ├── [P1].gvcf.gz			# Called variants in gvcf format for [P2] (when enabled `--gvcf`)
     ├── [P2].gvcf.gz			# Called variants in gvcf format for [P2] (when enabled `--gvcf`)
-    ├── phased_[C ].vcf.gz		# Called phased variants for [C ] (when enabled `--enable_output_phasing`)		
-    ├── phased_[P1].vcf.gz		# Called phased variants for [P1] (when enabled `--enable_output_phasing`)		
-    ├── phased_[P2].vcf.gz		# Called phased variants for [P2] (when enabled `--enable_output_phasing`)		
+    ├── phased_[C ].vcf.gz			# Called phased variants for [C ] (when enabled `--enable_output_phasing`)		
+    ├── phased_[P1].vcf.gz			# Called phased variants for [P1] (when enabled `--enable_output_phasing`)		
+    ├── phased_[P2].vcf.gz			# Called phased variants for [P2] (when enabled `--enable_output_phasing`)		
     ├── phased_[C ].bam			# alignment tagged with phased variants info. for [C ] (when enabled `--enable_output_haplotagging`)		
     ├── phased_[P1].bam			# alignment tagged with phased variants info. for [P1] (when enabled `--enable_output_haplotagging`)		
     ├── phased_[P2].bam			# alignment tagged with phased variants info. for [P2] (when enabled `--enable_output_haplotagging`)		
     ├── [C ]_c3t.vcf.gz			# raw variants from Clair-Trio's trio model for [C ]
     ├── [P1]_c3t.vcf.gz			# raw variants from Clair-Trio's trio model for [P1]
     ├── [P2]_c3t.vcf.gz			# raw variants from Clair-Trio's trio model for [P2]
-    ├── /log					# folder for detailed running log
-    └── /tmp					# folder for all running temporary files 
+    ├── /log				# folder for detailed running log
+    └── /tmp				# folder for all running temporary files 
 
 
 ## Usage
