@@ -9,7 +9,7 @@ Merging multiple VCF files is not a trivial task. The difficulty arises from two
 1) determining whether a non-called site should be considered a reference call (0/0) or an undetermined call (./.) based on the sequencing data;
 2) merging multiple alleles and overlapping variants between individuals and positions.
 
-To overcome the challenge of merging VCF files, we tried different methods. This page will describe our method to merge VCF files for Clair3-Trio.
+To overcome the challenge of merging VCF files, we tried different methods. This page will describe the methods we applied to merge VCF files for Clair3-Trio.
 
 We recommend **turning on `--print_ref_calls`** for Clair3-Trio to output all reference calls for better merging multiple VCF files.
 
