@@ -44,7 +44,7 @@ Detailed descriptions of the methodology and results for Clair3-Trio are availab
 ----
 
 ## Latest Updates
-*v0.7 (July 9, 2023)*: Added source/version/command tag into VCF header. Fixed bug of AF for 1/2 genotypes. Added AD and PL into VCF files. Added document about output files. Added a [document](docs/trio/merge.md) for method of merging VCF.
+*v0.7 (July 9, 2023)*: Added source/version/command tag into VCF header. Fixed a bug of AF for 1/2 genotypes. Added AD and PL into VCF output. Added document about [output](#output-files) files. Added a [page](docs/trio/merge.md) for the method of merging VCF.
 
 *v0.6 (April 25, 2023)*: Bumped up Python from 3.6 to 3.9, Whatshap from v1.0 to v1.7 [Clair3 #193](https://github.com/HKU-BAL/Clair3/issues/193). Fixed gVCF format mistake [#3](https://github.com/HKU-BAL/Clair3-Trio/issues/3). Added options "--enable_phasing", "--enable_output_phasing", and "enable_output_haplotagging" [#4](https://github.com/HKU-BAL/Clair3-Trio/issues/4). Added singularity support.
 
