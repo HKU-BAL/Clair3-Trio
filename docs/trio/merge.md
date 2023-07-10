@@ -117,9 +117,7 @@ REF_SDF_FILE_PATH=[REFERENCE SDF FILE]
 
 ## Option 3. Merging with GVCF files
 
-GVCF keeps all positions in files and provides more information for the not called sites.                                                                           
-However, when tested merging GVCF with available tools, we found many cases are problematic, which requires further finetuning for the results to make it useable.                                                                                                                       
-                                                              
+GVCF keeps all positions in files and provides more information for the not called sites. However, when tested merging GVCF with available tools, we found many cases are problematic, which requires further finetuning for the results to make it useable.                                                                                                                                  
 TBC
 
 ## Quality of de novo variants
