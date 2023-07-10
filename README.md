@@ -381,9 +381,7 @@ Clair3-Trio outputs files in VCF/GVCF format for the trio genotype. The output f
 
 **Other parameters:**
 
- **Caution**:  Use `=value` for optional parameters, e.g., `--bed_fn=fn.bed` instead of `--bed_fn fn.bed`
- 
- **[X]**: Not supported parameters at this moment. 
+**Caution**:  Use `=value` for optional parameters, e.g., `--bed_fn=fn.bed` instead of `--bed_fn fn.bed`
 
 ```bash
   --sample_name_c=STR       Define the sample name for Child to be shown in the VCF file.[Child].
@@ -466,7 +464,7 @@ Clair3-Trio supports both VCF and GVCF output formats. Clair3-Trio uses VCF vers
 
 Clair3-Trio outputs a GATK-compatible GVCF format that passes GATK's `ValidateVariants` module. Different from DeepVariant that uses `<*>` to represent any possible alternative allele, Clair3-Trio uses `<NON_REF>`, the same as GATK.
 
-Clair3-Trio GVCF files can be merged with GLNexus. A GLNexus caller based configuration file is available [Download](http://www.bio8.cs.hku.hk/clair3_trio/config/clair3.yml).
+Clair3-Trio GVCF files can be merged with GLNexus. A GLNexus caller-based configuration file is available [Download](http://www.bio8.cs.hku.hk/clair3_trio/config/clair3.yml).
 
 Note that the reference call in VCF is called via Model, and Refcall in GVCF may be **inferred** from allele depth.
 
