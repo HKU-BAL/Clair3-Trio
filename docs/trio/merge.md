@@ -33,7 +33,6 @@ C_VCF=[CHILD_VCF]			#e.g. HG002.vcf.gz
 P1_VCF=[PARENET_1_VCF]		#e.g. HG003.vcf.gz
 P2_VCF=[PARENET_2_VCF]		#e.g. HG004.vcf.gz
 
-# generarte BED file
 _TRIO_PED=[TRIO PED FILE]
 # e.g. cat $_TRIO_PED
 ##PED format pedigree
@@ -82,7 +81,6 @@ C_VCF=[CHILD_VCF]			#e.g. HG002.vcf.gz
 P1_VCF=[PARENET_1_VCF]		#e.g. HG003.vcf.gz
 P2_VCF=[PARENET_2_VCF]		#e.g. HG004.vcf.gz
 
-# generarte BED file
 _TRIO_PED=[TRIO PED FILE]
 # e.g. cat $_TRIO_PED
 ##PED format pedigree
