@@ -9,9 +9,16 @@ Merging multiple VCF files is not a trivial task. The difficulty arises from two
 1) determining whether a non-called site should be considered a reference call (0/0) or an undetermined call (./.) based on the sequencing data;
 2) merging multiple alleles and overlapping variants between individuals and positions.
 
-This page will describe our method to merge VCF files for Clair3-Trio.
+To overcome the challenge of merging VCF files, we tried different methods. This page will describe our method to merge VCF files for Clair3-Trio.
 
-We recommend turning on `--print_ref_calls` for Clair3-Trio to output all reference calls for better merging multiple VCF files.
+We recommend **turning on `--print_ref_calls`** for Clair3-Trio to output all reference calls for better merging multiple VCF files.
+
+## Contents
+
+* [Option 1. Merge VCF with unknown to "0/0"](#option-1-merge-vcf-with-unknown-to-00)
+* [Option 2. Merge VCF with unknown to "./."](#option-2-merge-vcf-with-unknown-to-)
+* [Option 3. Merging with GVCF files](#option-3-merging-with-gvcf-files)
+* [Quality of de novo variants](#quality-of-de-novo-variants)
 
 ## Option 1. Merge VCF with unknown to "0/0"
 
@@ -108,10 +115,19 @@ REF_SDF_FILE_PATH=[REFERENCE SDF FILE]
 #${RTG} mendelian --all-records -i ${M_VCF} -o ${M_VCF_annotated} --pedigree ${_TRIO_PED} -t ${REF_SDF_FILE_PATH}
 ```
 
-## Option 3 Mergeing with GVCF files
+## Option 3. Merging with GVCF files
 
 GVCF keeps all positions in files and provides more information for the not called sites.                                                                           
 However, when tested merging GVCF with available tools, we found many cases are problematic, which requires further finetuning for the results to make it useable.                                                                                                                       
                                                               
 TBC
+
+## Quality of de novo variants
+
+All de novo variants in the merged files are labeled with the "MCV" INFO tag in the merged files.
+
+We can use `${BCFTOOLS} view -i 'INFO/MCV="HG002:0/0+0/0->0/1"' ${M_VCF_annotated} | less` to check all de novo variants.
+
+And the quality of de novo variants can be accessed by aggregating (by max/mean or other methods) each individual's genotype quality (FORMAT/GQ).
+
 
