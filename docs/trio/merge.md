@@ -97,11 +97,11 @@ N_P1_VCF=[P1 NAME]_n.vcf.gz
 N_P2_VCF=[P2 NAME]_n.vcf.gz
 
 # filter Lowqual call           
-${BCFTOOLS} filter -S . -e 'FILTER="LowQual" | FORMAT/GQ < 2' ${C_VCF} | ${BCFTOOLS} view -O z -o ${N_C_VCF}
+${BCFTOOLS} filter -e 'FILTER="LowQual" | FORMAT/GQ < 2' ${C_VCF} | ${BCFTOOLS} view -O z -o ${N_C_VCF}
 ${BCFTOOLS} index ${N_C_VCF}
-${BCFTOOLS} filter -S . -e 'FILTER="LowQual" | FORMAT/GQ < 2' ${P1_VCF} | ${BCFTOOLS} view -O z -o ${N_P1_VCF}
+${BCFTOOLS} filter -e 'FILTER="LowQual" | FORMAT/GQ < 2' ${P1_VCF} | ${BCFTOOLS} view -O z -o ${N_P1_VCF}
 ${BCFTOOLS} index ${N_P1_VCF}
-${BCFTOOLS} filter -S . -e 'FILTER="LowQual" | FORMAT/GQ < 2' ${P2_VCF} | ${BCFTOOLS} view -O z -o ${N_P2_VCF}
+${BCFTOOLS} filter -e 'FILTER="LowQual" | FORMAT/GQ < 2' ${P2_VCF} | ${BCFTOOLS} view -O z -o ${N_P2_VCF}
 ${BCFTOOLS} index ${N_P2_VCF}
 
 # merge
