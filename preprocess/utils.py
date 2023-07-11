@@ -577,11 +577,11 @@ class variantInfoCalculator(object):
             ##INFO=<ID=END,Number=1,Type=Integer,Description="End position (for use with symbolic alleles)">
             ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
             ##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
-            ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
-            ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Read depth for each allele">
+            ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Approximate read depth (reads with MQ<20 or selected by 'samtools view -F 2316' are filtered)">
+            ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed">
+            ##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification">
             ##FORMAT=<ID=MIN_DP,Number=1,Type=Integer,Description="Minimum DP observed within the GVCF block">
-            ##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Phred-scaled genotype likelihoods rounded to the closest integer">
-            ##FORMAT=<ID=AF,Number=1,Type=Float,Description="Estimated allele frequency in the range of [0,1]">"""), file
+            ##FORMAT=<ID=AF,Number=1,Type=Float,Description="Observed allele frequency in reads, for each ALT allele, in the same order as listed, or the REF allele for a RefCall">"""), file
         =self.vcf_writer)
         if self.reference_file_path is not None:
             reference_index_file_path = file_path_from(self.reference_file_path, suffix=".fai", exit_on_not_found=True, sep='.')

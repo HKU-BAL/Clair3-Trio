@@ -171,7 +171,7 @@ def output_header(output_fn, reference_file_path, sample_name=None, cmdline=None
         ##fileformat=VCFv4.2
         ##source=Clair3-Trio
         ##{0}_version={1}
-        ##{0}_cmdline={2}
+        ##cmdline={2}
         ##FILTER=<ID=PASS,Description="All filters passed">
         ##FILTER=<ID=LowQual,Description="Low quality variant">
         ##FILTER=<ID=RefCall,Description="Reference call">
@@ -180,10 +180,10 @@ def output_header(output_fn, reference_file_path, sample_name=None, cmdline=None
         ##INFO=<ID=T,Number=0,Type=Flag,Description="Result from trio calling">
         ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
         ##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
-        ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
-        ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Read depth for each allele">
-        ##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Phred-scaled genotype likelihoods rounded to the closest integer">
-        ##FORMAT=<ID=AF,Number=1,Type=Float,Description="Estimated allele frequency in the range of [0,1]">"""
+        ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Approximate read depth (reads with MQ<20 or selected by 'samtools view -F 2316' are filtered)">
+        ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed">
+        ##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification">
+        ##FORMAT=<ID=AF,Number=1,Type=Float,Description="Observed allele frequency in reads, for each ALT allele, in the same order as listed, or the REF allele for a RefCall">"""
                              ).format(param.TOOL_NAME, param.VERSION, cmdline) + '\n')
 
     if reference_file_path is not None:
