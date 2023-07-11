@@ -105,7 +105,7 @@ ${BCFTOOLS} filter -S . -e 'FILTER="LowQual" | FORMAT/GQ < 2' ${P2_VCF} | ${BCFT
 ${BCFTOOLS} index ${N_P2_VCF}
 
 # merge
-${BCFTOOLS} merge ${N_C_VCF} ${N_P1_VCF} ${N_P2_VCF} --threads 32 -m all -F x | ${BCFTOOLS} view -O z -o ${M_VCF}
+${BCFTOOLS} merge ${N_C_VCF} ${N_P1_VCF} ${N_P2_VCF} --threads 32 -m all | ${BCFTOOLS} view -O z -o ${M_VCF}
 ${BCFTOOLS} index ${M_VCF}
 
 # add annotation
