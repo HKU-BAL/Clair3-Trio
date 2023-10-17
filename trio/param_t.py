@@ -1,6 +1,6 @@
 # Clair3 full alignment parameters
 TOOL_NAME = "clair3_trio"
-VERSION='v0.7'
+VERSION='v0.7.1'
 
 from itertools import accumulate
 
